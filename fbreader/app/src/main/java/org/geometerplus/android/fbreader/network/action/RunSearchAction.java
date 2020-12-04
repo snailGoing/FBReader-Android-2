@@ -22,64 +22,61 @@ package org.geometerplus.android.fbreader.network.action;
 import android.app.Activity;
 import android.os.Bundle;
 
-import org.geometerplus.fbreader.tree.FBTree;
+import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
+import org.geometerplus.android.fbreader.network.NetworkSearchActivity;
+import org.geometerplus.android.util.DeviceType;
+import org.geometerplus.android.util.SearchDialogUtil;
 import org.geometerplus.fbreader.network.NetworkLibrary;
 import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.tree.SearchCatalogTree;
-
+import org.geometerplus.fbreader.tree.FBTree;
 import org.geometerplus.zlibrary.ui.android.R;
 
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
-import org.geometerplus.android.fbreader.network.NetworkSearchActivity;
-
-import org.geometerplus.android.util.DeviceType;
-import org.geometerplus.android.util.SearchDialogUtil;
-
 public class RunSearchAction extends Action {
-	public static SearchCatalogTree getSearchTree(FBTree tree) {
-		for (; tree != null; tree = tree.Parent) {
-			for (FBTree t : tree.subtrees()) {
-				if (t instanceof SearchCatalogTree) {
-					return (SearchCatalogTree)t;
-				}
-			}
-		}
-		return null;
-	}
+    private final boolean myFromContextMenu;
 
-	private final boolean myFromContextMenu;
+    public RunSearchAction(Activity activity, boolean fromContextMenu) {
+        super(activity, ActionCode.SEARCH, "networkSearch", R.drawable.ic_menu_search);
+        myFromContextMenu = fromContextMenu;
+    }
 
-	public RunSearchAction(Activity activity, boolean fromContextMenu) {
-		super(activity, ActionCode.SEARCH, "networkSearch", R.drawable.ic_menu_search);
-		myFromContextMenu = fromContextMenu;
-	}
+    public static SearchCatalogTree getSearchTree(FBTree tree) {
+        for (; tree != null; tree = tree.Parent) {
+            for (FBTree t : tree.subtrees()) {
+                if (t instanceof SearchCatalogTree) {
+                    return (SearchCatalogTree) t;
+                }
+            }
+        }
+        return null;
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (myFromContextMenu) {
-			return tree instanceof SearchCatalogTree;
-		} else {
-			return getSearchTree(tree) != null;
-		}
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (myFromContextMenu) {
+            return tree instanceof SearchCatalogTree;
+        } else {
+            return getSearchTree(tree) != null;
+        }
+    }
 
-	@Override
-	public boolean isEnabled(NetworkTree tree) {
-		return myLibrary.getStoredLoader(getSearchTree(tree)) == null;
-	}
+    @Override
+    public boolean isEnabled(NetworkTree tree) {
+        return myLibrary.getStoredLoader(getSearchTree(tree)) == null;
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		final Bundle bundle = new Bundle();
-		bundle.putSerializable(
-			NetworkLibraryActivity.TREE_KEY_KEY,
-			getSearchTree(tree).getUniqueKey()
-		);
-		final NetworkLibrary library = myLibrary;
-		if (DeviceType.Instance().hasStandardSearchDialog()) {
-			myActivity.startSearch(library.NetworkSearchPatternOption.getValue(), true, bundle, false);
-		} else {
-			SearchDialogUtil.showDialog(myActivity, NetworkSearchActivity.class, library.NetworkSearchPatternOption.getValue(), null, bundle);
-		}
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        final Bundle bundle = new Bundle();
+        bundle.putSerializable(
+                NetworkLibraryActivity.TREE_KEY_KEY,
+                getSearchTree(tree).getUniqueKey()
+        );
+        final NetworkLibrary library = myLibrary;
+        if (DeviceType.Instance().hasStandardSearchDialog()) {
+            myActivity.startSearch(library.NetworkSearchPatternOption.getValue(), true, bundle, false);
+        } else {
+            SearchDialogUtil.showDialog(myActivity, NetworkSearchActivity.class, library.NetworkSearchPatternOption.getValue(), null, bundle);
+        }
+    }
 }

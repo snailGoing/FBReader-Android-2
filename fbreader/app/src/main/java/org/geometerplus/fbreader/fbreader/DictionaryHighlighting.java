@@ -20,40 +20,43 @@
 package org.geometerplus.fbreader.fbreader;
 
 import org.geometerplus.zlibrary.core.util.ZLColor;
-import org.geometerplus.zlibrary.text.view.*;
+import org.geometerplus.zlibrary.text.view.ZLTextHighlighting;
+import org.geometerplus.zlibrary.text.view.ZLTextPosition;
+import org.geometerplus.zlibrary.text.view.ZLTextSimpleHighlighting;
+import org.geometerplus.zlibrary.text.view.ZLTextView;
 
 public final class DictionaryHighlighting extends ZLTextSimpleHighlighting {
-	public static DictionaryHighlighting get(ZLTextView view) {
-		final ZLTextHighlighting hilite = view.getSelectionHighlighting();
-		if (hilite == null) {
-			return null;
-		}
+    private DictionaryHighlighting(ZLTextView view, ZLTextPosition start, ZLTextPosition end) {
+        super(view, start, end);
+    }
 
-		final ZLTextPosition start = hilite.getStartPosition();
-		final ZLTextPosition end = hilite.getEndPosition();
-		if (start == null || end == null) {
-			return null;
-		}
+    public static DictionaryHighlighting get(ZLTextView view) {
+        final ZLTextHighlighting hilite = view.getSelectionHighlighting();
+        if (hilite == null) {
+            return null;
+        }
 
-		return new DictionaryHighlighting(view, start, end);
-	}
+        final ZLTextPosition start = hilite.getStartPosition();
+        final ZLTextPosition end = hilite.getEndPosition();
+        if (start == null || end == null) {
+            return null;
+        }
 
-	private DictionaryHighlighting(ZLTextView view, ZLTextPosition start, ZLTextPosition end) {
-		super(view, start, end);
-	}
+        return new DictionaryHighlighting(view, start, end);
+    }
 
-	@Override
-	public ZLColor getBackgroundColor() {
-		return View.getSelectionBackgroundColor();
-	}
+    @Override
+    public ZLColor getBackgroundColor() {
+        return View.getSelectionBackgroundColor();
+    }
 
-	@Override
-	public ZLColor getForegroundColor() {
-		return null;
-	}
+    @Override
+    public ZLColor getForegroundColor() {
+        return null;
+    }
 
-	@Override
-	public ZLColor getOutlineColor() {
-		return null;
-	}
+    @Override
+    public ZLColor getOutlineColor() {
+        return null;
+    }
 }

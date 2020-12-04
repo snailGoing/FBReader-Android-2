@@ -19,31 +19,32 @@
 
 package org.geometerplus.fbreader.network.tree;
 
-import org.geometerplus.fbreader.network.*;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.NetworkTree;
 
 public final class RootTree extends NetworkTree {
-	public final boolean IsFake;
+    public final boolean IsFake;
 
-	private final String myId;
+    private final String myId;
 
-	public RootTree(NetworkLibrary library, String id, boolean isFake) {
-		super(library);
-		IsFake = isFake;
-		myId = id;
-	}
+    public RootTree(NetworkLibrary library, String id, boolean isFake) {
+        super(library);
+        IsFake = isFake;
+        myId = id;
+    }
 
-	@Override
-	public String getName() {
-		return NetworkLibrary.resource().getValue();
-	}
+    @Override
+    public String getName() {
+        return NetworkLibrary.resource().getValue();
+    }
 
-	@Override
-	public String getSummary() {
-		return NetworkLibrary.resource().getValue();
-	}
+    @Override
+    public String getSummary() {
+        return NetworkLibrary.resource().getValue();
+    }
 
-	@Override
-	protected String getStringId() {
-		return myId;
-	}
+    @Override
+    protected String getStringId() {
+        return myId;
+    }
 }

@@ -19,449 +19,449 @@
 
 package org.geometerplus.fbreader.book;
 
-import java.math.BigDecimal;
-import java.util.*;
-
 import org.fbreader.util.ComparisonUtil;
-
+import org.geometerplus.fbreader.sort.TitledEntity;
 import org.geometerplus.zlibrary.core.util.MiscUtil;
 import org.geometerplus.zlibrary.core.util.RationalNumber;
 
-import org.geometerplus.fbreader.sort.TitledEntity;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 public abstract class AbstractBook extends TitledEntity<AbstractBook> {
-	public static final String FAVORITE_LABEL = "favorite";
-	public static final String READ_LABEL = "read";
-	public static final String SYNCHRONISED_LABEL = "sync-success";
-	public static final String SYNC_FAILURE_LABEL = "sync-failure";
-	public static final String SYNC_DELETED_LABEL = "sync-deleted";
-	public static final String SYNC_TOSYNC_LABEL = "sync-tosync";
+    public static final String FAVORITE_LABEL = "favorite";
+    public static final String READ_LABEL = "read";
+    public static final String SYNCHRONISED_LABEL = "sync-success";
+    public static final String SYNC_FAILURE_LABEL = "sync-failure";
+    public static final String SYNC_DELETED_LABEL = "sync-deleted";
+    public static final String SYNC_TOSYNC_LABEL = "sync-tosync";
+    public volatile boolean HasBookmark;
+    protected volatile long myId;
+    protected volatile String myEncoding;
+    protected volatile String myLanguage;
+    protected volatile List<Author> myAuthors;
+    protected volatile List<Tag> myTags;
+    protected volatile List<Label> myLabels;
+    protected volatile SeriesInfo mySeriesInfo;
+    protected volatile List<UID> myUids;
+    protected volatile RationalNumber myProgress;
+    protected volatile int myChangedInfo;
 
-	protected volatile long myId;
+    ;
 
-	protected volatile String myEncoding;
-	protected volatile String myLanguage;
-	protected volatile List<Author> myAuthors;
-	protected volatile List<Tag> myTags;
-	protected volatile List<Label> myLabels;
-	protected volatile SeriesInfo mySeriesInfo;
-	protected volatile List<UID> myUids;
-	protected volatile RationalNumber myProgress;
+    AbstractBook(long id, String title, String encoding, String language) {
+        super(title);
+        myId = id;
+        myEncoding = encoding;
+        myLanguage = language;
+        myChangedInfo = InfoType.Nothing;
+    }
 
-	public volatile boolean HasBookmark;
+    public abstract String getPath();
 
-	protected interface InfoType {
-		int	Nothing           = 0;
-		int	Title             = 1 << 0;
-		int	Language          = 1 << 1;
-		int	Encoding          = 1 << 2;
-		int Headers           = Title | Language | Encoding;
-		int	Authors           = 1 << 3;
-		int	Tags              = 1 << 4;
-		int	Uids              = 1 << 5;
-		int	Series            = 1 << 6;
-		int Metainfo          = Headers | Authors | Tags | Uids | Series;
-		int	Progress          = 1 << 7;
-		int	Labels            = 1 << 8;
-		int	HasBookmark       = 1 << 9;
-		int Everything        = (1 << 10) - 1;
-	};
-	protected volatile int myChangedInfo;
+    public abstract void updateFrom(AbstractBook book);
 
-	AbstractBook(long id, String title, String encoding, String language) {
-		super(title);
-		myId = id;
-		myEncoding = encoding;
-		myLanguage = language;
-		myChangedInfo = InfoType.Nothing;
-	}
+    protected final void updateFrom(AbstractBook book, int state) {
+        if (book == null || myId != book.myId) {
+            return;
+        }
 
-	public abstract String getPath();
+        if ((state & InfoType.Title) != 0) {
+            setTitle(book.getTitle());
+        }
+        if ((state & InfoType.Encoding) != 0) {
+            setEncoding(book.myEncoding);
+        }
+        if ((state & InfoType.Language) != 0) {
+            setLanguage(book.myLanguage);
+        }
 
-	public abstract void updateFrom(AbstractBook book);
+        if (((state & InfoType.Authors) != 0) &&
+                !ComparisonUtil.equal(myAuthors, book.myAuthors)) {
+            myAuthors = book.myAuthors != null ? new ArrayList<Author>(book.myAuthors) : null;
+            myChangedInfo |= InfoType.Authors;
+        }
+        if (((state & InfoType.Tags) != 0) &&
+                !ComparisonUtil.equal(myTags, book.myTags)) {
+            myTags = book.myTags != null ? new ArrayList<Tag>(book.myTags) : null;
+            myChangedInfo |= InfoType.Tags;
+        }
+        if (((state & InfoType.Series) != 0) &&
+                !ComparisonUtil.equal(mySeriesInfo, book.mySeriesInfo)) {
+            mySeriesInfo = book.mySeriesInfo;
+            myChangedInfo |= InfoType.Series;
+        }
+        if (((state & InfoType.Uids) != 0) &&
+                !MiscUtil.listsEquals(myUids, book.myUids)) {
+            myUids = book.myUids != null ? new ArrayList<UID>(book.myUids) : null;
+            myChangedInfo |= InfoType.Uids;
+        }
 
-	protected final void updateFrom(AbstractBook book, int state) {
-		if (book == null || myId != book.myId) {
-			return;
-		}
+        if (((state & InfoType.Labels) != 0) &&
+                !MiscUtil.listsEquals(myLabels, book.myLabels)) {
+            myLabels = book.myLabels != null ? new ArrayList<Label>(book.myLabels) : null;
+            myChangedInfo |= InfoType.Labels;
+        }
+        if ((state & InfoType.Progress) != 0) {
+            setProgress(book.myProgress);
+        }
+        if (((state & InfoType.HasBookmark) != 0) &&
+                HasBookmark != book.HasBookmark) {
+            HasBookmark = book.HasBookmark;
+            myChangedInfo |= InfoType.HasBookmark;
+        }
+    }
 
-		if ((state & InfoType.Title) != 0) {
-			setTitle(book.getTitle());
-		}
-		if ((state & InfoType.Encoding) != 0) {
-			setEncoding(book.myEncoding);
-		}
-		if ((state & InfoType.Language) != 0) {
-			setLanguage(book.myLanguage);
-		}
+    public final List<Author> authors() {
+        return myAuthors != null
+                ? Collections.unmodifiableList(myAuthors)
+                : Collections.<Author>emptyList();
+    }
 
-		if (((state & InfoType.Authors) != 0) &&
-			!ComparisonUtil.equal(myAuthors, book.myAuthors)) {
-			myAuthors = book.myAuthors != null ? new ArrayList<Author>(book.myAuthors) : null;
-			myChangedInfo |= InfoType.Authors;
-		}
-		if (((state & InfoType.Tags) != 0) &&
-			!ComparisonUtil.equal(myTags, book.myTags)) {
-			myTags = book.myTags != null ? new ArrayList<Tag>(book.myTags) : null;
-			myChangedInfo |= InfoType.Tags;
-		}
-		if (((state & InfoType.Series) != 0) &&
-			!ComparisonUtil.equal(mySeriesInfo, book.mySeriesInfo)) {
-			mySeriesInfo = book.mySeriesInfo;
-			myChangedInfo |= InfoType.Series;
-		}
-		if (((state & InfoType.Uids) != 0) &&
-			!MiscUtil.listsEquals(myUids, book.myUids)) {
-			myUids = book.myUids != null ? new ArrayList<UID>(book.myUids) : null;
-			myChangedInfo |= InfoType.Uids;
-		}
+    public final String authorsString(String separator) {
+        final List<Author> authors = myAuthors;
+        if (authors == null || authors.isEmpty()) {
+            return null;
+        }
 
-		if (((state & InfoType.Labels) != 0) &&
-			!MiscUtil.listsEquals(myLabels, book.myLabels)) {
-			myLabels = book.myLabels != null ? new ArrayList<Label>(book.myLabels) : null;
-			myChangedInfo |= InfoType.Labels;
-		}
-		if ((state & InfoType.Progress) != 0) {
-			setProgress(book.myProgress);
-		}
-		if (((state & InfoType.HasBookmark) != 0) &&
-			HasBookmark != book.HasBookmark) {
-			HasBookmark = book.HasBookmark;
-			myChangedInfo |= InfoType.HasBookmark;
-		}
-	}
+        final StringBuilder buffer = new StringBuilder();
+        boolean first = true;
+        for (Author a : authors) {
+            if (!first) {
+                buffer.append(separator);
+            }
+            buffer.append(a.DisplayName);
+            first = false;
+        }
+        return buffer.toString();
+    }
 
-	public final List<Author> authors() {
-		return myAuthors != null
-			? Collections.unmodifiableList(myAuthors)
-			: Collections.<Author>emptyList();
-	}
+    void addAuthorWithNoCheck(Author author) {
+        if (myAuthors == null) {
+            myAuthors = new ArrayList<Author>();
+        }
+        myAuthors.add(author);
+    }
 
-	public final String authorsString(String separator) {
-		final List<Author> authors = myAuthors;
-		if (authors == null || authors.isEmpty()) {
-			return null;
-		}
+    public void removeAllAuthors() {
+        if (myAuthors != null) {
+            myAuthors = null;
+            myChangedInfo |= InfoType.Authors;
+        }
+    }
 
-		final StringBuilder buffer = new StringBuilder();
-		boolean first = true;
-		for (Author a : authors) {
-			if (!first) {
-				buffer.append(separator);
-			}
-			buffer.append(a.DisplayName);
-			first = false;
-		}
-		return buffer.toString();
-	}
+    public void addAuthor(Author author) {
+        if (author == null) {
+            return;
+        }
+        if (myAuthors == null) {
+            myAuthors = new ArrayList<Author>();
+            myAuthors.add(author);
+            myChangedInfo |= InfoType.Authors;
+        } else if (!myAuthors.contains(author)) {
+            myAuthors.add(author);
+            myChangedInfo |= InfoType.Authors;
+        }
+    }
 
-	void addAuthorWithNoCheck(Author author) {
-		if (myAuthors == null) {
-			myAuthors = new ArrayList<Author>();
-		}
-		myAuthors.add(author);
-	}
+    public void addAuthor(String name) {
+        addAuthor(name, null);
+    }
 
-	public void removeAllAuthors() {
-		if (myAuthors != null) {
-			myAuthors = null;
-			myChangedInfo |= InfoType.Authors;
-		}
-	}
+    public void addAuthor(String name, String sortKey) {
+        addAuthor(Author.create(name, sortKey));
+    }
 
-	public void addAuthor(Author author) {
-		if (author == null) {
-			return;
-		}
-		if (myAuthors == null) {
-			myAuthors = new ArrayList<Author>();
-			myAuthors.add(author);
-			myChangedInfo |= InfoType.Authors;
-		} else if (!myAuthors.contains(author)) {
-			myAuthors.add(author);
-			myChangedInfo |= InfoType.Authors;
-		}
-	}
+    public long getId() {
+        return myId;
+    }
 
-	public void addAuthor(String name) {
-		addAuthor(name, null);
-	}
+    @Override
+    public void setTitle(String title) {
+        if (title == null) {
+            return;
+        }
+        title = title.trim();
+        if (title.length() == 0) {
+            return;
+        }
+        if (!getTitle().equals(title)) {
+            super.setTitle(title);
+            myChangedInfo |= InfoType.Title;
+        }
+    }
 
-	public void addAuthor(String name, String sortKey) {
-		addAuthor(Author.create(name, sortKey));
-	}
+    public SeriesInfo getSeriesInfo() {
+        return mySeriesInfo;
+    }
 
-	public long getId() {
-		return myId;
-	}
+    void setSeriesInfoWithNoCheck(String name, String index) {
+        mySeriesInfo = SeriesInfo.createSeriesInfo(name, index);
+    }
 
-	@Override
-	public void setTitle(String title) {
-		if (title == null) {
-			return;
-		}
-		title = title.trim();
-		if (title.length() == 0) {
-			return;
-		}
-		if (!getTitle().equals(title)) {
-			super.setTitle(title);
-			myChangedInfo |= InfoType.Title;
-		}
-	}
+    public void setSeriesInfo(String name, String index) {
+        setSeriesInfo(name, SeriesInfo.createIndex(index));
+    }
 
-	public SeriesInfo getSeriesInfo() {
-		return mySeriesInfo;
-	}
+    public void setSeriesInfo(String name, BigDecimal index) {
+        if (mySeriesInfo == null) {
+            if (name != null) {
+                mySeriesInfo = new SeriesInfo(name, index);
+                myChangedInfo |= InfoType.Series;
+            }
+        } else if (name == null) {
+            mySeriesInfo = null;
+            myChangedInfo |= InfoType.Series;
+        } else if (!name.equals(mySeriesInfo.Series.getTitle()) || mySeriesInfo.Index != index) {
+            mySeriesInfo = new SeriesInfo(name, index);
+            myChangedInfo |= InfoType.Series;
+        }
+    }
 
-	void setSeriesInfoWithNoCheck(String name, String index) {
-		mySeriesInfo = SeriesInfo.createSeriesInfo(name, index);
-	}
+    @Override
+    public String getLanguage() {
+        return myLanguage;
+    }
 
-	public void setSeriesInfo(String name, String index) {
-		setSeriesInfo(name, SeriesInfo.createIndex(index));
-	}
+    public void setLanguage(String language) {
+        if (!ComparisonUtil.equal(myLanguage, language)) {
+            myLanguage = language;
+            resetSortKey();
+            myChangedInfo |= InfoType.Language;
+        }
+    }
 
-	public void setSeriesInfo(String name, BigDecimal index) {
-		if (mySeriesInfo == null) {
-			if (name != null) {
-				mySeriesInfo = new SeriesInfo(name, index);
-				myChangedInfo |= InfoType.Series;
-			}
-		} else if (name == null) {
-			mySeriesInfo = null;
-			myChangedInfo |= InfoType.Series;
-		} else if (!name.equals(mySeriesInfo.Series.getTitle()) || mySeriesInfo.Index != index) {
-			mySeriesInfo = new SeriesInfo(name, index);
-			myChangedInfo |= InfoType.Series;
-		}
-	}
+    public String getEncodingNoDetection() {
+        return myEncoding;
+    }
 
-	@Override
-	public String getLanguage() {
-		return myLanguage;
-	}
+    public void setEncoding(String encoding) {
+        if (!ComparisonUtil.equal(myEncoding, encoding)) {
+            myEncoding = encoding;
+            myChangedInfo |= InfoType.Encoding;
+        }
+    }
 
-	public void setLanguage(String language) {
-		if (!ComparisonUtil.equal(myLanguage, language)) {
-			myLanguage = language;
-			resetSortKey();
-			myChangedInfo |= InfoType.Language;
-		}
-	}
+    public List<Tag> tags() {
+        return myTags != null
+                ? Collections.unmodifiableList(myTags)
+                : Collections.<Tag>emptyList();
+    }
 
-	public String getEncodingNoDetection() {
-		return myEncoding;
-	}
+    public final String tagsString(String separator) {
+        final List<Tag> tags = myTags;
+        if (tags == null || tags.isEmpty()) {
+            return null;
+        }
 
-	public void setEncoding(String encoding) {
-		if (!ComparisonUtil.equal(myEncoding, encoding)) {
-			myEncoding = encoding;
-			myChangedInfo |= InfoType.Encoding;
-		}
-	}
+        final HashSet<String> tagNames = new HashSet<String>();
+        final StringBuilder buffer = new StringBuilder();
+        boolean first = true;
+        for (Tag t : tags) {
+            if (!first) {
+                buffer.append(separator);
+            }
+            if (!tagNames.contains(t.Name)) {
+                tagNames.add(t.Name);
+                buffer.append(t.Name);
+                first = false;
+            }
+        }
+        return buffer.toString();
+    }
 
-	public List<Tag> tags() {
-		return myTags != null
-			? Collections.unmodifiableList(myTags)
-			: Collections.<Tag>emptyList();
-	}
+    void addTagWithNoCheck(Tag tag) {
+        if (myTags == null) {
+            myTags = new ArrayList<Tag>();
+        }
+        myTags.add(tag);
+    }
 
-	public final String tagsString(String separator) {
-		final List<Tag> tags = myTags;
-		if (tags == null || tags.isEmpty()) {
-			return null;
-		}
+    public void removeAllTags() {
+        if (myTags != null) {
+            myTags = null;
+            myChangedInfo |= InfoType.Tags;
+        }
+    }
 
-		final HashSet<String> tagNames = new HashSet<String>();
-		final StringBuilder buffer = new StringBuilder();
-		boolean first = true;
-		for (Tag t : tags) {
-			if (!first) {
-				buffer.append(separator);
-			}
-			if (!tagNames.contains(t.Name)) {
-				tagNames.add(t.Name);
-				buffer.append(t.Name);
-				first = false;
-			}
-		}
-		return buffer.toString();
-	}
+    public void addTag(Tag tag) {
+        if (tag != null) {
+            if (myTags == null) {
+                myTags = new ArrayList<Tag>();
+            }
+            if (!myTags.contains(tag)) {
+                myTags.add(tag);
+                myChangedInfo |= InfoType.Tags;
+            }
+        }
+    }
 
-	void addTagWithNoCheck(Tag tag) {
-		if (myTags == null) {
-			myTags = new ArrayList<Tag>();
-		}
-		myTags.add(tag);
-	}
+    public void addTag(String tagName) {
+        addTag(Tag.getTag(null, tagName));
+    }
 
-	public void removeAllTags() {
-		if (myTags != null) {
-			myTags = null;
-			myChangedInfo |= InfoType.Tags;
-		}
-	}
+    public boolean hasLabel(String name) {
+        for (Label l : labels()) {
+            if (name.equals(l.Name)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public void addTag(Tag tag) {
-		if (tag != null) {
-			if (myTags == null) {
-				myTags = new ArrayList<Tag>();
-			}
-			if (!myTags.contains(tag)) {
-				myTags.add(tag);
-				myChangedInfo |= InfoType.Tags;
-			}
-		}
-	}
+    public Label findLabel(String name) {
+        for (Label l : labels()) {
+            if (name.equals(l.Name)) {
+                return l;
+            }
+        }
+        return null;
+    }
 
-	public void addTag(String tagName) {
-		addTag(Tag.getTag(null, tagName));
-	}
+    public List<Label> labels() {
+        return myLabels != null ? Collections.unmodifiableList(myLabels) : Collections.<Label>emptyList();
+    }
 
-	public boolean hasLabel(String name) {
-		for (Label l : labels()) {
-			if (name.equals(l.Name)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    void addLabelWithNoCheck(Label label) {
+        if (myLabels == null) {
+            myLabels = new ArrayList<Label>();
+        }
+        myLabels.add(label);
+    }
 
-	public Label findLabel(String name) {
-		for (Label l : labels()) {
-			if (name.equals(l.Name)) {
-				return l;
-			}
-		}
-		return null;
-	}
+    public void addNewLabel(String label) {
+        addLabel(new Label(label));
+    }
 
-	public List<Label> labels() {
-		return myLabels != null ? Collections.unmodifiableList(myLabels) : Collections.<Label>emptyList();
-	}
+    public void addLabel(Label label) {
+        if (myLabels == null) {
+            myLabels = new ArrayList<Label>();
+        }
+        if (!myLabels.contains(label)) {
+            myLabels.add(label);
+            myChangedInfo |= InfoType.Labels;
+        }
+    }
 
-	void addLabelWithNoCheck(Label label) {
-		if (myLabels == null) {
-			myLabels = new ArrayList<Label>();
-		}
-		myLabels.add(label);
-	}
+    public void removeLabel(String label) {
+        removeLabel(new Label(label));
+    }
 
-	public void addNewLabel(String label) {
-		addLabel(new Label(label));
-	}
+    public void removeLabel(Label label) {
+        if (myLabels != null && myLabels.remove(label)) {
+            myChangedInfo |= InfoType.Labels;
+        }
+    }
 
-	public void addLabel(Label label) {
-		if (myLabels == null) {
-			myLabels = new ArrayList<Label>();
-		}
-		if (!myLabels.contains(label)) {
-			myLabels.add(label);
-			myChangedInfo |= InfoType.Labels;
-		}
-	}
+    public List<UID> uids() {
+        return myUids != null ? Collections.unmodifiableList(myUids) : Collections.<UID>emptyList();
+    }
 
-	public void removeLabel(String label) {
-		removeLabel(new Label(label));
-	}
+    public void addUid(String type, String id) {
+        addUid(new UID(type, id));
+    }
 
-	public void removeLabel(Label label) {
-		if (myLabels != null && myLabels.remove(label)) {
-			myChangedInfo |= InfoType.Labels;
-		}
-	}
+    void addUidWithNoCheck(UID uid) {
+        if (uid == null) {
+            return;
+        }
+        if (myUids == null) {
+            myUids = new ArrayList<UID>();
+        }
+        myUids.add(uid);
+    }
 
-	public List<UID> uids() {
-		return myUids != null ? Collections.unmodifiableList(myUids) : Collections.<UID>emptyList();
-	}
+    public void addUid(UID uid) {
+        if (uid == null) {
+            return;
+        }
+        if (myUids == null) {
+            myUids = new ArrayList<UID>();
+        }
+        if (!myUids.contains(uid)) {
+            myUids.add(uid);
+            myChangedInfo |= InfoType.Uids;
+        }
+    }
 
-	public void addUid(String type, String id) {
-		addUid(new UID(type, id));
-	}
+    public boolean matchesUid(UID uid) {
+        return myUids.contains(uid);
+    }
 
-	void addUidWithNoCheck(UID uid) {
-		if (uid == null) {
-			return;
-		}
-		if (myUids == null) {
-			myUids = new ArrayList<UID>();
-		}
-		myUids.add(uid);
-	}
+    public RationalNumber getProgress() {
+        return myProgress;
+    }
 
-	public void addUid(UID uid) {
-		if (uid == null) {
-			return;
-		}
-		if (myUids == null) {
-			myUids = new ArrayList<UID>();
-		}
-		if (!myUids.contains(uid)) {
-			myUids.add(uid);
-			myChangedInfo |= InfoType.Uids;
-		}
-	}
+    public void setProgress(RationalNumber progress) {
+        if (!ComparisonUtil.equal(myProgress, progress)) {
+            myProgress = progress;
+            myChangedInfo |= InfoType.Progress;
+        }
+    }
 
-	public boolean matchesUid(UID uid) {
-		return myUids.contains(uid);
-	}
+    public void setProgressWithNoCheck(RationalNumber progress) {
+        myProgress = progress;
+    }
 
-	public RationalNumber getProgress() {
-		return myProgress;
-	}
+    public boolean matches(String pattern) {
+        if (MiscUtil.matchesIgnoreCase(getTitle(), pattern)) {
+            return true;
+        }
+        if (mySeriesInfo != null && MiscUtil.matchesIgnoreCase(mySeriesInfo.Series.getTitle(), pattern)) {
+            return true;
+        }
+        if (myAuthors != null) {
+            for (Author author : myAuthors) {
+                if (MiscUtil.matchesIgnoreCase(author.DisplayName, pattern)) {
+                    return true;
+                }
+            }
+        }
+        if (myTags != null) {
+            for (Tag tag : myTags) {
+                if (MiscUtil.matchesIgnoreCase(tag.Name, pattern)) {
+                    return true;
+                }
+            }
+        }
 
-	public void setProgress(RationalNumber progress) {
-		if (!ComparisonUtil.equal(myProgress, progress)) {
-			myProgress = progress;
-			myChangedInfo |= InfoType.Progress;
-		}
-	}
+        String fileName = getPath();
+        // first archive delimiter
+        int index = fileName.indexOf(":");
+        // last path delimiter before first archive delimiter
+        if (index == -1) {
+            index = fileName.lastIndexOf("/");
+        } else {
+            index = fileName.lastIndexOf("/", index);
+        }
+        fileName = fileName.substring(index + 1);
+        if (MiscUtil.matchesIgnoreCase(fileName, pattern)) {
+            return true;
+        }
+        return false;
+    }
 
-	public void setProgressWithNoCheck(RationalNumber progress) {
-		myProgress = progress;
-	}
+    @Override
+    public String toString() {
+        return getClass().getName() + "[" + getPath() + ", " + myId + ", " + getTitle() + ", " + myChangedInfo + "]";
+    }
 
-	public boolean matches(String pattern) {
-		if (MiscUtil.matchesIgnoreCase(getTitle(), pattern)) {
-			return true;
-		}
-		if (mySeriesInfo != null && MiscUtil.matchesIgnoreCase(mySeriesInfo.Series.getTitle(), pattern)) {
-			return true;
-		}
-		if (myAuthors != null) {
-			for (Author author : myAuthors) {
-				if (MiscUtil.matchesIgnoreCase(author.DisplayName, pattern)) {
-					return true;
-				}
-			}
-		}
-		if (myTags != null) {
-			for (Tag tag : myTags) {
-				if (MiscUtil.matchesIgnoreCase(tag.Name, pattern)) {
-					return true;
-				}
-			}
-		}
-
-		String fileName = getPath();
-		// first archive delimiter
-		int index = fileName.indexOf(":");
-		// last path delimiter before first archive delimiter
-		if (index == -1) {
-			index = fileName.lastIndexOf("/");
-		} else {
-			index = fileName.lastIndexOf("/", index);
-		}
-		fileName = fileName.substring(index + 1);
-		if (MiscUtil.matchesIgnoreCase(fileName, pattern)) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getName() + "[" + getPath() + ", " + myId + ", " + getTitle() + ", " + myChangedInfo + "]";
-	}
+    protected interface InfoType {
+        int Nothing = 0;
+        int Title = 1 << 0;
+        int Language = 1 << 1;
+        int Encoding = 1 << 2;
+        int Headers = Title | Language | Encoding;
+        int Authors = 1 << 3;
+        int Tags = 1 << 4;
+        int Uids = 1 << 5;
+        int Series = 1 << 6;
+        int Metainfo = Headers | Authors | Tags | Uids | Series;
+        int Progress = 1 << 7;
+        int Labels = 1 << 8;
+        int HasBookmark = 1 << 9;
+        int Everything = (1 << 10) - 1;
+    }
 }

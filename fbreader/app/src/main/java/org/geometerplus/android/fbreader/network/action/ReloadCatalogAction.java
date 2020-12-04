@@ -19,46 +19,46 @@
 
 package org.geometerplus.android.fbreader.network.action;
 
+import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
+import org.geometerplus.fbreader.network.NetworkCatalogItem;
+import org.geometerplus.fbreader.network.NetworkTree;
+import org.geometerplus.fbreader.network.NetworkURLCatalogItem;
+import org.geometerplus.fbreader.network.tree.NetworkCatalogTree;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
 import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 import org.geometerplus.zlibrary.ui.android.R;
 
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.fbreader.network.tree.NetworkCatalogTree;
-import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
-
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
-
 public class ReloadCatalogAction extends CatalogAction {
-	private final ZLNetworkContext myNetworkContext;
+    private final ZLNetworkContext myNetworkContext;
 
-	public ReloadCatalogAction(NetworkLibraryActivity activity, ZLNetworkContext nc) {
-		super(activity, ActionCode.RELOAD_CATALOG, "reload", R.drawable.ic_menu_refresh);
-		myNetworkContext = nc;
-	}
+    public ReloadCatalogAction(NetworkLibraryActivity activity, ZLNetworkContext nc) {
+        super(activity, ActionCode.RELOAD_CATALOG, "reload", R.drawable.ic_menu_refresh);
+        myNetworkContext = nc;
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (!super.isVisible(tree)) {
-			return false;
-		}
-		final NetworkCatalogItem item = ((NetworkCatalogTree)tree).Item;
-		if (!(item instanceof NetworkURLCatalogItem)) {
-			return false;
-		}
-		return ((NetworkURLCatalogItem)item).getUrl(UrlInfo.Type.Catalog) != null;
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (!super.isVisible(tree)) {
+            return false;
+        }
+        final NetworkCatalogItem item = ((NetworkCatalogTree) tree).Item;
+        if (!(item instanceof NetworkURLCatalogItem)) {
+            return false;
+        }
+        return ((NetworkURLCatalogItem) item).getUrl(UrlInfo.Type.Catalog) != null;
+    }
 
-	@Override
-	public boolean isEnabled(NetworkTree tree) {
-		return myLibrary.getStoredLoader(tree) == null;
-	}
+    @Override
+    public boolean isEnabled(NetworkTree tree) {
+        return myLibrary.getStoredLoader(tree) == null;
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		if (myLibrary.getStoredLoader(tree) != null) {
-			return;
-		}
-		((NetworkCatalogTree)tree).clearCatalog();
-		((NetworkCatalogTree)tree).startItemsLoader(myNetworkContext, false, false);
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        if (myLibrary.getStoredLoader(tree) != null) {
+            return;
+        }
+        ((NetworkCatalogTree) tree).clearCatalog();
+        ((NetworkCatalogTree) tree).startItemsLoader(myNetworkContext, false, false);
+    }
 }

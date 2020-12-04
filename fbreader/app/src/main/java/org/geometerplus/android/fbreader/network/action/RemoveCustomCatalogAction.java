@@ -21,26 +21,25 @@ package org.geometerplus.android.fbreader.network.action;
 
 import android.app.Activity;
 
-import org.geometerplus.fbreader.network.NetworkLibrary;
-import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.ICustomNetworkLink;
+import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.tree.NetworkCatalogRootTree;
 
 public class RemoveCustomCatalogAction extends CatalogAction {
-	public RemoveCustomCatalogAction(Activity activity) {
-		super(activity, ActionCode.CUSTOM_CATALOG_REMOVE, "removeCustomCatalog");
-	}
+    public RemoveCustomCatalogAction(Activity activity) {
+        super(activity, ActionCode.CUSTOM_CATALOG_REMOVE, "removeCustomCatalog");
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		return
-			tree instanceof NetworkCatalogRootTree &&
-			tree.getLink() instanceof ICustomNetworkLink;
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        return
+                tree instanceof NetworkCatalogRootTree &&
+                        tree.getLink() instanceof ICustomNetworkLink;
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		myLibrary.removeCustomLink((ICustomNetworkLink)tree.getLink());
-		myLibrary.synchronize();
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        myLibrary.removeCustomLink((ICustomNetworkLink) tree.getLink());
+        myLibrary.synchronize();
+    }
 }

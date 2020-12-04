@@ -19,138 +19,133 @@
 
 package org.geometerplus.android.fbreader.network;
 
-import java.util.*;
-
 import android.app.Activity;
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.net.Uri;
-
-import org.geometerplus.zlibrary.core.money.Money;
-import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-
-import org.geometerplus.fbreader.network.INetworkLink;
-import org.geometerplus.fbreader.network.NetworkLibrary;
-import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
-import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
-
-import org.geometerplus.android.util.PackageUtil;
 
 import org.geometerplus.android.fbreader.api.PluginApi;
 import org.geometerplus.android.fbreader.network.auth.ActivityNetworkContext;
+import org.geometerplus.android.util.PackageUtil;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.zlibrary.core.money.Money;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+
+import java.util.Map;
 
 public class TopupMenuActivity extends MenuActivity {
-	private static final String AMOUNT_KEY = "topup:amount";
-	private static final String CURRENCY_KEY = "topup:currency";
+    private static final String AMOUNT_KEY = "topup:amount";
+    private static final String CURRENCY_KEY = "topup:currency";
+    final ActivityNetworkContext myNetworkContext = new ActivityNetworkContext(this);
+    private INetworkLink myLink;
+    private Money myAmount;
 
-	public static boolean isTopupSupported(INetworkLink link) {
-		// TODO: more correct check
-		return link.getUrlInfo(UrlInfo.Type.TopUp) != null;
-	}
+    public static boolean isTopupSupported(INetworkLink link) {
+        // TODO: more correct check
+        return link.getUrlInfo(UrlInfo.Type.TopUp) != null;
+    }
 
-	public static void runMenu(Activity context, INetworkLink link, Money amount) {
-		final Intent intent =
-			Util.intentByLink(new Intent(context, TopupMenuActivity.class), link);
-		intent.putExtra(AMOUNT_KEY, amount);
-		context.startActivityForResult(intent, NetworkLibraryActivity.REQUEST_TOPUP);
-	}
+    public static void runMenu(Activity context, INetworkLink link, Money amount) {
+        final Intent intent =
+                Util.intentByLink(new Intent(context, TopupMenuActivity.class), link);
+        intent.putExtra(AMOUNT_KEY, amount);
+        context.startActivityForResult(intent, NetworkLibraryActivity.REQUEST_TOPUP);
+    }
 
-	final ActivityNetworkContext myNetworkContext = new ActivityNetworkContext(this);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        myNetworkContext.onResume();
+    }
 
-	private INetworkLink myLink;
-	private Money myAmount;
+    @Override
+    protected void init() {
+        setTitle(NetworkLibrary.resource().getResource("topupTitle").getValue());
+        final String url = getIntent().getData().toString();
+        myLink = Util.networkLibrary(this).getLinkByUrl(url);
+        myAmount = (Money) getIntent().getSerializableExtra(AMOUNT_KEY);
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		myNetworkContext.onResume();
-	}
+        if (myLink.getUrlInfo(UrlInfo.Type.TopUp) != null) {
+            myInfos.add(new PluginApi.MenuActionInfo(
+                    Uri.parse(url + "/browser"),
+                    NetworkLibrary.resource().getResource("topupViaBrowser").getValue(),
+                    100
+            ));
+        }
+    }
 
-	@Override
-	protected void init() {
-		setTitle(NetworkLibrary.resource().getResource("topupTitle").getValue());
-		final String url = getIntent().getData().toString();
-		myLink = Util.networkLibrary(this).getLinkByUrl(url);
-		myAmount = (Money)getIntent().getSerializableExtra(AMOUNT_KEY);
+    @Override
+    protected String getAction() {
+        return Util.TOPUP_ACTION;
+    }
 
-		if (myLink.getUrlInfo(UrlInfo.Type.TopUp) != null) {
-			myInfos.add(new PluginApi.MenuActionInfo(
-				Uri.parse(url + "/browser"),
-				NetworkLibrary.resource().getResource("topupViaBrowser").getValue(),
-				100
-			));
-		}
-	}
+    private void runBrowserPopup() {
+        try {
+            Util.openInBrowser(
+                    this,
+                    myLink.authenticationManager().topupLink(myNetworkContext, myAmount)
+            );
+        } catch (ZLNetworkException e) {
+            setResult(
+                    RESULT_OK,
+                    new Intent().putExtra(NetworkLibraryActivity.ERROR_KEY, e.getMessage())
+            );
+        }
+        finish();
+    }
 
-	@Override
-	protected String getAction() {
-		return Util.TOPUP_ACTION;
-	}
+    @Override
+    protected boolean runItem(final PluginApi.MenuActionInfo info) {
+        setResult(RESULT_OK, null);
 
-	private void runBrowserPopup() {
-		try {
-			Util.openInBrowser(
-				this,
-				myLink.authenticationManager().topupLink(myNetworkContext, myAmount)
-			);
-		} catch (ZLNetworkException e) {
-			setResult(
-				RESULT_OK,
-				new Intent().putExtra(NetworkLibraryActivity.ERROR_KEY, e.getMessage())
-			);
-		}
-		finish();
-	}
+        try {
+            doTopup(new Runnable() {
+                public void run() {
+                    try {
+                        final NetworkAuthenticationManager mgr = myLink.authenticationManager();
+                        if (info.getId().toString().endsWith("/browser")) {
+                            if (mgr != null) {
+                                new Thread() {
+                                    public void run() {
+                                        runBrowserPopup();
+                                    }
+                                }.start();
+                            }
+                        } else {
+                            final Intent intent = new Intent(getAction(), info.getId());
+                            if (mgr != null) {
+                                for (Map.Entry<String, String> entry : mgr.getTopupData().entrySet()) {
+                                    intent.putExtra(entry.getKey(), entry.getValue());
+                                }
+                            }
+                            if (myAmount != null) {
+                                intent.putExtra(AMOUNT_KEY, myAmount.Amount);
+                            }
+                            if (PackageUtil.canBeStarted(TopupMenuActivity.this, intent, true)) {
+                                startActivity(intent);
+                            }
+                            finish();
+                        }
+                    } catch (ActivityNotFoundException e) {
+                        finish();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            return true;
+        }
+        return false;
+    }
 
-	@Override
-	protected boolean runItem(final PluginApi.MenuActionInfo info) {
-		setResult(RESULT_OK, null);
-
-		try {
-			doTopup(new Runnable() {
-				public void run() {
-					try {
-						final NetworkAuthenticationManager mgr = myLink.authenticationManager();
-						if (info.getId().toString().endsWith("/browser")) {
-							if (mgr != null) {
-								new Thread() {
-									public void run() {
-										runBrowserPopup();
-									}
-								}.start();
-							}
-						} else {
-							final Intent intent = new Intent(getAction(), info.getId());
-							if (mgr != null) {
-								for (Map.Entry<String,String> entry : mgr.getTopupData().entrySet()) {
-									intent.putExtra(entry.getKey(), entry.getValue());
-								}
-							}
-							if (myAmount != null) {
-								intent.putExtra(AMOUNT_KEY, myAmount.Amount);
-							}
-							if (PackageUtil.canBeStarted(TopupMenuActivity.this, intent, true)) {
-								startActivity(intent);
-							}
-							finish();
-						}
-					} catch (ActivityNotFoundException e) {
-						finish();
-					}
-				}
-			});
-		} catch (Exception e) {
-			return true;
-		}
-		return false;
-	}
-
-	private void doTopup(final Runnable action) {
-		final NetworkAuthenticationManager mgr = myLink.authenticationManager();
-		if (mgr.mayBeAuthorised(false)) {
-			action.run();
-		} else {
-			Util.runAuthenticationDialog(this, myLink, action);
-		}
-	}
+    private void doTopup(final Runnable action) {
+        final NetworkAuthenticationManager mgr = myLink.authenticationManager();
+        if (mgr.mayBeAuthorised(false)) {
+            action.run();
+        } else {
+            Util.runAuthenticationDialog(this, myLink, action);
+        }
+    }
 }

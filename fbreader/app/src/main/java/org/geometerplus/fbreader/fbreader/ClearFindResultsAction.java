@@ -20,12 +20,12 @@
 package org.geometerplus.fbreader.fbreader;
 
 class ClearFindResultsAction extends FBAction {
-	ClearFindResultsAction(FBReaderApp fbreader) {
-		super(fbreader);
-	}
+    ClearFindResultsAction(FBReaderApp fbreader) {
+        super(fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		Reader.getTextView().clearFindResults();
-	}
+    @Override
+    protected void run(Object... params) {
+        Reader.getTextView().clearFindResults();
+    }
 }

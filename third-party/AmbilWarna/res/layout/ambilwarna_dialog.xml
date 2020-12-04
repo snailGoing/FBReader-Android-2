@@ -3,17 +3,18 @@
     android:id="@+id/ambilwarna_dialogView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center" >
+    android:layout_gravity="center">
 
     <RelativeLayout
         android:id="@+id/ambilwarna_viewContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:clipToPadding="false"
-        android:paddingBottom="@dimen/ambilwarna_spacer"
         android:paddingLeft="@dimen/ambilwarna_spacer"
+        android:paddingTop="@dimen/ambilwarna_spacer"
         android:paddingRight="@dimen/ambilwarna_spacer"
-        android:paddingTop="@dimen/ambilwarna_spacer" android:layout_gravity="center">
+        android:paddingBottom="@dimen/ambilwarna_spacer">
 
         <yuku.ambilwarna.AmbilWarnaKotak
             android:id="@+id/ambilwarna_viewSatBri"
@@ -52,7 +53,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/ambilwarna_spacer"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <View
                 android:id="@+id/ambilwarna_warnaLama"

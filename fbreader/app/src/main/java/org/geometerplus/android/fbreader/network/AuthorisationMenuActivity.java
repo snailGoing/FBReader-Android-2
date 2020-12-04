@@ -20,83 +20,82 @@
 package org.geometerplus.android.fbreader.network;
 
 import android.app.Activity;
-import android.content.*;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
-
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-
-import org.geometerplus.fbreader.network.INetworkLink;
-import org.geometerplus.fbreader.network.NetworkLibrary;
-import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
-import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
 
 import org.geometerplus.android.fbreader.api.PluginApi;
 import org.geometerplus.android.fbreader.network.litres.AutoRegistrationActivity;
 import org.geometerplus.android.fbreader.network.litres.UserRegistrationActivity;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 public class AuthorisationMenuActivity extends MenuActivity {
-	public static void runMenu(Context context, INetworkLink link) {
-		context.startActivity(
-			Util.intentByLink(new Intent(context, AuthorisationMenuActivity.class), link)
-		);
-	}
+    private INetworkLink myLink;
 
-	public static void runMenu(Activity activity, INetworkLink link, int code) {
-		activity.startActivityForResult(
-			Util.intentByLink(new Intent(activity, AuthorisationMenuActivity.class), link), code
-		);
-	}
+    public static void runMenu(Context context, INetworkLink link) {
+        context.startActivity(
+                Util.intentByLink(new Intent(context, AuthorisationMenuActivity.class), link)
+        );
+    }
 
-	private INetworkLink myLink;
+    public static void runMenu(Activity activity, INetworkLink link, int code) {
+        activity.startActivityForResult(
+                Util.intentByLink(new Intent(activity, AuthorisationMenuActivity.class), link), code
+        );
+    }
 
-	@Override
-	protected void init() {
-		final String baseUrl = getIntent().getData().toString();
-		final ZLResource resource = NetworkLibrary.resource();
+    @Override
+    protected void init() {
+        final String baseUrl = getIntent().getData().toString();
+        final ZLResource resource = NetworkLibrary.resource();
 
-		setTitle(resource.getResource("authorisationMenuTitle").getValue());
-		myLink = Util.networkLibrary(this).getLinkByUrl(baseUrl);
+        setTitle(resource.getResource("authorisationMenuTitle").getValue());
+        myLink = Util.networkLibrary(this).getLinkByUrl(baseUrl);
 
-		if (myLink.getUrlInfo(UrlInfo.Type.SignIn) != null) {
-			myInfos.add(new PluginApi.MenuActionInfo(
-				Uri.parse(baseUrl + "/signIn"),
-				resource.getResource("signIn").getValue(),
-				0
-			));
-			if (myLink.authenticationManager() != null) {
-				myInfos.add(new PluginApi.MenuActionInfo(
-					Uri.parse(baseUrl + "/signUp"),
-					resource.getResource("signUp").getValue(),
-					1
-				));
-				myInfos.add(new PluginApi.MenuActionInfo(
-					Uri.parse(baseUrl + "/quickBuy"),
-					resource.getResource("quickBuy").getValue(),
-					2
-				));
-			}
-		}
-	}
+        if (myLink.getUrlInfo(UrlInfo.Type.SignIn) != null) {
+            myInfos.add(new PluginApi.MenuActionInfo(
+                    Uri.parse(baseUrl + "/signIn"),
+                    resource.getResource("signIn").getValue(),
+                    0
+            ));
+            if (myLink.authenticationManager() != null) {
+                myInfos.add(new PluginApi.MenuActionInfo(
+                        Uri.parse(baseUrl + "/signUp"),
+                        resource.getResource("signUp").getValue(),
+                        1
+                ));
+                myInfos.add(new PluginApi.MenuActionInfo(
+                        Uri.parse(baseUrl + "/quickBuy"),
+                        resource.getResource("quickBuy").getValue(),
+                        2
+                ));
+            }
+        }
+    }
 
-	@Override
-	protected String getAction() {
-		return Util.AUTHORISATION_ACTION;
-	}
+    @Override
+    protected String getAction() {
+        return Util.AUTHORISATION_ACTION;
+    }
 
-	@Override
-	protected boolean runItem(final PluginApi.MenuActionInfo info) {
-		try {
-			final NetworkAuthenticationManager mgr = myLink.authenticationManager();
-			if (info.getId().toString().endsWith("/signIn")) {
-				Util.runAuthenticationDialog(AuthorisationMenuActivity.this, myLink, null);
-			} else if (info.getId().toString().endsWith("/signUp")) {
-				startActivity(Util.authorisationIntent(myLink, this, UserRegistrationActivity.class));
-			} else if (info.getId().toString().endsWith("/quickBuy")) {
-				startActivity(Util.authorisationIntent(myLink, this, AutoRegistrationActivity.class));
-			}
-		} catch (Exception e) {
-			// do nothing
-		}
-		return true;
-	}
+    @Override
+    protected boolean runItem(final PluginApi.MenuActionInfo info) {
+        try {
+            final NetworkAuthenticationManager mgr = myLink.authenticationManager();
+            if (info.getId().toString().endsWith("/signIn")) {
+                Util.runAuthenticationDialog(AuthorisationMenuActivity.this, myLink, null);
+            } else if (info.getId().toString().endsWith("/signUp")) {
+                startActivity(Util.authorisationIntent(myLink, this, UserRegistrationActivity.class));
+            } else if (info.getId().toString().endsWith("/quickBuy")) {
+                startActivity(Util.authorisationIntent(myLink, this, AutoRegistrationActivity.class));
+            }
+        } catch (Exception e) {
+            // do nothing
+        }
+        return true;
+    }
 }

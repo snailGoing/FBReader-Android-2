@@ -22,12 +22,12 @@ package org.geometerplus.fbreader.network.urlInfo;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
 public class RelatedUrlInfo extends UrlInfo {
-	private static final long serialVersionUID = -893514485257788098L;
+    private static final long serialVersionUID = -893514485257788098L;
 
-	public final String Title;
+    public final String Title;
 
-	public RelatedUrlInfo(Type type, String title, String url, MimeType mime) {
-		super(type, url, mime);
-		Title = title;
-	}
+    public RelatedUrlInfo(Type type, String title, String url, MimeType mime) {
+        super(type, url, mime);
+        Title = title;
+    }
 }

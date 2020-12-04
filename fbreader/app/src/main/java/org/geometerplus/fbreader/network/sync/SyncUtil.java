@@ -20,16 +20,15 @@
 package org.geometerplus.fbreader.network.sync;
 
 import org.fbreader.common.options.SyncOptions;
-
 import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 
 public abstract class SyncUtil {
-	public static String getAccountName() {
-		return ZLNetworkContext.getAccountName(SyncOptions.DOMAIN, SyncOptions.REALM);
-	}
+    public static String getAccountName() {
+        return ZLNetworkContext.getAccountName(SyncOptions.DOMAIN, SyncOptions.REALM);
+    }
 
-	public static void logout(ZLNetworkContext context) {
-		context.removeCookiesForDomain(SyncOptions.DOMAIN);
-		context.setAccountName(SyncOptions.DOMAIN, SyncOptions.REALM, null);
-	}
+    public static void logout(ZLNetworkContext context) {
+        context.removeCookiesForDomain(SyncOptions.DOMAIN);
+        context.setAccountName(SyncOptions.DOMAIN, SyncOptions.REALM, null);
+    }
 }

@@ -19,360 +19,362 @@
 
 package org.geometerplus.android.fbreader.dict;
 
-import java.util.*;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import android.app.Activity;
-import android.content.*;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.util.DisplayMetrics;
 
+import org.geometerplus.android.fbreader.FBReaderMainActivity;
+import org.geometerplus.android.util.PackageUtil;
+import org.geometerplus.fbreader.fbreader.DurationEnum;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.language.Language;
 import org.geometerplus.zlibrary.core.options.ZLEnumOption;
 import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.util.XmlUtil;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
-import org.geometerplus.fbreader.fbreader.DurationEnum;
-import org.geometerplus.android.fbreader.FBReaderMainActivity;
-import org.geometerplus.android.util.PackageUtil;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class DictionaryUtil {
-	public static final ZLEnumOption<DurationEnum> TranslationToastDurationOption =
-		new ZLEnumOption<DurationEnum>("Dictionary", "TranslationToastDuration", DurationEnum.duration40);
-	public static final ZLEnumOption<DurationEnum> ErrorToastDurationOption =
-		new ZLEnumOption<DurationEnum>("Dictionary", "ErrorToastDuration", DurationEnum.duration5);
+    public static final ZLEnumOption<DurationEnum> TranslationToastDurationOption =
+            new ZLEnumOption<DurationEnum>("Dictionary", "TranslationToastDuration", DurationEnum.duration40);
+    public static final ZLEnumOption<DurationEnum> ErrorToastDurationOption =
+            new ZLEnumOption<DurationEnum>("Dictionary", "ErrorToastDuration", DurationEnum.duration5);
+    // TODO: use StringListOption instead
+    public static final ZLStringOption TargetLanguageOption = new ZLStringOption("Dictionary", "TargetLanguage", Language.ANY_CODE);
+    static int FLAG_SHOW_AS_DICTIONARY = 2;
+    private static int FLAG_INSTALLED_ONLY = 1;
+    private static int FLAG_SHOW_AS_TRANSLATOR = 4;
+    private static ZLStringOption ourSingleWordTranslatorOption;
+    private static ZLStringOption ourMultiWordTranslatorOption;
+    // Map: dictionary info -> mode if package is not installed
+    private static Map<PackageInfo, Integer> ourInfos =
+            Collections.synchronizedMap(new LinkedHashMap<PackageInfo, Integer>());
 
-	private static int FLAG_INSTALLED_ONLY = 1;
-	static int FLAG_SHOW_AS_DICTIONARY = 2;
-	private static int FLAG_SHOW_AS_TRANSLATOR = 4;
+    public static void init(Activity activity, Runnable postAction) {
+        if (ourInfos.isEmpty()) {
+            final Thread initThread = new Thread(new Initializer(activity, postAction));
+            initThread.setPriority(Thread.MIN_PRIORITY);
+            initThread.start();
+        } else if (postAction != null) {
+            postAction.run();
+        }
+    }
 
-	private static ZLStringOption ourSingleWordTranslatorOption;
-	private static ZLStringOption ourMultiWordTranslatorOption;
+    public static List<PackageInfo> dictionaryInfos(Context context, boolean dictionaryNotTranslator) {
+        final LinkedList<PackageInfo> list = new LinkedList<PackageInfo>();
+        final HashSet<String> installedPackages = new HashSet<String>();
+        final HashSet<String> notInstalledPackages = new HashSet<String>();
+        synchronized (ourInfos) {
+            for (Map.Entry<PackageInfo, Integer> entry : ourInfos.entrySet()) {
+                final PackageInfo info = entry.getKey();
+                final int flags = entry.getValue();
+                if (dictionaryNotTranslator) {
+                    if ((flags & FLAG_SHOW_AS_DICTIONARY) == 0) {
+                        continue;
+                    }
+                } else {
+                    if ((flags & FLAG_SHOW_AS_TRANSLATOR) == 0) {
+                        continue;
+                    }
+                }
 
-	// TODO: use StringListOption instead
-	public static final ZLStringOption TargetLanguageOption = new ZLStringOption("Dictionary", "TargetLanguage", Language.ANY_CODE);
+                final String packageName = info.get("package");
+                if (((flags & FLAG_INSTALLED_ONLY) == 0) ||
+                        installedPackages.contains(packageName)) {
+                    list.add(info);
+                } else if (!notInstalledPackages.contains(packageName)) {
+                    if (PackageUtil.canBeStarted(context, info.getActionIntent("test"), false)) {
+                        list.add(info);
+                        installedPackages.add(packageName);
+                    } else {
+                        notInstalledPackages.add(packageName);
+                    }
+                }
+            }
+        }
+        return list;
+    }
 
-	// Map: dictionary info -> mode if package is not installed
-	private static Map<PackageInfo,Integer> ourInfos =
-		Collections.synchronizedMap(new LinkedHashMap<PackageInfo,Integer>());
+    private static PackageInfo firstInfo() {
+        synchronized (ourInfos) {
+            for (Map.Entry<PackageInfo, Integer> entry : ourInfos.entrySet()) {
+                if ((entry.getValue() & FLAG_INSTALLED_ONLY) == 0) {
+                    return entry.getKey();
+                }
+            }
+        }
+        throw new RuntimeException("There are no available dictionary infos");
+    }
 
-	public static abstract class PackageInfo extends HashMap<String,String> {
-		public final boolean SupportsTargetLanguageSetting;
+    public static ZLStringOption singleWordTranslatorOption() {
+        if (ourSingleWordTranslatorOption == null) {
+            ourSingleWordTranslatorOption = new ZLStringOption("Dictionary", "Id", firstInfo().getId());
+        }
+        return ourSingleWordTranslatorOption;
+    }
 
-		PackageInfo(String id, String title) {
-			this(id, title, false);
-		}
+    public static ZLStringOption multiWordTranslatorOption() {
+        if (ourMultiWordTranslatorOption == null) {
+            ourMultiWordTranslatorOption = new ZLStringOption("Translator", "Id", firstInfo().getId());
+        }
+        return ourMultiWordTranslatorOption;
+    }
 
-		PackageInfo(String id, String title, boolean supportsTargetLanguageSetting) {
-			put("id", id);
-			put("title", title != null ? title : id);
+    private static PackageInfo getDictionaryInfo(String id) {
+        if (id == null) {
+            return firstInfo();
+        }
 
-			SupportsTargetLanguageSetting = supportsTargetLanguageSetting;
-		}
+        synchronized (ourInfos) {
+            for (PackageInfo info : ourInfos.keySet()) {
+                if (id.equals(info.getId())) {
+                    return info;
+                }
+            }
+        }
+        return firstInfo();
+    }
 
-		public final String getId() {
-			return get("id");
-		}
+    public static PackageInfo getCurrentDictionaryInfo(boolean singleWord) {
+        final ZLStringOption option = singleWord
+                ? singleWordTranslatorOption() : multiWordTranslatorOption();
+        return getDictionaryInfo(option.getValue());
+    }
 
-		public final String getTitle() {
-			return get("title");
-		}
+    public static void openTextInDictionary(final FBReaderMainActivity fbreader, String text, boolean singleWord, int selectionTop, int selectionBottom, final Runnable outliner) {
+        final String textToTranslate;
+        if (singleWord) {
+            int start = 0;
+            int end = text.length();
+            for (; start < end && !Character.isLetterOrDigit(text.charAt(start)); ++start) ;
+            for (; start < end && !Character.isLetterOrDigit(text.charAt(end - 1)); --end) ;
+            if (start == end) {
+                return;
+            }
+            textToTranslate = text.substring(start, end);
+        } else {
+            textToTranslate = text;
+        }
 
-		final Intent getActionIntent(String text) {
-			final Intent intent = new Intent(get("action"));
+        final DisplayMetrics metrics = new DisplayMetrics();
+        fbreader.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        final PopupFrameMetric frameMetrics =
+                new PopupFrameMetric(metrics, selectionTop, selectionBottom);
 
-			final String packageName = get("package");
-			if (packageName != null) {
-				final String className = get("class");
-				if (className != null) {
-					intent.setComponent(new ComponentName(
-						packageName,
-						className.startsWith(".") ? packageName + className : className
-					));
-				}
-			}
+        final PackageInfo info = getCurrentDictionaryInfo(singleWord);
+        fbreader.runOnUiThread(new Runnable() {
+            public void run() {
+                info.open(textToTranslate, outliner, fbreader, frameMetrics);
+            }
+        });
+    }
 
-			final String category = get("category");
-			if (category != null) {
-				intent.addCategory(category);
-			}
+    public static void onActivityResult(final FBReaderMainActivity fbreader, int resultCode, final Intent data) {
+        getDictionaryInfo("dictan").onActivityResult(fbreader, resultCode, data);
+    }
 
-			final String key = get("dataKey");
-			if (key != null) {
-				return intent.putExtra(key, text);
-			} else {
-				return intent.setData(Uri.parse(text));
-			}
-		}
+    public static abstract class PackageInfo extends HashMap<String, String> {
+        public final boolean SupportsTargetLanguageSetting;
 
-		void onActivityResult(FBReaderMainActivity fbreader, int resultCode, final Intent data) {
-			// does nothing; implement in subclasses
-		}
+        PackageInfo(String id, String title) {
+            this(id, title, false);
+        }
 
-		abstract void open(String text, Runnable outliner, FBReaderMainActivity fbreader, PopupFrameMetric frameMetrics);
-	}
+        PackageInfo(String id, String title, boolean supportsTargetLanguageSetting) {
+            put("id", id);
+            put("title", title != null ? title : id);
 
-	private static class PlainPackageInfo extends PackageInfo {
-		PlainPackageInfo(String id, String title) {
-			super(id, title);
-		}
+            SupportsTargetLanguageSetting = supportsTargetLanguageSetting;
+        }
 
-		@Override
-		void open(String text, Runnable outliner, FBReaderMainActivity fbreader, PopupFrameMetric frameMetrics) {
-			final Intent intent = getActionIntent(text);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-			InternalUtil.startDictionaryActivity(fbreader, intent, this);
-		}
-	}
+        public final String getId() {
+            return get("id");
+        }
 
-	private static class InfoReader extends DefaultHandler {
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			if (!"dictionary".equals(localName)) {
-				return;
-			}
+        public final String getTitle() {
+            return get("title");
+        }
 
-			final String id = attributes.getValue("id");
-			final String title = attributes.getValue("title");
-			final String role = attributes.getValue("role");
-			int flags;
-			if ("dictionary".equals(role)) {
-				flags = FLAG_SHOW_AS_DICTIONARY;
-			} else if ("translator".equals(role)) {
-				flags = FLAG_SHOW_AS_TRANSLATOR;
-			} else {
-				flags = FLAG_SHOW_AS_DICTIONARY | FLAG_SHOW_AS_TRANSLATOR;
-			}
-			if (!"always".equals(attributes.getValue("list"))) {
-				flags |= FLAG_INSTALLED_ONLY;
-			}
-			final PackageInfo info;
-			if ("dictan".equals(id)) {
-				info = new Dictan(id, title);
-			} else if ("ABBYY Lingvo".equals(id)) {
-				info = new Lingvo(id, title);
-			} else if ("ColorDict".equals(id)) {
-				info = new ColorDict(id, title);
-			} else {
-				info = new PlainPackageInfo(id, title);
-			}
-			for (int i = attributes.getLength() - 1; i >= 0; --i) {
-				info.put(attributes.getLocalName(i), attributes.getValue(i));
-			}
-			ourInfos.put(info, flags);
-		}
-	}
+        final Intent getActionIntent(String text) {
+            final Intent intent = new Intent(get("action"));
 
-	private static class BitKnightsInfoReader extends DefaultHandler {
-		private final Context myContext;
-		private int myCounter;
+            final String packageName = get("package");
+            if (packageName != null) {
+                final String className = get("class");
+                if (className != null) {
+                    intent.setComponent(new ComponentName(
+                            packageName,
+                            className.startsWith(".") ? packageName + className : className
+                    ));
+                }
+            }
 
-		BitKnightsInfoReader(Context context) {
-			myContext = context;
-		}
+            final String category = get("category");
+            if (category != null) {
+                intent.addCategory(category);
+            }
 
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			if (!"dictionary".equals(localName)) {
-				return;
-			}
+            final String key = get("dataKey");
+            if (key != null) {
+                return intent.putExtra(key, text);
+            } else {
+                return intent.setData(Uri.parse(text));
+            }
+        }
 
-			final PackageInfo info = new PlainPackageInfo(
-				"BK" + myCounter ++,
-				attributes.getValue("title")
-			);
-			for (int i = attributes.getLength() - 1; i >= 0; --i) {
-				info.put(attributes.getLocalName(i), attributes.getValue(i));
-			}
-			info.put("class", "com.bitknights.dict.ShareTranslateActivity");
-			info.put("action", Intent.ACTION_VIEW);
-			// TODO: other attributes
-			if (PackageUtil.canBeStarted(myContext, info.getActionIntent("test"), false)) {
-				ourInfos.put(info, FLAG_SHOW_AS_DICTIONARY | FLAG_INSTALLED_ONLY);
-			}
-		}
-	}
+        void onActivityResult(FBReaderMainActivity fbreader, int resultCode, final Intent data) {
+            // does nothing; implement in subclasses
+        }
 
-	private static final class Initializer implements Runnable {
-		private final Activity myActivity;
-		private final Runnable myPostAction;
+        abstract void open(String text, Runnable outliner, FBReaderMainActivity fbreader, PopupFrameMetric frameMetrics);
+    }
 
-		public Initializer(Activity activity, Runnable postAction) {
-			myActivity = activity;
-			myPostAction = postAction;
-		}
+    private static class PlainPackageInfo extends PackageInfo {
+        PlainPackageInfo(String id, String title) {
+            super(id, title);
+        }
 
-		public void run() {
-			synchronized (ourInfos) {
-				if (!ourInfos.isEmpty()) {
-					if (myPostAction != null) {
-						myPostAction.run();
-					}
-					return;
-				}
-				XmlUtil.parseQuietly(
-					ZLFile.createFileByPath("dictionaries/main.xml"),
-					new InfoReader()
-				);
-				XmlUtil.parseQuietly(
-					ZLFile.createFileByPath("dictionaries/bitknights.xml"),
-					new BitKnightsInfoReader(myActivity)
-				);
-				myActivity.runOnUiThread(new Runnable() {
-					public void run() {
-						OpenDictionary.collect(myActivity, ourInfos);
-						if (myPostAction != null) {
-							myPostAction.run();
-						}
-					}
-				});
-			}
-		}
-	}
+        @Override
+        void open(String text, Runnable outliner, FBReaderMainActivity fbreader, PopupFrameMetric frameMetrics) {
+            final Intent intent = getActionIntent(text);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            InternalUtil.startDictionaryActivity(fbreader, intent, this);
+        }
+    }
 
-	public static void init(Activity activity, Runnable postAction) {
-		if (ourInfos.isEmpty()) {
-			final Thread initThread = new Thread(new Initializer(activity, postAction));
-			initThread.setPriority(Thread.MIN_PRIORITY);
-			initThread.start();
-		} else if (postAction != null) {
-			postAction.run();
-		}
-	}
+    private static class InfoReader extends DefaultHandler {
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (!"dictionary".equals(localName)) {
+                return;
+            }
 
-	public static List<PackageInfo> dictionaryInfos(Context context, boolean dictionaryNotTranslator) {
-		final LinkedList<PackageInfo> list = new LinkedList<PackageInfo>();
-		final HashSet<String> installedPackages = new HashSet<String>();
-		final HashSet<String> notInstalledPackages = new HashSet<String>();
-		synchronized (ourInfos) {
-			for (Map.Entry<PackageInfo,Integer> entry : ourInfos.entrySet()) {
-				final PackageInfo info = entry.getKey();
-				final int flags = entry.getValue();
-				if (dictionaryNotTranslator) {
-					if ((flags & FLAG_SHOW_AS_DICTIONARY) == 0) {
-						continue;
-					}
-				} else {
-					if ((flags & FLAG_SHOW_AS_TRANSLATOR) == 0) {
-						continue;
-					}
-				}
+            final String id = attributes.getValue("id");
+            final String title = attributes.getValue("title");
+            final String role = attributes.getValue("role");
+            int flags;
+            if ("dictionary".equals(role)) {
+                flags = FLAG_SHOW_AS_DICTIONARY;
+            } else if ("translator".equals(role)) {
+                flags = FLAG_SHOW_AS_TRANSLATOR;
+            } else {
+                flags = FLAG_SHOW_AS_DICTIONARY | FLAG_SHOW_AS_TRANSLATOR;
+            }
+            if (!"always".equals(attributes.getValue("list"))) {
+                flags |= FLAG_INSTALLED_ONLY;
+            }
+            final PackageInfo info;
+            if ("dictan".equals(id)) {
+                info = new Dictan(id, title);
+            } else if ("ABBYY Lingvo".equals(id)) {
+                info = new Lingvo(id, title);
+            } else if ("ColorDict".equals(id)) {
+                info = new ColorDict(id, title);
+            } else {
+                info = new PlainPackageInfo(id, title);
+            }
+            for (int i = attributes.getLength() - 1; i >= 0; --i) {
+                info.put(attributes.getLocalName(i), attributes.getValue(i));
+            }
+            ourInfos.put(info, flags);
+        }
+    }
 
-				final String packageName = info.get("package");
-				if (((flags & FLAG_INSTALLED_ONLY) == 0) ||
-					installedPackages.contains(packageName)) {
-					list.add(info);
-				} else if (!notInstalledPackages.contains(packageName)) {
-					if (PackageUtil.canBeStarted(context, info.getActionIntent("test"), false)) {
-						list.add(info);
-						installedPackages.add(packageName);
-					} else {
-						notInstalledPackages.add(packageName);
-					}
-				}
-			}
-		}
-		return list;
-	}
+    private static class BitKnightsInfoReader extends DefaultHandler {
+        private final Context myContext;
+        private int myCounter;
 
-	private static PackageInfo firstInfo() {
-		synchronized (ourInfos) {
-			for (Map.Entry<PackageInfo,Integer> entry : ourInfos.entrySet()) {
-				if ((entry.getValue() & FLAG_INSTALLED_ONLY) == 0) {
-					return entry.getKey();
-				}
-			}
-		}
-		throw new RuntimeException("There are no available dictionary infos");
-	}
+        BitKnightsInfoReader(Context context) {
+            myContext = context;
+        }
 
-	public static ZLStringOption singleWordTranslatorOption() {
-		if (ourSingleWordTranslatorOption == null) {
-			ourSingleWordTranslatorOption = new ZLStringOption("Dictionary", "Id", firstInfo().getId());
-		}
-		return ourSingleWordTranslatorOption;
-	}
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            if (!"dictionary".equals(localName)) {
+                return;
+            }
 
-	public static ZLStringOption multiWordTranslatorOption() {
-		if (ourMultiWordTranslatorOption == null) {
-			ourMultiWordTranslatorOption = new ZLStringOption("Translator", "Id", firstInfo().getId());
-		}
-		return ourMultiWordTranslatorOption;
-	}
+            final PackageInfo info = new PlainPackageInfo(
+                    "BK" + myCounter++,
+                    attributes.getValue("title")
+            );
+            for (int i = attributes.getLength() - 1; i >= 0; --i) {
+                info.put(attributes.getLocalName(i), attributes.getValue(i));
+            }
+            info.put("class", "com.bitknights.dict.ShareTranslateActivity");
+            info.put("action", Intent.ACTION_VIEW);
+            // TODO: other attributes
+            if (PackageUtil.canBeStarted(myContext, info.getActionIntent("test"), false)) {
+                ourInfos.put(info, FLAG_SHOW_AS_DICTIONARY | FLAG_INSTALLED_ONLY);
+            }
+        }
+    }
 
-	private static PackageInfo getDictionaryInfo(String id) {
-		if (id == null) {
-			return firstInfo();
-		}
+    private static final class Initializer implements Runnable {
+        private final Activity myActivity;
+        private final Runnable myPostAction;
 
-		synchronized (ourInfos) {
-			for (PackageInfo info : ourInfos.keySet()) {
-				if (id.equals(info.getId())) {
-					return info;
-				}
-			}
-		}
-		return firstInfo();
-	}
+        public Initializer(Activity activity, Runnable postAction) {
+            myActivity = activity;
+            myPostAction = postAction;
+        }
 
-	public static PackageInfo getCurrentDictionaryInfo(boolean singleWord) {
-		final ZLStringOption option = singleWord
-			? singleWordTranslatorOption() : multiWordTranslatorOption();
-		return getDictionaryInfo(option.getValue());
-	}
+        public void run() {
+            synchronized (ourInfos) {
+                if (!ourInfos.isEmpty()) {
+                    if (myPostAction != null) {
+                        myPostAction.run();
+                    }
+                    return;
+                }
+                XmlUtil.parseQuietly(
+                        ZLFile.createFileByPath("dictionaries/main.xml"),
+                        new InfoReader()
+                );
+                XmlUtil.parseQuietly(
+                        ZLFile.createFileByPath("dictionaries/bitknights.xml"),
+                        new BitKnightsInfoReader(myActivity)
+                );
+                myActivity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        OpenDictionary.collect(myActivity, ourInfos);
+                        if (myPostAction != null) {
+                            myPostAction.run();
+                        }
+                    }
+                });
+            }
+        }
+    }
 
-	public static class PopupFrameMetric {
-		public final int Height;
-		public final int Gravity;
+    public static class PopupFrameMetric {
+        public final int Height;
+        public final int Gravity;
 
-		PopupFrameMetric(DisplayMetrics metrics, int selectionTop, int selectionBottom) {
-			final int screenHeight = metrics.heightPixels;
-			final int topSpace = selectionTop;
-			final int bottomSpace = metrics.heightPixels - selectionBottom;
-			final boolean showAtBottom = bottomSpace >= topSpace;
-			final int space = (showAtBottom ? bottomSpace : topSpace) - metrics.densityDpi / 12;
-			final int maxHeight = Math.min(metrics.densityDpi * 20 / 12, screenHeight * 2 / 3);
-			final int minHeight = Math.min(metrics.densityDpi * 10 / 12, screenHeight * 2 / 3);
+        PopupFrameMetric(DisplayMetrics metrics, int selectionTop, int selectionBottom) {
+            final int screenHeight = metrics.heightPixels;
+            final int topSpace = selectionTop;
+            final int bottomSpace = metrics.heightPixels - selectionBottom;
+            final boolean showAtBottom = bottomSpace >= topSpace;
+            final int space = (showAtBottom ? bottomSpace : topSpace) - metrics.densityDpi / 12;
+            final int maxHeight = Math.min(metrics.densityDpi * 20 / 12, screenHeight * 2 / 3);
+            final int minHeight = Math.min(metrics.densityDpi * 10 / 12, screenHeight * 2 / 3);
 
-			Height = Math.max(minHeight, Math.min(maxHeight, space));
-			Gravity = showAtBottom ? android.view.Gravity.BOTTOM : android.view.Gravity.TOP;
-		}
-	}
-
-	public static void openTextInDictionary(final FBReaderMainActivity fbreader, String text, boolean singleWord, int selectionTop, int selectionBottom, final Runnable outliner) {
-		final String textToTranslate;
-		if (singleWord) {
-			int start = 0;
-			int end = text.length();
-			for (; start < end && !Character.isLetterOrDigit(text.charAt(start)); ++start);
-			for (; start < end && !Character.isLetterOrDigit(text.charAt(end - 1)); --end);
-			if (start == end) {
-				return;
-			}
-			textToTranslate = text.substring(start, end);
-		} else {
-			textToTranslate = text;
-		}
-
-		final DisplayMetrics metrics = new DisplayMetrics();
-		fbreader.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		final PopupFrameMetric frameMetrics =
-			new PopupFrameMetric(metrics, selectionTop, selectionBottom);
-
-		final PackageInfo info = getCurrentDictionaryInfo(singleWord);
-		fbreader.runOnUiThread(new Runnable() {
-			public void run() {
-				info.open(textToTranslate, outliner, fbreader, frameMetrics);
-			}
-		});
-	}
-
-	public static void onActivityResult(final FBReaderMainActivity fbreader, int resultCode, final Intent data) {
-		getDictionaryInfo("dictan").onActivityResult(fbreader, resultCode, data);
-	}
+            Height = Math.max(minHeight, Math.min(maxHeight, space));
+            Gravity = showAtBottom ? android.view.Gravity.BOTTOM : android.view.Gravity.TOP;
+        }
+    }
 }

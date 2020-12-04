@@ -19,43 +19,44 @@
 
 package org.geometerplus.fbreader.network;
 
-import org.geometerplus.zlibrary.core.network.*;
-import org.geometerplus.zlibrary.core.util.MimeType;
-
 import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
 import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
+import org.geometerplus.zlibrary.core.util.MimeType;
 
 public class SingleCatalogSearchItem extends SearchItem {
-	public SingleCatalogSearchItem(INetworkLink link) {
-		super(
-			link,
-			NetworkLibrary.resource().getResource("search").getResource("summary").getValue().replace("%s", link.getShortName())
-		);
-	}
+    public SingleCatalogSearchItem(INetworkLink link) {
+        super(
+                link,
+                NetworkLibrary.resource().getResource("search").getResource("summary").getValue().replace("%s", link.getShortName())
+        );
+    }
 
-	@Override
-	public void runSearch(ZLNetworkContext nc, NetworkItemsLoader loader, String pattern) throws ZLNetworkException {
-		final NetworkOperationData data = Link.createOperationData(loader);
-		ZLNetworkRequest request = Link.simpleSearchRequest(pattern, data);
-		// TODO: possible infinite loop, use "continue link" instead
-		while (request != null) {
-			nc.perform(request);
-			if (loader.confirmInterruption()) {
-				return;
-			}
-			request = data.resume();
-		}
-	}
+    @Override
+    public void runSearch(ZLNetworkContext nc, NetworkItemsLoader loader, String pattern) throws ZLNetworkException {
+        final NetworkOperationData data = Link.createOperationData(loader);
+        ZLNetworkRequest request = Link.simpleSearchRequest(pattern, data);
+        // TODO: possible infinite loop, use "continue link" instead
+        while (request != null) {
+            nc.perform(request);
+            if (loader.confirmInterruption()) {
+                return;
+            }
+            request = data.resume();
+        }
+    }
 
-	@Override
-	public MimeType getMimeType() {
-		final UrlInfo info = Link.getUrlInfo(UrlInfo.Type.Search);
-		return info != null ? info.Mime : MimeType.NULL;
-	}
+    @Override
+    public MimeType getMimeType() {
+        final UrlInfo info = Link.getUrlInfo(UrlInfo.Type.Search);
+        return info != null ? info.Mime : MimeType.NULL;
+    }
 
-	@Override
-	public String getUrl(String pattern) {
-		final UrlInfo info = Link.getUrlInfo(UrlInfo.Type.Search);
-		return info != null && info.Url != null ? info.Url.replace("%s", pattern) : null;
-	}
+    @Override
+    public String getUrl(String pattern) {
+        final UrlInfo info = Link.getUrlInfo(UrlInfo.Type.Search);
+        return info != null && info.Url != null ? info.Url.replace("%s", pattern) : null;
+    }
 }

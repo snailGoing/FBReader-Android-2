@@ -19,12 +19,11 @@
 
 package org.geometerplus.fbreader.network.rss;
 
+import org.geometerplus.fbreader.network.atom.ATOMCategory;
 import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
-import org.geometerplus.fbreader.network.atom.ATOMCategory;
-
 public class RSSCategory extends ATOMCategory {
-	RSSCategory(ZLStringMap source) {
-		super(source);
-	}
+    RSSCategory(ZLStringMap source) {
+        super(source);
+    }
 }

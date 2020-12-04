@@ -19,19 +19,19 @@
 
 package org.geometerplus.android.fbreader.network.litres;
 
-import java.util.ArrayList;
-
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.*;
-import android.widget.*;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.TextView;
 
+import org.geometerplus.fbreader.network.authentication.litres.LitResNetworkRequest;
+import org.geometerplus.fbreader.network.authentication.litres.LitResPasswordRecoveryXMLReader;
+import org.geometerplus.fbreader.network.authentication.litres.LitResRegisterUserXMLReader;
 import org.geometerplus.zlibrary.core.network.ZLNetworkAuthenticationException;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.ui.android.R;
-
-import org.geometerplus.fbreader.network.authentication.litres.*;
 
 /*
  * Algorithm:
@@ -60,246 +60,245 @@ import org.geometerplus.fbreader.network.authentication.litres.*;
  */
 
 public class AutoRegistrationActivity extends RegistrationActivity {
-	private final RegistrationUtils myUtil = new RegistrationUtils(this);
+    private final RegistrationUtils myUtil = new RegistrationUtils(this);
+    private final View.OnClickListener myFinishListener = new View.OnClickListener() {
+        public void onClick(View view) {
+            AutoRegistrationActivity.this.finish();
+        }
+    };
 
-	@Override
-	public void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
+    @Override
+    public void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
 
-		final ZLResource dialogResource = ZLResource.resource("dialog");
-		final ZLResource buttonResource = dialogResource.getResource("button");
+        final ZLResource dialogResource = ZLResource.resource("dialog");
+        final ZLResource buttonResource = dialogResource.getResource("button");
 
-		myResource = dialogResource.getResource("litresAutoSignIn");
-		setContentView(R.layout.lr_auto_registration);
-		setTitle(myResource.getResource("title").getValue());
+        myResource = dialogResource.getResource("litresAutoSignIn");
+        setContentView(R.layout.lr_auto_registration);
+        setTitle(myResource.getResource("title").getValue());
 
-		getOkButton().setText(buttonResource.getResource("ok").getValue());
-		getCancelButton().setText(buttonResource.getResource("cancel").getValue());
-		getTextArea().setVisibility(View.GONE);
-		getActionSignIn().setVisibility(View.GONE);
-		getActionAnotherEmail().setVisibility(View.GONE);
-		getActionRecover().setVisibility(View.GONE);
-		getEmailControl().setVisibility(View.GONE);
-		getButtons().setVisibility(View.GONE);
+        getOkButton().setText(buttonResource.getResource("ok").getValue());
+        getCancelButton().setText(buttonResource.getResource("cancel").getValue());
+        getTextArea().setVisibility(View.GONE);
+        getActionSignIn().setVisibility(View.GONE);
+        getActionAnotherEmail().setVisibility(View.GONE);
+        getActionRecover().setVisibility(View.GONE);
+        getEmailControl().setVisibility(View.GONE);
+        getButtons().setVisibility(View.GONE);
 
-		startAutoRegistration();
-	}
+        startAutoRegistration();
+    }
 
-	// step 0
-	private void startAutoRegistration() {
-		final String email = myUtil.firstEMail();
-		if (email != null) {
-			runAutoLogin(email);
-		} else {
-			runEmailSelectionDialog(null);
-		}
-	}
+    // step 0
+    private void startAutoRegistration() {
+        final String email = myUtil.firstEMail();
+        if (email != null) {
+            runAutoLogin(email);
+        } else {
+            runEmailSelectionDialog(null);
+        }
+    }
 
-	// step 1
-	private void runAutoLogin(final String email) {
-		final String username = myUtil.getAutoLogin(email);
-		final String password = myUtil.getAutoPassword();
+    // step 1
+    private void runAutoLogin(final String email) {
+        final String username = myUtil.getAutoLogin(email);
+        final String password = myUtil.getAutoPassword();
 
-		final SignInNetworkRunnable runnable = new SignInNetworkRunnable(username, password);
-		final PostRunnable post = new PostRunnable() {
-			public void run(ZLNetworkException e) {
-				if (e == null) {
-					reportSuccess(username, password, runnable.XmlReader.Sid);
-					showFinalMessage(
-						myResource.getResource("signedIn").getValue()
-							.replace("%s", email)
-					);
-				} else if (e instanceof ZLNetworkAuthenticationException) {
-					runAutoRegistraion(email);
-				} else {
-					showErrorMessage(e);
-				}
-			}
-		};
-		runWithMessage("autoSignIn", runnable, post);
-	}
+        final SignInNetworkRunnable runnable = new SignInNetworkRunnable(username, password);
+        final PostRunnable post = new PostRunnable() {
+            public void run(ZLNetworkException e) {
+                if (e == null) {
+                    reportSuccess(username, password, runnable.XmlReader.Sid);
+                    showFinalMessage(
+                            myResource.getResource("signedIn").getValue()
+                                    .replace("%s", email)
+                    );
+                } else if (e instanceof ZLNetworkAuthenticationException) {
+                    runAutoRegistraion(email);
+                } else {
+                    showErrorMessage(e);
+                }
+            }
+        };
+        runWithMessage("autoSignIn", runnable, post);
+    }
 
-	// step 2
-	private void runAutoRegistraion(final String email) {
-		final String username = myUtil.getAutoLogin(email);
-		final String password = myUtil.getAutoPassword();
+    // step 2
+    private void runAutoRegistraion(final String email) {
+        final String username = myUtil.getAutoLogin(email);
+        final String password = myUtil.getAutoPassword();
 
-		final RegistrationNetworkRunnable runnable =
-			new RegistrationNetworkRunnable(username, password, email);
-		final PostRunnable post = new PostRunnable() {
-			public void run(ZLNetworkException e) {
-				if (e == null) {
-					reportSuccess(username, password, runnable.XmlReader.Sid);
-					showFinalMessage(
-						myResource.getResource("registrationSuccessful").getValue()
-							.replace("%s", email)
-					);
-				} else if (e instanceof LitResRegisterUserXMLReader.AlreadyInUseException) {
-					runEmailAlreadyInUseDialog(email);
-				} else {
-					showErrorMessage(e);
-				}
-			}
-		};
-		runWithMessage("autoSignIn", runnable, post);
-	}
+        final RegistrationNetworkRunnable runnable =
+                new RegistrationNetworkRunnable(username, password, email);
+        final PostRunnable post = new PostRunnable() {
+            public void run(ZLNetworkException e) {
+                if (e == null) {
+                    reportSuccess(username, password, runnable.XmlReader.Sid);
+                    showFinalMessage(
+                            myResource.getResource("registrationSuccessful").getValue()
+                                    .replace("%s", email)
+                    );
+                } else if (e instanceof LitResRegisterUserXMLReader.AlreadyInUseException) {
+                    runEmailAlreadyInUseDialog(email);
+                } else {
+                    showErrorMessage(e);
+                }
+            }
+        };
+        runWithMessage("autoSignIn", runnable, post);
+    }
 
-	// step 3
-	private void runEmailAlreadyInUseDialog(final String email) {
-		final ZLResource actionResource = myResource.getResource("actions");
-		getTextArea().setVisibility(View.VISIBLE);
-		getTextArea().setText(actionResource.getResource("title").getValue().replace("%s", email));
-		final View.OnClickListener rbListener = new View.OnClickListener() {
-			public void onClick(View view) {
-				final RadioButton rb = (RadioButton)view;
-				getActionSignIn().setChecked(false);
-				getActionAnotherEmail().setChecked(false);
-				getActionRecover().setChecked(false);
-				rb.setChecked(true);
-				getOkButton().setEnabled(true);
-			}
-		};
-		getActionSignIn().setVisibility(View.GONE);
+    // step 3
+    private void runEmailAlreadyInUseDialog(final String email) {
+        final ZLResource actionResource = myResource.getResource("actions");
+        getTextArea().setVisibility(View.VISIBLE);
+        getTextArea().setText(actionResource.getResource("title").getValue().replace("%s", email));
+        final View.OnClickListener rbListener = new View.OnClickListener() {
+            public void onClick(View view) {
+                final RadioButton rb = (RadioButton) view;
+                getActionSignIn().setChecked(false);
+                getActionAnotherEmail().setChecked(false);
+                getActionRecover().setChecked(false);
+                rb.setChecked(true);
+                getOkButton().setEnabled(true);
+            }
+        };
+        getActionSignIn().setVisibility(View.GONE);
 
 		/*
 		getActionSignIn().setVisibility(View.VISIBLE);
 		getActionSignIn().setText(actionResource.getResource("signIn").getValue());
 		getActionSignIn().setOnClickListener(rbListener);
 		*/
-		getActionAnotherEmail().setVisibility(View.VISIBLE);
-		getActionAnotherEmail().setText(actionResource.getResource("anotherEmail").getValue());
-		getActionAnotherEmail().setOnClickListener(rbListener);
-		getActionRecover().setVisibility(View.VISIBLE);
-		getActionRecover().setText(actionResource.getResource("recover").getValue());
-		getActionRecover().setOnClickListener(rbListener);
-		getEmailControl().setVisibility(View.GONE);
-		getButtons().setVisibility(View.VISIBLE);
-		getOkButton().setVisibility(View.VISIBLE);
-		getOkButton().setEnabled(false);
-		getOkButton().setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) {
-				if (getActionSignIn().isChecked()) {
-					// TODO: implement
-				} else if (getActionAnotherEmail().isChecked()) {
-					runEmailSelectionDialog(email);
-				} else if (getActionRecover().isChecked()) {
-					recoverAccountInformation(email);
-				}
-			}
-		});
-		getCancelButton().setVisibility(View.VISIBLE);
-		getCancelButton().setOnClickListener(myFinishListener);
-	}
+        getActionAnotherEmail().setVisibility(View.VISIBLE);
+        getActionAnotherEmail().setText(actionResource.getResource("anotherEmail").getValue());
+        getActionAnotherEmail().setOnClickListener(rbListener);
+        getActionRecover().setVisibility(View.VISIBLE);
+        getActionRecover().setText(actionResource.getResource("recover").getValue());
+        getActionRecover().setOnClickListener(rbListener);
+        getEmailControl().setVisibility(View.GONE);
+        getButtons().setVisibility(View.VISIBLE);
+        getOkButton().setVisibility(View.VISIBLE);
+        getOkButton().setEnabled(false);
+        getOkButton().setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (getActionSignIn().isChecked()) {
+                    // TODO: implement
+                } else if (getActionAnotherEmail().isChecked()) {
+                    runEmailSelectionDialog(email);
+                } else if (getActionRecover().isChecked()) {
+                    recoverAccountInformation(email);
+                }
+            }
+        });
+        getCancelButton().setVisibility(View.VISIBLE);
+        getCancelButton().setOnClickListener(myFinishListener);
+    }
 
-	// step 4
-	private void runEmailSelectionDialog(String email) {
-		getTextArea().setVisibility(View.VISIBLE);
-		getTextArea().setText(myResource.getResource("email").getValue());
-		getActionSignIn().setVisibility(View.GONE);
-		getActionAnotherEmail().setVisibility(View.GONE);
-		getActionRecover().setVisibility(View.GONE);
-		getEmailControl().setVisibility(View.VISIBLE);
-		setupEmailControl(getEmailControl(), email);
-		getButtons().setVisibility(View.VISIBLE);
-		getOkButton().setVisibility(View.VISIBLE);
-		getOkButton().setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) {
-				runAutoLogin(getEmailTextView().getText().toString().trim());
-			}
-		});
-		getCancelButton().setVisibility(View.VISIBLE);
-		getCancelButton().setOnClickListener(myFinishListener);
-	}
+    // step 4
+    private void runEmailSelectionDialog(String email) {
+        getTextArea().setVisibility(View.VISIBLE);
+        getTextArea().setText(myResource.getResource("email").getValue());
+        getActionSignIn().setVisibility(View.GONE);
+        getActionAnotherEmail().setVisibility(View.GONE);
+        getActionRecover().setVisibility(View.GONE);
+        getEmailControl().setVisibility(View.VISIBLE);
+        setupEmailControl(getEmailControl(), email);
+        getButtons().setVisibility(View.VISIBLE);
+        getOkButton().setVisibility(View.VISIBLE);
+        getOkButton().setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                runAutoLogin(getEmailTextView().getText().toString().trim());
+            }
+        });
+        getCancelButton().setVisibility(View.VISIBLE);
+        getCancelButton().setOnClickListener(myFinishListener);
+    }
 
-	// step 5
-	private void recoverAccountInformation(final String email) {
-		System.err.println("recoverAccountInformation 0");
-		final LitResPasswordRecoveryXMLReader xmlReader = new LitResPasswordRecoveryXMLReader();
+    // step 5
+    private void recoverAccountInformation(final String email) {
+        System.err.println("recoverAccountInformation 0");
+        final LitResPasswordRecoveryXMLReader xmlReader = new LitResPasswordRecoveryXMLReader();
 
-		final NetworkRunnable runnable = new NetworkRunnable() {
-			public void run() throws ZLNetworkException {
-		System.err.println("recoverAccountInformation 1");
-				final LitResNetworkRequest request = new LitResNetworkRequest(myRecoverPasswordURL, xmlReader);
-				request.addPostParameter("mail", email);
-				myNetworkContext.perform(request);
-			}
-		};
-		final PostRunnable post = new PostRunnable() {
-			public void run(ZLNetworkException e) {
-		System.err.println("recoverAccountInformation 2");
-				if (e == null) {
-		System.err.println("recoverAccountInformation 3");
-					showFinalMessage(
-						myResource.getResource("passwordSent").getValue().replace("%s", email)
-					);
-				} else {
-		System.err.println("recoverAccountInformation 4");
-					showErrorMessage(e);
-				}
-			}
-		};
-		System.err.println("recoverAccountInformation 5");
-		runWithMessage("recoverPassword", runnable, post);
-		System.err.println("recoverAccountInformation 6");
-	}
+        final NetworkRunnable runnable = new NetworkRunnable() {
+            public void run() throws ZLNetworkException {
+                System.err.println("recoverAccountInformation 1");
+                final LitResNetworkRequest request = new LitResNetworkRequest(myRecoverPasswordURL, xmlReader);
+                request.addPostParameter("mail", email);
+                myNetworkContext.perform(request);
+            }
+        };
+        final PostRunnable post = new PostRunnable() {
+            public void run(ZLNetworkException e) {
+                System.err.println("recoverAccountInformation 2");
+                if (e == null) {
+                    System.err.println("recoverAccountInformation 3");
+                    showFinalMessage(
+                            myResource.getResource("passwordSent").getValue().replace("%s", email)
+                    );
+                } else {
+                    System.err.println("recoverAccountInformation 4");
+                    showErrorMessage(e);
+                }
+            }
+        };
+        System.err.println("recoverAccountInformation 5");
+        runWithMessage("recoverPassword", runnable, post);
+        System.err.println("recoverAccountInformation 6");
+    }
 
-	private TextView getTextArea() {
-		return (TextView)findViewById(R.id.lr_auto_registration_text);
-	}
+    private TextView getTextArea() {
+        return (TextView) findViewById(R.id.lr_auto_registration_text);
+    }
 
-	private RadioButton getActionSignIn() {
-		return (RadioButton)findViewById(R.id.lr_auto_registration_action_signin);
-	}
+    private RadioButton getActionSignIn() {
+        return (RadioButton) findViewById(R.id.lr_auto_registration_action_signin);
+    }
 
-	private RadioButton getActionAnotherEmail() {
-		return (RadioButton)findViewById(R.id.lr_auto_registration_action_change_email);
-	}
+    private RadioButton getActionAnotherEmail() {
+        return (RadioButton) findViewById(R.id.lr_auto_registration_action_change_email);
+    }
 
-	private RadioButton getActionRecover() {
-		return (RadioButton)findViewById(R.id.lr_auto_registration_action_recover);
-	}
+    private RadioButton getActionRecover() {
+        return (RadioButton) findViewById(R.id.lr_auto_registration_action_recover);
+    }
 
-	private View getEmailControl() {
-		return findViewById(R.id.lr_auto_registration_email_control);
-	}
+    private View getEmailControl() {
+        return findViewById(R.id.lr_auto_registration_email_control);
+    }
 
-	private TextView getEmailTextView() {
-		return (TextView)getEmailControl().findViewById(R.id.lr_email_edit);
-	}
+    private TextView getEmailTextView() {
+        return (TextView) getEmailControl().findViewById(R.id.lr_email_edit);
+    }
 
-	private View getButtons() {
-		return findViewById(R.id.lr_auto_registration_buttons);
-	}
+    private View getButtons() {
+        return findViewById(R.id.lr_auto_registration_buttons);
+    }
 
-	private Button getOkButton() {
-		return (Button)getButtons().findViewById(R.id.ok_button);
-	}
+    private Button getOkButton() {
+        return (Button) getButtons().findViewById(R.id.ok_button);
+    }
 
-	private Button getCancelButton() {
-		return (Button)getButtons().findViewById(R.id.cancel_button);
-	}
+    private Button getCancelButton() {
+        return (Button) getButtons().findViewById(R.id.cancel_button);
+    }
 
-	private final View.OnClickListener myFinishListener = new View.OnClickListener() {
-		public void onClick(View view) {
-			AutoRegistrationActivity.this.finish();
-		}
-	};
+    private void showFinalMessage(String message) {
+        getTextArea().setVisibility(View.VISIBLE);
+        getTextArea().setText(message);
+        getActionSignIn().setVisibility(View.GONE);
+        getActionAnotherEmail().setVisibility(View.GONE);
+        getActionRecover().setVisibility(View.GONE);
+        getEmailControl().setVisibility(View.GONE);
+        getButtons().setVisibility(View.VISIBLE);
+        getOkButton().setVisibility(View.VISIBLE);
+        getOkButton().setOnClickListener(myFinishListener);
+        getCancelButton().setVisibility(View.GONE);
+    }
 
-	private void showFinalMessage(String message) {
-		getTextArea().setVisibility(View.VISIBLE);
-		getTextArea().setText(message);
-		getActionSignIn().setVisibility(View.GONE);
-		getActionAnotherEmail().setVisibility(View.GONE);
-		getActionRecover().setVisibility(View.GONE);
-		getEmailControl().setVisibility(View.GONE);
-		getButtons().setVisibility(View.VISIBLE);
-		getOkButton().setVisibility(View.VISIBLE);
-		getOkButton().setOnClickListener(myFinishListener);
-		getCancelButton().setVisibility(View.GONE);
-	}
-
-	private void showErrorMessage(ZLNetworkException exception) {
-		exception.printStackTrace();
-		showFinalMessage(exception.getMessage());
-	}
+    private void showErrorMessage(ZLNetworkException exception) {
+        exception.printStackTrace();
+        showFinalMessage(exception.getMessage());
+    }
 }

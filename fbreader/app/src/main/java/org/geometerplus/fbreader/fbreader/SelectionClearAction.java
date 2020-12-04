@@ -20,12 +20,12 @@
 package org.geometerplus.fbreader.fbreader;
 
 public class SelectionClearAction extends FBAction {
-	SelectionClearAction(FBReaderApp fbreader) {
-		super(fbreader);
-	}
+    SelectionClearAction(FBReaderApp fbreader) {
+        super(fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		Reader.getTextView().clearSelection();
-	}
+    @Override
+    protected void run(Object... params) {
+        Reader.getTextView().clearSelection();
+    }
 }

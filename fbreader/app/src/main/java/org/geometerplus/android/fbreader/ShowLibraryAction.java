@@ -22,39 +22,38 @@ package org.geometerplus.android.fbreader;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 
-import org.geometerplus.fbreader.fbreader.FBReaderApp;
-
 import org.geometerplus.android.fbreader.api.FBReaderIntents;
 import org.geometerplus.android.fbreader.library.LibraryActivity;
 import org.geometerplus.android.util.OrientationUtil;
 import org.geometerplus.android.util.PackageUtil;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 class ShowLibraryAction extends FBAndroidAction {
-	ShowLibraryAction(FBReader baseActivity, FBReaderApp fbreader) {
-		super(baseActivity, fbreader);
-	}
+    ShowLibraryAction(FBReader baseActivity, FBReaderApp fbreader) {
+        super(baseActivity, fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		final Intent externalIntent =
-			new Intent(FBReaderIntents.Action.EXTERNAL_LIBRARY);
-		final Intent internalIntent =
-			new Intent(BaseActivity.getApplicationContext(), LibraryActivity.class);
-		if (PackageUtil.canBeStarted(BaseActivity, externalIntent, true)) {
-			try {
-				startLibraryActivity(externalIntent);
-			} catch (ActivityNotFoundException e) {
-				startLibraryActivity(internalIntent);
-			}
-		} else {
-			startLibraryActivity(internalIntent);
-		}
-	}
+    @Override
+    protected void run(Object... params) {
+        final Intent externalIntent =
+                new Intent(FBReaderIntents.Action.EXTERNAL_LIBRARY);
+        final Intent internalIntent =
+                new Intent(BaseActivity.getApplicationContext(), LibraryActivity.class);
+        if (PackageUtil.canBeStarted(BaseActivity, externalIntent, true)) {
+            try {
+                startLibraryActivity(externalIntent);
+            } catch (ActivityNotFoundException e) {
+                startLibraryActivity(internalIntent);
+            }
+        } else {
+            startLibraryActivity(internalIntent);
+        }
+    }
 
-	private void startLibraryActivity(Intent intent) {
-		if (Reader.Model != null) {
-			FBReaderIntents.putBookExtra(intent, Reader.getCurrentBook());
-		}
-		OrientationUtil.startActivity(BaseActivity, intent);
-	}
+    private void startLibraryActivity(Intent intent) {
+        if (Reader.Model != null) {
+            FBReaderIntents.putBookExtra(intent, Reader.getCurrentBook());
+        }
+        OrientationUtil.startActivity(BaseActivity, intent);
+    }
 }

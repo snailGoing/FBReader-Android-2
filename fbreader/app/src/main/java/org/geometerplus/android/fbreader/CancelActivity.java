@@ -19,128 +19,129 @@
 
 package org.geometerplus.android.fbreader;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.*;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.fbreader.util.android.ViewUtil;
-
-import org.geometerplus.zlibrary.core.options.Config;
-
-import org.geometerplus.zlibrary.ui.android.R;
-
-import org.geometerplus.fbreader.fbreader.options.CancelMenuHelper;
-
 import org.geometerplus.android.fbreader.api.FBReaderIntents;
 import org.geometerplus.android.fbreader.libraryService.BookCollectionShadow;
+import org.geometerplus.fbreader.fbreader.options.CancelMenuHelper;
+import org.geometerplus.zlibrary.ui.android.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CancelActivity extends ListActivity {
-	public static String ACTIONS_KEY = "fbreader.cancel.actions";
+    public static String ACTIONS_KEY = "fbreader.cancel.actions";
 
-	private final BookCollectionShadow myCollection = new BookCollectionShadow();
-	private final List<CancelMenuHelper.ActionDescription> myActions =
-		new ArrayList<CancelMenuHelper.ActionDescription>();
+    private final BookCollectionShadow myCollection = new BookCollectionShadow();
+    private final List<CancelMenuHelper.ActionDescription> myActions =
+            new ArrayList<CancelMenuHelper.ActionDescription>();
 
-	@Override
-	protected void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+    @Override
+    protected void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-		myActions.clear();
-		final Intent intent = getIntent();
-		final List<CancelMenuHelper.ActionDescription> actions = intent != null
-			? (List<CancelMenuHelper.ActionDescription>)intent.getSerializableExtra(ACTIONS_KEY)
-			: null;
-		if (actions != null) {
-			myActions.addAll(actions);
-		}
-	}
+        myActions.clear();
+        final Intent intent = getIntent();
+        final List<CancelMenuHelper.ActionDescription> actions = intent != null
+                ? (List<CancelMenuHelper.ActionDescription>) intent.getSerializableExtra(ACTIONS_KEY)
+                : null;
+        if (actions != null) {
+            myActions.addAll(actions);
+        }
+    }
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-		if (!myActions.isEmpty()) {
-			final ActionListAdapter adapter = new ActionListAdapter(myActions);
-			setListAdapter(adapter);
-			getListView().setOnItemClickListener(adapter);
-		} else {
-			myCollection.bindToService(this, new Runnable() {
-				public void run() {
-					myActions.addAll(new CancelMenuHelper().getActionsList(myCollection));
-					final ActionListAdapter adapter = new ActionListAdapter(myActions);
-					setListAdapter(adapter);
-					getListView().setOnItemClickListener(adapter);
-				}
-			});
-		}
-	}
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!myActions.isEmpty()) {
+            final ActionListAdapter adapter = new ActionListAdapter(myActions);
+            setListAdapter(adapter);
+            getListView().setOnItemClickListener(adapter);
+        } else {
+            myCollection.bindToService(this, new Runnable() {
+                public void run() {
+                    myActions.addAll(new CancelMenuHelper().getActionsList(myCollection));
+                    final ActionListAdapter adapter = new ActionListAdapter(myActions);
+                    setListAdapter(adapter);
+                    getListView().setOnItemClickListener(adapter);
+                }
+            });
+        }
+    }
 
-	@Override
-	protected void onDestroy() {
-		myCollection.unbind();
-		super.onDestroy();
-	}
+    @Override
+    protected void onDestroy() {
+        myCollection.unbind();
+        super.onDestroy();
+    }
 
-	private class ActionListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
-		private final List<CancelMenuHelper.ActionDescription> myActions;
+    private class ActionListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
+        private final List<CancelMenuHelper.ActionDescription> myActions;
 
-		ActionListAdapter(List<CancelMenuHelper.ActionDescription> actions) {
-			myActions = new ArrayList<CancelMenuHelper.ActionDescription>(actions);
-		}
+        ActionListAdapter(List<CancelMenuHelper.ActionDescription> actions) {
+            myActions = new ArrayList<CancelMenuHelper.ActionDescription>(actions);
+        }
 
-		public final int getCount() {
-			return myActions.size();
-		}
+        public final int getCount() {
+            return myActions.size();
+        }
 
-		public final CancelMenuHelper.ActionDescription getItem(int position) {
-			return myActions.get(position);
-		}
+        public final CancelMenuHelper.ActionDescription getItem(int position) {
+            return myActions.get(position);
+        }
 
-		public final long getItemId(int position) {
-			return position;
-		}
+        public final long getItemId(int position) {
+            return position;
+        }
 
-		public View getView(int position, View convertView, final ViewGroup parent) {
-			final View view = convertView != null
-				? convertView
-				: LayoutInflater.from(parent.getContext()).inflate(R.layout.cancel_item, parent, false);
-			final CancelMenuHelper.ActionDescription item = getItem(position);
-			final TextView titleView = ViewUtil.findTextView(view, R.id.cancel_item_title);
-			final TextView summaryView = ViewUtil.findTextView(view, R.id.cancel_item_summary);
-			final String title = item.Title;
-			final String summary = item.Summary;
-			titleView.setText(title);
-			if (summary != null) {
-				summaryView.setVisibility(View.VISIBLE);
-				summaryView.setText(summary);
-				titleView.setLayoutParams(new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
-				));
-			} else {
-				summaryView.setVisibility(View.GONE);
-				titleView.setLayoutParams(new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT
-				));
-			}
-			return view;
-		}
+        public View getView(int position, View convertView, final ViewGroup parent) {
+            final View view = convertView != null
+                    ? convertView
+                    : LayoutInflater.from(parent.getContext()).inflate(R.layout.cancel_item, parent, false);
+            final CancelMenuHelper.ActionDescription item = getItem(position);
+            final TextView titleView = ViewUtil.findTextView(view, R.id.cancel_item_title);
+            final TextView summaryView = ViewUtil.findTextView(view, R.id.cancel_item_summary);
+            final String title = item.Title;
+            final String summary = item.Summary;
+            titleView.setText(title);
+            if (summary != null) {
+                summaryView.setVisibility(View.VISIBLE);
+                summaryView.setText(summary);
+                titleView.setLayoutParams(new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                ));
+            } else {
+                summaryView.setVisibility(View.GONE);
+                titleView.setLayoutParams(new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT
+                ));
+            }
+            return view;
+        }
 
-		public final void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			final Intent data = new Intent();
-			final CancelMenuHelper.ActionDescription item = getItem(position);
-			data.putExtra(FBReaderIntents.Key.TYPE, item.Type.name());
-			if (item instanceof CancelMenuHelper.BookmarkDescription) {
-				FBReaderIntents.putBookmarkExtra(
-					data, ((CancelMenuHelper.BookmarkDescription)item).getBookmark()
-				);
-			}
-			setResult(RESULT_FIRST_USER, data);
-			finish();
-		}
-	}
+        public final void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            final Intent data = new Intent();
+            final CancelMenuHelper.ActionDescription item = getItem(position);
+            data.putExtra(FBReaderIntents.Key.TYPE, item.Type.name());
+            if (item instanceof CancelMenuHelper.BookmarkDescription) {
+                FBReaderIntents.putBookmarkExtra(
+                        data, ((CancelMenuHelper.BookmarkDescription) item).getBookmark()
+                );
+            }
+            setResult(RESULT_FIRST_USER, data);
+            finish();
+        }
+    }
 }

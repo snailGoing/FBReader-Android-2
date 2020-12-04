@@ -7,19 +7,18 @@
 
 package group.pals.android.lib.ui.filechooser.utils;
 
-import group.pals.android.lib.ui.filechooser.R;
-import group.pals.android.lib.ui.filechooser.prefs.DisplayPrefs.FileTimeDisplay;
+import android.content.Context;
 
 import java.util.Calendar;
 
-import android.content.Context;
+import group.pals.android.lib.ui.filechooser.R;
+import group.pals.android.lib.ui.filechooser.prefs.DisplayPrefs.FileTimeDisplay;
 
 /**
  * Date utilities.
- * 
+ *
  * @author Hai Bison
  * @since v4.7 beta
- * 
  */
 public class DateUtils {
 
@@ -45,13 +44,10 @@ public class DateUtils {
 
     /**
      * Formats date.
-     * 
-     * @param context
-     *            {@link Context}.
-     * @param millis
-     *            time in milliseconds.
-     * @param fileTimeDisplay
-     *            {@link FileTimeDisplay}.
+     *
+     * @param context         {@link Context}.
+     * @param millis          time in milliseconds.
+     * @param fileTimeDisplay {@link FileTimeDisplay}.
      * @return the formatted string
      */
     public static String formatDate(Context context, long millis, FileTimeDisplay fileTimeDisplay) {
@@ -62,13 +58,10 @@ public class DateUtils {
 
     /**
      * Formats date.
-     * 
-     * @param context
-     *            {@link Context}.
-     * @param date
-     *            {@link Calendar}.
-     * @param fileTimeDisplay
-     *            {@link FileTimeDisplay}.
+     *
+     * @param context         {@link Context}.
+     * @param date            {@link Calendar}.
+     * @param fileTimeDisplay {@link FileTimeDisplay}.
      * @return the formatted string, for local human reading.
      */
     public static String formatDate(Context context, Calendar date, FileTimeDisplay fileTimeDisplay) {

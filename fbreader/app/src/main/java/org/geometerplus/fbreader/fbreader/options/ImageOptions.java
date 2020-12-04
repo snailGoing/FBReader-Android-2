@@ -19,29 +19,31 @@
 
 package org.geometerplus.fbreader.fbreader.options;
 
-import org.geometerplus.zlibrary.core.options.*;
+import org.geometerplus.fbreader.fbreader.FBView;
+import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
+import org.geometerplus.zlibrary.core.options.ZLColorOption;
+import org.geometerplus.zlibrary.core.options.ZLEnumOption;
 import org.geometerplus.zlibrary.core.util.ZLColor;
 
-import org.geometerplus.fbreader.fbreader.FBView;
-
 public class ImageOptions {
-	public final ZLColorOption ImageViewBackground;
+    public final ZLColorOption ImageViewBackground;
 
-	public final ZLEnumOption<FBView.ImageFitting> FitToScreen;
-	public static enum TapActionEnum {
-		doNothing, selectImage, openImageView
-	}
-	public final ZLEnumOption<TapActionEnum> TapAction;
-	public final ZLBooleanOption MatchBackground;
+    public final ZLEnumOption<FBView.ImageFitting> FitToScreen;
+    public final ZLEnumOption<TapActionEnum> TapAction;
+    public final ZLBooleanOption MatchBackground;
 
-	public ImageOptions() {
-		ImageViewBackground =
-			new ZLColorOption("Colors", "ImageViewBackground", new ZLColor(255, 255, 255));
-		FitToScreen =
-			new ZLEnumOption<FBView.ImageFitting>("Options", "FitImagesToScreen", FBView.ImageFitting.covers);
-		TapAction =
-			new ZLEnumOption<TapActionEnum>("Options", "ImageTappingAction", TapActionEnum.openImageView);
-		MatchBackground =
-			new ZLBooleanOption("Colors", "ImageMatchBackground", true);
-	}
+    public ImageOptions() {
+        ImageViewBackground =
+                new ZLColorOption("Colors", "ImageViewBackground", new ZLColor(255, 255, 255));
+        FitToScreen =
+                new ZLEnumOption<FBView.ImageFitting>("Options", "FitImagesToScreen", FBView.ImageFitting.covers);
+        TapAction =
+                new ZLEnumOption<TapActionEnum>("Options", "ImageTappingAction", TapActionEnum.openImageView);
+        MatchBackground =
+                new ZLBooleanOption("Colors", "ImageMatchBackground", true);
+    }
+
+    public static enum TapActionEnum {
+        doNothing, selectImage, openImageView
+    }
 }

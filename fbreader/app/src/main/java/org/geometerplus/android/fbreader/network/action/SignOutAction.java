@@ -21,83 +21,83 @@ package org.geometerplus.android.fbreader.network.action;
 
 import android.app.Activity;
 
-import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
-
-import org.geometerplus.fbreader.network.*;
+import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.ISyncNetworkLink;
+import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
 import org.geometerplus.fbreader.network.sync.SyncUtil;
 import org.geometerplus.fbreader.network.tree.NetworkCatalogRootTree;
-
-import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 
 public class SignOutAction extends Action {
-	private final ZLNetworkContext myNetworkContext;
+    private final ZLNetworkContext myNetworkContext;
 
-	public SignOutAction(Activity activity, ZLNetworkContext context) {
-		super(activity, ActionCode.SIGNOUT, "signOut", -1);
-		myNetworkContext = context;
-	}
+    public SignOutAction(Activity activity, ZLNetworkContext context) {
+        super(activity, ActionCode.SIGNOUT, "signOut", -1);
+        myNetworkContext = context;
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (!(tree instanceof NetworkCatalogRootTree)) {
-			return false;
-		}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (!(tree instanceof NetworkCatalogRootTree)) {
+            return false;
+        }
 
-		final INetworkLink link = tree.getLink();
-		if (link instanceof ISyncNetworkLink) {
-			return ((ISyncNetworkLink)link).isLoggedIn();
-		}
+        final INetworkLink link = tree.getLink();
+        if (link instanceof ISyncNetworkLink) {
+            return ((ISyncNetworkLink) link).isLoggedIn();
+        }
 
-		final NetworkAuthenticationManager mgr = link.authenticationManager();
-		return mgr != null && mgr.mayBeAuthorised(false);
-	}
+        final NetworkAuthenticationManager mgr = link.authenticationManager();
+        return mgr != null && mgr.mayBeAuthorised(false);
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		final INetworkLink link = tree.getLink();
-		if (link instanceof ISyncNetworkLink) {
-			((ISyncNetworkLink)link).logout(myNetworkContext);
-			((NetworkCatalogRootTree)tree).clearCatalog();
-			return;
-		}
+    @Override
+    public void run(NetworkTree tree) {
+        final INetworkLink link = tree.getLink();
+        if (link instanceof ISyncNetworkLink) {
+            ((ISyncNetworkLink) link).logout(myNetworkContext);
+            ((NetworkCatalogRootTree) tree).clearCatalog();
+            return;
+        }
 
-		final NetworkAuthenticationManager mgr = link.authenticationManager();
-		final Runnable runnable = new Runnable() {
-			public void run() {
-				if (mgr.mayBeAuthorised(false)) {
-					mgr.logOut();
-					myActivity.runOnUiThread(new Runnable() {
-						public void run() {
-							myLibrary.invalidateVisibility();
-							myLibrary.synchronize();
-						}
-					});
-				}
-			}
-		};
-		UIUtil.wait("signOut", runnable, myActivity);
-	}
+        final NetworkAuthenticationManager mgr = link.authenticationManager();
+        final Runnable runnable = new Runnable() {
+            public void run() {
+                if (mgr.mayBeAuthorised(false)) {
+                    mgr.logOut();
+                    myActivity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            myLibrary.invalidateVisibility();
+                            myLibrary.synchronize();
+                        }
+                    });
+                }
+            }
+        };
+        UIUtil.wait("signOut", runnable, myActivity);
+    }
 
-	private String accountName(NetworkTree tree) {
-		final INetworkLink link = tree.getLink();
-		if (link instanceof ISyncNetworkLink) {
-			return SyncUtil.getAccountName();
-		}
+    private String accountName(NetworkTree tree) {
+        final INetworkLink link = tree.getLink();
+        if (link instanceof ISyncNetworkLink) {
+            return SyncUtil.getAccountName();
+        }
 
-		final NetworkAuthenticationManager mgr = link.authenticationManager();
-		return mgr != null && mgr.mayBeAuthorised(false) ? mgr.getVisibleUserName() : null;
-	}
+        final NetworkAuthenticationManager mgr = link.authenticationManager();
+        return mgr != null && mgr.mayBeAuthorised(false) ? mgr.getVisibleUserName() : null;
+    }
 
-	@Override
-	public String getOptionsLabel(NetworkTree tree) {
-		final String account = accountName(tree);
-		return super.getOptionsLabel(tree).replace("%s", account != null ? account : "");
-	}
+    @Override
+    public String getOptionsLabel(NetworkTree tree) {
+        final String account = accountName(tree);
+        return super.getOptionsLabel(tree).replace("%s", account != null ? account : "");
+    }
 
-	@Override
-	public String getContextLabel(NetworkTree tree) {
-		final String account = accountName(tree);
-		return super.getContextLabel(tree).replace("%s", account != null ? account : "");
-	}
+    @Override
+    public String getContextLabel(NetworkTree tree) {
+        final String account = accountName(tree);
+        return super.getContextLabel(tree).replace("%s", account != null ? account : "");
+    }
 }

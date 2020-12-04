@@ -19,232 +19,235 @@
 
 package org.geometerplus.fbreader.network.sync;
 
-import java.util.*;
-
-import org.json.simple.JSONValue;
-
 import org.fbreader.common.options.SyncOptions;
-
-import org.geometerplus.zlibrary.core.options.*;
-
-import org.geometerplus.zlibrary.text.view.ZLTextPositionWithTimestamp;
-
 import org.geometerplus.fbreader.book.Book;
 import org.geometerplus.fbreader.book.IBookCollection;
+import org.geometerplus.zlibrary.core.options.Config;
+import org.geometerplus.zlibrary.core.options.ZLIntegerOption;
+import org.geometerplus.zlibrary.core.options.ZLStringListOption;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
+import org.geometerplus.zlibrary.text.view.ZLTextPositionWithTimestamp;
+import org.json.simple.JSONValue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SyncData {
-	public final static class ServerBookInfo {
-		public final List<String> Hashes;
-		public final String Title;
-		public final String DownloadUrl;
-		public final String Mimetype;
-		public final String ThumbnailUrl;
-		public final int Size;
+    private final ZLIntegerOption myGeneration =
+            new ZLIntegerOption("SyncData", "Generation", -1);
+    private final ZLStringOption myCurrentBookHash =
+            new ZLStringOption("SyncData", "CurrentBookHash", "");
+    private final ZLStringOption myCurrentBookTimestamp =
+            new ZLStringOption("SyncData", "CurrentBookTimestamp", "");
+    private final ServerBook myServerBook = new ServerBook();
 
-		private ServerBookInfo(List<String> hashes, String title, String downloadUrl, String mimetype, String thumbnailUrl, int size) {
-			Hashes = Collections.unmodifiableList(hashes);
-			Title = title;
-			DownloadUrl = downloadUrl;
-			Mimetype = mimetype;
-			ThumbnailUrl = thumbnailUrl;
-			Size = size;
-		}
-	}
+    private Map<String, Object> position2Map(ZLTextPositionWithTimestamp pos) {
+        final Map<String, Object> map = new HashMap<String, Object>();
+        map.put("para", pos.Position.ParagraphIndex);
+        map.put("elmt", pos.Position.ElementIndex);
+        map.put("char", pos.Position.CharIndex);
+        map.put("timestamp", pos.Timestamp);
+        return map;
+    }
 
-	private final ZLIntegerOption myGeneration =
-		new ZLIntegerOption("SyncData", "Generation", -1);
-	private final ZLStringOption myCurrentBookHash =
-		new ZLStringOption("SyncData", "CurrentBookHash", "");
-	private final ZLStringOption myCurrentBookTimestamp =
-		new ZLStringOption("SyncData", "CurrentBookTimestamp", "");
+    private ZLTextPositionWithTimestamp map2Position(Map<String, Object> map) {
+        return new ZLTextPositionWithTimestamp(
+                (int) (long) (Long) map.get("para"),
+                (int) (long) (Long) map.get("elmt"),
+                (int) (long) (Long) map.get("char"),
+                (Long) map.get("timestamp")
+        );
+    }
 
-	private static class ServerBook {
-		final ZLStringListOption Hashes =
-			new ZLStringListOption("SyncData", "ServerBookHashes", Collections.<String>emptyList(), ";");
-		final ZLStringOption Title =
-			new ZLStringOption("SyncData", "ServerBookTitle", "");
-		final ZLStringOption DownloadUrl =
-			new ZLStringOption("SyncData", "ServerBookDownloadUrl", "");
-		final ZLStringOption Mimetype =
-			new ZLStringOption("SyncData", "ServerBookMimetype", "");
-		final ZLStringOption ThumbnailUrl =
-			new ZLStringOption("SyncData", "ServerBookThumbnailUrl", "");
-		final ZLIntegerOption Size =
-			new ZLIntegerOption("SyncData", "ServerBookSize", 0);
+    private Map<String, Object> positionMap(IBookCollection<Book> collection, Book book) {
+        if (book == null) {
+            return null;
+        }
+        final ZLTextPositionWithTimestamp pos = collection.getStoredPosition(book.getId());
+        return pos != null ? position2Map(pos) : null;
+    }
 
-		void init(Map<String,Object> book) {
-			if (book == null) {
-				reset();
-			} else {
-				Hashes.setValue((List<String>)book.get("all_hashes"));
-				Title.setValue((String)book.get("title"));
+    public Map<String, Object> data(IBookCollection<Book> collection) {
+        final Map<String, Object> map = new HashMap<String, Object>();
+        map.put("generation", myGeneration.getValue());
+        map.put("timestamp", System.currentTimeMillis());
 
-				final String downloadUrl = (String)book.get("download_url");
-				DownloadUrl.setValue(downloadUrl != null ? downloadUrl : "");
-				final String mimetype = (String)book.get("mimetype");
-				Mimetype.setValue(mimetype != null ? mimetype : "");
-				final String thumbnailUrl = (String)book.get("thumbnail_url");
-				ThumbnailUrl.setValue(thumbnailUrl != null ? thumbnailUrl : "");
-				final Long size = (Long)book.get("size");
-				Size.setValue(size != null ? (int)(long)size : 0);
-			}
-		}
+        final Book currentBook = collection.getRecentBook(0);
+        if (currentBook != null) {
+            final String oldHash = myCurrentBookHash.getValue();
+            final String newHash = collection.getHash(currentBook, true);
+            if (newHash != null && !newHash.equals(oldHash)) {
+                myCurrentBookHash.setValue(newHash);
+                if (oldHash.length() != 0) {
+                    myCurrentBookTimestamp.setValue(String.valueOf(System.currentTimeMillis()));
+                    myServerBook.reset();
+                }
+            }
+            final String currentBookHash = newHash != null ? newHash : oldHash;
 
-		void reset() {
-			Hashes.setValue(Collections.<String>emptyList());
-			Title.setValue("");
-			DownloadUrl.setValue("");
-			Mimetype.setValue("");
-			ThumbnailUrl.setValue("");
-			Size.setValue(0);
-		}
+            final Map<String, Object> currentBookMap = new HashMap<String, Object>();
+            currentBookMap.put("hash", currentBookHash);
+            currentBookMap.put("title", currentBook.getTitle());
+            try {
+                currentBookMap.put("timestamp", Long.parseLong(myCurrentBookTimestamp.getValue()));
+            } catch (Exception e) {
+            }
+            map.put("currentbook", currentBookMap);
 
-		private static String fullUrl(ZLStringOption option) {
-			final String value = option.getValue();
-			return !"".equals(value) ? SyncOptions.BASE_URL + value : null;
-		}
+            final List<Map<String, Object>> lst = new ArrayList<Map<String, Object>>();
+            if (positionOption(currentBookHash).getValue().length() == 0) {
+                final Map<String, Object> posMap = positionMap(collection, currentBook);
+                if (posMap != null) {
+                    posMap.put("hash", currentBookHash);
+                    lst.add(posMap);
+                }
+            }
+            if (!currentBookHash.equals(oldHash) &&
+                    positionOption(oldHash).getValue().length() == 0) {
+                final Map<String, Object> posMap =
+                        positionMap(collection, collection.getBookByHash(oldHash));
+                if (posMap != null) {
+                    posMap.put("hash", oldHash);
+                    lst.add(posMap);
+                }
+            }
+            if (lst.size() > 0) {
+                map.put("positions", lst);
+            }
+        }
 
-		ServerBookInfo getInfo() {
-			final List<String> hashes = Hashes.getValue();
-			if (hashes.size() == 0) {
-				return null;
-			}
-			return new ServerBookInfo(
-				hashes,
-				Title.getValue(),
-				fullUrl(DownloadUrl),
-				Mimetype.getValue(),
-				fullUrl(ThumbnailUrl),
-				Size.getValue()
-			);
-		}
-	}
-	private final ServerBook myServerBook = new ServerBook();
+        return map;
+    }
 
-	private Map<String,Object> position2Map(ZLTextPositionWithTimestamp pos) {
-		final Map<String,Object> map = new HashMap<String,Object>();
-		map.put("para", pos.Position.ParagraphIndex);
-		map.put("elmt", pos.Position.ElementIndex);
-		map.put("char", pos.Position.CharIndex);
-		map.put("timestamp", pos.Timestamp);
-		return map;
-	}
+    public boolean updateFromServer(Map<String, Object> data) {
+        myGeneration.setValue((int) (long) (Long) data.get("generation"));
 
-	private ZLTextPositionWithTimestamp map2Position(Map<String,Object> map) {
-		return new ZLTextPositionWithTimestamp(
-			(int)(long)(Long)map.get("para"),
-			(int)(long)(Long)map.get("elmt"),
-			(int)(long)(Long)map.get("char"),
-			(Long)map.get("timestamp")
-		);
-	}
+        final List<Map> positions = (List<Map>) data.get("positions");
+        if (positions != null) {
+            for (Map<String, Object> map : positions) {
+                final ZLTextPositionWithTimestamp pos = map2Position(map);
+                for (String hash : (List<String>) map.get("all_hashes")) {
+                    savePosition(hash, pos);
+                }
+            }
+        }
 
-	private Map<String,Object> positionMap(IBookCollection<Book> collection, Book book) {
-		if (book == null) {
-			return null;
-		}
-		final ZLTextPositionWithTimestamp pos = collection.getStoredPosition(book.getId());
-		return pos != null ? position2Map(pos) : null;
-	}
+        myServerBook.init((Map<String, Object>) data.get("currentbook"));
 
-	public Map<String,Object> data(IBookCollection<Book> collection) {
-		final Map<String,Object> map = new HashMap<String,Object>();
-		map.put("generation", myGeneration.getValue());
-		map.put("timestamp", System.currentTimeMillis());
+        return data.size() > 1;
+    }
 
-		final Book currentBook = collection.getRecentBook(0);
-		if (currentBook != null) {
-			final String oldHash = myCurrentBookHash.getValue();
-			final String newHash = collection.getHash(currentBook, true);
-			if (newHash != null && !newHash.equals(oldHash)) {
-				myCurrentBookHash.setValue(newHash);
-				if (oldHash.length() != 0) {
-					myCurrentBookTimestamp.setValue(String.valueOf(System.currentTimeMillis()));
-					myServerBook.reset();
-				}
-			}
-			final String currentBookHash = newHash != null ? newHash : oldHash;
+    private ZLStringOption positionOption(String hash) {
+        return new ZLStringOption("SyncData", "Pos:" + hash, "");
+    }
 
-			final Map<String,Object> currentBookMap = new HashMap<String,Object>();
-			currentBookMap.put("hash", currentBookHash);
-			currentBookMap.put("title", currentBook.getTitle());
-			try {
-				currentBookMap.put("timestamp", Long.parseLong(myCurrentBookTimestamp.getValue()));
-			} catch (Exception e) {
-			}
-			map.put("currentbook", currentBookMap);
+    private void savePosition(String hash, ZLTextPositionWithTimestamp pos) {
+        positionOption(hash).setValue(pos != null ? JSONValue.toJSONString(position2Map(pos)) : "");
+    }
 
-			final List<Map<String,Object>> lst = new ArrayList<Map<String,Object>>();
-			if (positionOption(currentBookHash).getValue().length() == 0) {
-				final Map<String,Object> posMap = positionMap(collection, currentBook);
-				if (posMap != null) {
-					posMap.put("hash", currentBookHash);
-					lst.add(posMap);
-				}
-			}
-			if (!currentBookHash.equals(oldHash) &&
-				positionOption(oldHash).getValue().length() == 0) {
-				final Map<String,Object> posMap =
-					positionMap(collection, collection.getBookByHash(oldHash));
-				if (posMap != null) {
-					posMap.put("hash", oldHash);
-					lst.add(posMap);
-				}
-			}
-			if (lst.size() > 0) {
-				map.put("positions", lst);
-			}
-		}
+    public boolean hasPosition(String hash) {
+        return positionOption(hash).getValue().length() > 0;
+    }
 
-		return map;
-	}
+    public ServerBookInfo getServerBookInfo() {
+        return myServerBook.getInfo();
+    }
 
-	public boolean updateFromServer(Map<String,Object> data) {
-		myGeneration.setValue((int)(long)(Long)data.get("generation"));
+    public ZLTextPositionWithTimestamp getAndCleanPosition(String hash) {
+        final ZLStringOption option = positionOption(hash);
+        try {
+            return map2Position((Map) JSONValue.parse(option.getValue()));
+        } catch (Throwable t) {
+            return null;
+        } finally {
+            option.setValue("");
+        }
+    }
 
-		final List<Map> positions = (List<Map>)data.get("positions");
-		if (positions != null) {
-			for (Map<String,Object> map : positions) {
-				final ZLTextPositionWithTimestamp pos = map2Position(map);
-				for (String hash : (List<String>)map.get("all_hashes")) {
-					savePosition(hash, pos);
-				}
-			}
-		}
+    public void reset() {
+        Config.Instance().removeGroup("SyncData");
+    }
 
-		myServerBook.init((Map<String,Object>)data.get("currentbook"));
+    public final static class ServerBookInfo {
+        public final List<String> Hashes;
+        public final String Title;
+        public final String DownloadUrl;
+        public final String Mimetype;
+        public final String ThumbnailUrl;
+        public final int Size;
 
-		return data.size() > 1;
-	}
+        private ServerBookInfo(List<String> hashes, String title, String downloadUrl, String mimetype, String thumbnailUrl, int size) {
+            Hashes = Collections.unmodifiableList(hashes);
+            Title = title;
+            DownloadUrl = downloadUrl;
+            Mimetype = mimetype;
+            ThumbnailUrl = thumbnailUrl;
+            Size = size;
+        }
+    }
 
-	private ZLStringOption positionOption(String hash) {
-		return new ZLStringOption("SyncData", "Pos:" + hash, "");
-	}
+    private static class ServerBook {
+        final ZLStringListOption Hashes =
+                new ZLStringListOption("SyncData", "ServerBookHashes", Collections.<String>emptyList(), ";");
+        final ZLStringOption Title =
+                new ZLStringOption("SyncData", "ServerBookTitle", "");
+        final ZLStringOption DownloadUrl =
+                new ZLStringOption("SyncData", "ServerBookDownloadUrl", "");
+        final ZLStringOption Mimetype =
+                new ZLStringOption("SyncData", "ServerBookMimetype", "");
+        final ZLStringOption ThumbnailUrl =
+                new ZLStringOption("SyncData", "ServerBookThumbnailUrl", "");
+        final ZLIntegerOption Size =
+                new ZLIntegerOption("SyncData", "ServerBookSize", 0);
 
-	private void savePosition(String hash, ZLTextPositionWithTimestamp pos) {
-		positionOption(hash).setValue(pos != null ? JSONValue.toJSONString(position2Map(pos)) : "");
-	}
+        private static String fullUrl(ZLStringOption option) {
+            final String value = option.getValue();
+            return !"".equals(value) ? SyncOptions.BASE_URL + value : null;
+        }
 
-	public boolean hasPosition(String hash) {
-		return positionOption(hash).getValue().length() > 0;
-	}
+        void init(Map<String, Object> book) {
+            if (book == null) {
+                reset();
+            } else {
+                Hashes.setValue((List<String>) book.get("all_hashes"));
+                Title.setValue((String) book.get("title"));
 
-	public ServerBookInfo getServerBookInfo() {
-		return myServerBook.getInfo();
-	}
+                final String downloadUrl = (String) book.get("download_url");
+                DownloadUrl.setValue(downloadUrl != null ? downloadUrl : "");
+                final String mimetype = (String) book.get("mimetype");
+                Mimetype.setValue(mimetype != null ? mimetype : "");
+                final String thumbnailUrl = (String) book.get("thumbnail_url");
+                ThumbnailUrl.setValue(thumbnailUrl != null ? thumbnailUrl : "");
+                final Long size = (Long) book.get("size");
+                Size.setValue(size != null ? (int) (long) size : 0);
+            }
+        }
 
-	public ZLTextPositionWithTimestamp getAndCleanPosition(String hash) {
-		final ZLStringOption option = positionOption(hash);
-		try {
-			return map2Position((Map)JSONValue.parse(option.getValue()));
-		} catch (Throwable t) {
-			return null;
-		} finally {
-			option.setValue("");
-		}
-	}
+        void reset() {
+            Hashes.setValue(Collections.<String>emptyList());
+            Title.setValue("");
+            DownloadUrl.setValue("");
+            Mimetype.setValue("");
+            ThumbnailUrl.setValue("");
+            Size.setValue(0);
+        }
 
-	public void reset() {
-		Config.Instance().removeGroup("SyncData");
-	}
+        ServerBookInfo getInfo() {
+            final List<String> hashes = Hashes.getValue();
+            if (hashes.size() == 0) {
+                return null;
+            }
+            return new ServerBookInfo(
+                    hashes,
+                    Title.getValue(),
+                    fullUrl(DownloadUrl),
+                    Mimetype.getValue(),
+                    fullUrl(ThumbnailUrl),
+                    Size.getValue()
+            );
+        }
+    }
 }

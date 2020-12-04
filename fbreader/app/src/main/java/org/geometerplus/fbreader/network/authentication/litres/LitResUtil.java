@@ -22,9 +22,9 @@ package org.geometerplus.fbreader.network.authentication.litres;
 import org.geometerplus.fbreader.network.INetworkLink;
 
 class LitResUtil {
-	public static final String HOST_NAME = "litres.ru";
+    public static final String HOST_NAME = "litres.ru";
 
-	public static String url(INetworkLink link, String path) {
-		return link.rewriteUrl("https://robot.litres.ru/" + path, false);
-	}
+    public static String url(INetworkLink link, String path) {
+        return link.rewriteUrl("https://robot.litres.ru/" + path, false);
+    }
 }

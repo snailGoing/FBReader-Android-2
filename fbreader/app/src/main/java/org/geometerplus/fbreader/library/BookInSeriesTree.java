@@ -19,37 +19,37 @@
 
 package org.geometerplus.fbreader.library;
 
-import java.math.BigDecimal;
-
 import org.geometerplus.fbreader.book.Book;
 import org.geometerplus.fbreader.book.IBookCollection;
 import org.geometerplus.fbreader.formats.PluginCollection;
 import org.geometerplus.fbreader.tree.FBTree;
 
+import java.math.BigDecimal;
+
 public final class BookInSeriesTree extends BookTree {
-	BookInSeriesTree(IBookCollection collection, PluginCollection pluginCollection, Book book) {
-		super(collection, pluginCollection, book);
-	}
+    BookInSeriesTree(IBookCollection collection, PluginCollection pluginCollection, Book book) {
+        super(collection, pluginCollection, book);
+    }
 
-	BookInSeriesTree(LibraryTree parent, Book book, int position) {
-		super(parent, book, position);
-	}
+    BookInSeriesTree(LibraryTree parent, Book book, int position) {
+        super(parent, book, position);
+    }
 
-	@Override
-	public int compareTo(FBTree tree) {
-		if (tree instanceof BookInSeriesTree) {
-			final BigDecimal index0 = Book.getSeriesInfo().Index;
-			final BigDecimal index1 = ((BookTree)tree).Book.getSeriesInfo().Index;
-			final int cmp;
-			if (index0 == null) {
-				cmp = index1 == null ? 0 : 1;
-			} else {
-				cmp = index1 == null ? -1 : index0.compareTo(index1);
-			}
-			if (cmp != 0) {
-				return cmp;
-			}
-		}
-		return super.compareTo(tree);
-	}
+    @Override
+    public int compareTo(FBTree tree) {
+        if (tree instanceof BookInSeriesTree) {
+            final BigDecimal index0 = Book.getSeriesInfo().Index;
+            final BigDecimal index1 = ((BookTree) tree).Book.getSeriesInfo().Index;
+            final int cmp;
+            if (index0 == null) {
+                cmp = index1 == null ? 0 : 1;
+            } else {
+                cmp = index1 == null ? -1 : index0.compareTo(index1);
+            }
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return super.compareTo(tree);
+    }
 }

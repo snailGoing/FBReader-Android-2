@@ -19,46 +19,44 @@
 
 package org.geometerplus.fbreader.network;
 
-import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-
 import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
 import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
 import org.geometerplus.fbreader.network.urlInfo.UrlInfoCollection;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 public class RecentCatalogListItem extends NetworkCatalogItem {
-	RecentCatalogListItem(ZLResource resource) {
-		super(
-			null,
-			resource.getValue(),
-			resource.getResource("summary").getValue(),
-			new UrlInfoCollection<UrlInfo>(),
-			Accessibility.ALWAYS,
-			FLAGS_DEFAULT
-		);
-	}
+    RecentCatalogListItem(ZLResource resource) {
+        super(
+                null,
+                resource.getValue(),
+                resource.getResource("summary").getValue(),
+                new UrlInfoCollection<UrlInfo>(),
+                Accessibility.ALWAYS,
+                FLAGS_DEFAULT
+        );
+    }
 
-	@Override
-	public String getStringId() {
-		return "@RecentCatalogs";
-	}
+    @Override
+    public String getStringId() {
+        return "@RecentCatalogs";
+    }
 
-	@Override
-	public boolean canBeOpened() {
-		// TODO: implement
-		return true;
-	}
+    @Override
+    public boolean canBeOpened() {
+        // TODO: implement
+        return true;
+    }
 
-	@Override
-	public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		// TODO: implement
-		for (int i = 0; i < 5; ++i) {
-			loader.onNewItem(new RecentCatalogItem("Catalog " + i, "Visited ..."));
-		}
-		loader.Tree.confirmAllItems();
-		if (onSuccess != null) {
-			onSuccess.run();
-		}
-	}
+    @Override
+    public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        // TODO: implement
+        for (int i = 0; i < 5; ++i) {
+            loader.onNewItem(new RecentCatalogItem("Catalog " + i, "Visited ..."));
+        }
+        loader.Tree.confirmAllItems();
+        if (onSuccess != null) {
+            onSuccess.run();
+        }
+    }
 }

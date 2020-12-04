@@ -10,48 +10,47 @@ import android.os.Parcelable;
 import org.geometerplus.zlibrary.text.view.ZLTextPositionWithTimestamp;
 
 public final class PositionWithTimestamp implements Parcelable {
-	public final int ParagraphIndex;
-	public final int ElementIndex;
-	public final int CharIndex;
-	public final long Timestamp;
+    public static final Parcelable.Creator<PositionWithTimestamp> CREATOR =
+            new Parcelable.Creator<PositionWithTimestamp>() {
+                public PositionWithTimestamp createFromParcel(Parcel parcel) {
+                    return new PositionWithTimestamp(parcel.readInt(), parcel.readInt(), parcel.readInt(), parcel.readLong());
+                }
 
-	public PositionWithTimestamp(ZLTextPositionWithTimestamp pos) {
-		this(
-			pos.Position.ParagraphIndex,
-			pos.Position.ElementIndex,
-			pos.Position.CharIndex,
-			pos.Timestamp
-		);
-	}
+                public PositionWithTimestamp[] newArray(int size) {
+                    return new PositionWithTimestamp[size];
+                }
+            };
+    public final int ParagraphIndex;
+    public final int ElementIndex;
+    public final int CharIndex;
+    public final long Timestamp;
 
-	private PositionWithTimestamp(int paragraphIndex, int elementIndex, int charIndex, long stamp) {
-		ParagraphIndex = paragraphIndex;
-		ElementIndex = elementIndex;
-		CharIndex = charIndex;
-		Timestamp = stamp;
-	}
+    public PositionWithTimestamp(ZLTextPositionWithTimestamp pos) {
+        this(
+                pos.Position.ParagraphIndex,
+                pos.Position.ElementIndex,
+                pos.Position.CharIndex,
+                pos.Timestamp
+        );
+    }
 
-	@Override
-	public void writeToParcel(Parcel parcel, int flags) {
-		parcel.writeInt(ParagraphIndex);
-		parcel.writeInt(ElementIndex);
-		parcel.writeInt(CharIndex);
-		parcel.writeLong(Timestamp);
-	}
+    private PositionWithTimestamp(int paragraphIndex, int elementIndex, int charIndex, long stamp) {
+        ParagraphIndex = paragraphIndex;
+        ElementIndex = elementIndex;
+        CharIndex = charIndex;
+        Timestamp = stamp;
+    }
 
-	@Override
-	public int describeContents() {
-		return 0;
-	}
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeInt(ParagraphIndex);
+        parcel.writeInt(ElementIndex);
+        parcel.writeInt(CharIndex);
+        parcel.writeLong(Timestamp);
+    }
 
-	public static final Parcelable.Creator<PositionWithTimestamp> CREATOR =
-		new Parcelable.Creator<PositionWithTimestamp>() {
-			public PositionWithTimestamp createFromParcel(Parcel parcel) {
-				return new PositionWithTimestamp(parcel.readInt(), parcel.readInt(), parcel.readInt(), parcel.readLong());
-			}
-
-			public PositionWithTimestamp[] newArray(int size) {
-				return new PositionWithTimestamp[size];
-			}
-		};
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 }

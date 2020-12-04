@@ -23,58 +23,58 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-
-import org.geometerplus.fbreader.network.*;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.NetworkLibrary;
 import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
 import org.geometerplus.fbreader.network.authentication.litres.LitResAuthenticationManager;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 
 public class ListenerCallback extends BroadcastReceiver implements UserRegistrationConstants {
-	@Override
-	public void onReceive(Context context, final Intent intent) {
-		final NetworkLibrary library = Util.networkLibrary(context);
+    private static void processSignup(LitResAuthenticationManager mgr, Intent data) throws ZLNetworkException {
+        mgr.initUser(
+                data.getStringExtra(USER_REGISTRATION_USERNAME),
+                data.getStringExtra(USER_REGISTRATION_LITRES_SID),
+                "",
+                false
+        );
+        //if (!mgr.isAuthorised(true)) {
+        //	throw new ZLNetworkException(NetworkException.ERROR_AUTHENTICATION_FAILED);
+        //}
+        try {
+            mgr.authorise(
+                    data.getStringExtra(USER_REGISTRATION_USERNAME),
+                    data.getStringExtra(USER_REGISTRATION_PASSWORD)
+            );
+            mgr.initialize();
+        } catch (ZLNetworkException e) {
+            mgr.logOut();
+            throw e;
+        }
+    }
 
-		if (Util.SIGNIN_ACTION.equals(intent.getAction())) {
-			final String url = intent.getStringExtra(CATALOG_URL);
-			final INetworkLink link = library.getLinkByUrl(url);
-			if (link != null) {
-				final NetworkAuthenticationManager mgr = link.authenticationManager();
-				if (mgr instanceof LitResAuthenticationManager) {
-					new Thread(new Runnable() {
-						public void run() {
-							try {
-								processSignup((LitResAuthenticationManager)mgr, intent);
-							} catch (ZLNetworkException e) {
-								e.printStackTrace();
-							}
-						}
-					}).start();
-				}
-			}
-		} else {
-			library.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.SomeCode);
-		}
-	}
+    @Override
+    public void onReceive(Context context, final Intent intent) {
+        final NetworkLibrary library = Util.networkLibrary(context);
 
-	private static void processSignup(LitResAuthenticationManager mgr, Intent data) throws ZLNetworkException {
-		mgr.initUser(
-			data.getStringExtra(USER_REGISTRATION_USERNAME),
-			data.getStringExtra(USER_REGISTRATION_LITRES_SID),
-			"",
-			false
-		);
-		//if (!mgr.isAuthorised(true)) {
-		//	throw new ZLNetworkException(NetworkException.ERROR_AUTHENTICATION_FAILED);
-		//}
-		try {
-			mgr.authorise(
-				data.getStringExtra(USER_REGISTRATION_USERNAME),
-				data.getStringExtra(USER_REGISTRATION_PASSWORD)
-			);
-			mgr.initialize();
-		} catch (ZLNetworkException e) {
-			mgr.logOut();
-			throw e;
-		}
-	}
+        if (Util.SIGNIN_ACTION.equals(intent.getAction())) {
+            final String url = intent.getStringExtra(CATALOG_URL);
+            final INetworkLink link = library.getLinkByUrl(url);
+            if (link != null) {
+                final NetworkAuthenticationManager mgr = link.authenticationManager();
+                if (mgr instanceof LitResAuthenticationManager) {
+                    new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                processSignup((LitResAuthenticationManager) mgr, intent);
+                            } catch (ZLNetworkException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
+            }
+        } else {
+            library.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.SomeCode);
+        }
+    }
 }

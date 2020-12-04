@@ -19,47 +19,50 @@
 
 package org.geometerplus.fbreader.fbreader.options;
 
-import org.geometerplus.zlibrary.core.options.*;
 import org.geometerplus.fbreader.fbreader.DurationEnum;
+import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
+import org.geometerplus.zlibrary.core.options.ZLEnumOption;
+import org.geometerplus.zlibrary.core.options.ZLIntegerRangeOption;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
 
 public class MiscOptions {
-	public final ZLBooleanOption AllowScreenBrightnessAdjustment;
-	public final ZLStringOption TextSearchPattern;
+    public final ZLBooleanOption AllowScreenBrightnessAdjustment;
+    public final ZLStringOption TextSearchPattern;
 
-	public final ZLBooleanOption EnableDoubleTap;
-	public final ZLBooleanOption NavigateAllWords;
+    public final ZLBooleanOption EnableDoubleTap;
+    public final ZLBooleanOption NavigateAllWords;
+    public final ZLEnumOption<WordTappingActionEnum> WordTappingAction;
+    public final ZLIntegerRangeOption ToastFontSizePercent;
+    public final ZLEnumOption<FootnoteToastEnum> ShowFootnoteToast;
+    public final ZLEnumOption<DurationEnum> FootnoteToastDuration;
 
-	public static enum WordTappingActionEnum {
-		doNothing, selectSingleWord, startSelecting, openDictionary
-	}
-	public final ZLEnumOption<WordTappingActionEnum> WordTappingAction;
+    public MiscOptions() {
+        AllowScreenBrightnessAdjustment =
+                new ZLBooleanOption("LookNFeel", "AllowScreenBrightnessAdjustment", true);
+        TextSearchPattern =
+                new ZLStringOption("TextSearch", "Pattern", "");
 
-	public final ZLIntegerRangeOption ToastFontSizePercent;
-	public static enum FootnoteToastEnum {
-		never, footnotesOnly, footnotesAndSuperscripts, allInternalLinks
-	}
-	public final ZLEnumOption<FootnoteToastEnum> ShowFootnoteToast;
-	public final ZLEnumOption<DurationEnum> FootnoteToastDuration;
+        EnableDoubleTap =
+                new ZLBooleanOption("Options", "EnableDoubleTap", false);
+        NavigateAllWords =
+                new ZLBooleanOption("Options", "NavigateAllWords", false);
 
-	public MiscOptions() {
-		AllowScreenBrightnessAdjustment =
-			new ZLBooleanOption("LookNFeel", "AllowScreenBrightnessAdjustment", true);
-		TextSearchPattern =
-			new ZLStringOption("TextSearch", "Pattern", "");
+        WordTappingAction =
+                new ZLEnumOption<WordTappingActionEnum>("Options", "WordTappingAction", WordTappingActionEnum.startSelecting);
 
-		EnableDoubleTap =
-			new ZLBooleanOption("Options", "EnableDoubleTap", false);
-		NavigateAllWords =
-			new ZLBooleanOption("Options", "NavigateAllWords", false);
+        ToastFontSizePercent =
+                new ZLIntegerRangeOption("Options", "ToastFontSizePercent", 25, 100, 90);
+        ShowFootnoteToast =
+                new ZLEnumOption<FootnoteToastEnum>("Options", "ShowFootnoteToast", FootnoteToastEnum.footnotesAndSuperscripts);
+        FootnoteToastDuration =
+                new ZLEnumOption<DurationEnum>("Options", "FootnoteToastDuration", DurationEnum.duration5);
+    }
 
-		WordTappingAction =
-			new ZLEnumOption<WordTappingActionEnum>("Options", "WordTappingAction", WordTappingActionEnum.startSelecting);
+    public static enum WordTappingActionEnum {
+        doNothing, selectSingleWord, startSelecting, openDictionary
+    }
 
-		ToastFontSizePercent =
-			new ZLIntegerRangeOption("Options", "ToastFontSizePercent", 25, 100, 90);
-		ShowFootnoteToast =
-			new ZLEnumOption<FootnoteToastEnum>("Options", "ShowFootnoteToast", FootnoteToastEnum.footnotesAndSuperscripts);
-		FootnoteToastDuration =
-			new ZLEnumOption<DurationEnum>("Options", "FootnoteToastDuration", DurationEnum.duration5);
-	}
+    public static enum FootnoteToastEnum {
+        never, footnotesOnly, footnotesAndSuperscripts, allInternalLinks
+    }
 }

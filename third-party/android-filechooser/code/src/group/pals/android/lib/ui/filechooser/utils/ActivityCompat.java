@@ -16,17 +16,15 @@ import android.os.Build;
  * <br>
  * <b>Note:</b> You must check API level first with
  * {@link Build.VERSION#SDK_INT} and {@link Build.VERSION_CODES}.
- * 
+ *
  * @author Hai Bison
  * @since v4.3 beta
- * 
  */
 public class ActivityCompat {
 
     /**
+     * @param a {@link Activity}
      * @see {@link Activity#invalidateOptionsMenu()}
-     * @param a
-     *            {@link Activity}
      */
     public static void invalidateOptionsMenu(Activity a) {
         a.invalidateOptionsMenu();

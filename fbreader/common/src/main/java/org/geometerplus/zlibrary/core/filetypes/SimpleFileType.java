@@ -19,43 +19,43 @@
 
 package org.geometerplus.zlibrary.core.filetypes;
 
-import java.util.List;
-
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
+import java.util.List;
+
 class SimpleFileType extends FileType {
-	private final String myExtension;
-	private final List<MimeType> myMimeTypes;
+    private final String myExtension;
+    private final List<MimeType> myMimeTypes;
 
-	SimpleFileType(String id, String extension, List<MimeType> mimeTypes) {
-		super(id);
-		myExtension = extension;
-		myMimeTypes = mimeTypes;
-	}
+    SimpleFileType(String id, String extension, List<MimeType> mimeTypes) {
+        super(id);
+        myExtension = extension;
+        myMimeTypes = mimeTypes;
+    }
 
-	@Override
-	public boolean acceptsFile(ZLFile file) {
-		return myExtension.equalsIgnoreCase(file.getExtension());
-	}
+    @Override
+    public boolean acceptsFile(ZLFile file) {
+        return myExtension.equalsIgnoreCase(file.getExtension());
+    }
 
-	@Override
-	public List<MimeType> mimeTypes() {
-		return myMimeTypes;
-	}
+    @Override
+    public List<MimeType> mimeTypes() {
+        return myMimeTypes;
+    }
 
-	@Override
-	public MimeType mimeType(ZLFile file) {
-		return acceptsFile(file) ? myMimeTypes.get(0) : MimeType.NULL;
-	}
+    @Override
+    public MimeType mimeType(ZLFile file) {
+        return acceptsFile(file) ? myMimeTypes.get(0) : MimeType.NULL;
+    }
 
-	@Override
-	public String defaultExtension(MimeType mime) {
-		return myExtension;
-	}
+    @Override
+    public String defaultExtension(MimeType mime) {
+        return myExtension;
+    }
 
-	@Override
-	public String toString() {
-		return "SimpleFileType [" + Id + "]";
-	}
+    @Override
+    public String toString() {
+        return "SimpleFileType [" + Id + "]";
+    }
 }

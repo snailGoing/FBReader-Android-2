@@ -21,99 +21,103 @@ package org.geometerplus.android.fbreader.api;
 
 import android.content.Intent;
 
-import org.geometerplus.fbreader.book.*;
+import org.geometerplus.fbreader.book.AbstractBook;
+import org.geometerplus.fbreader.book.AbstractSerializer;
+import org.geometerplus.fbreader.book.Book;
+import org.geometerplus.fbreader.book.Bookmark;
+import org.geometerplus.fbreader.book.SerializerUtil;
 
 public abstract class FBReaderIntents {
-	public static final String DEFAULT_PACKAGE = "org.geometerplus.zlibrary.ui.android";
+    public static final String DEFAULT_PACKAGE = "org.geometerplus.zlibrary.ui.android";
 
-	public interface Action {
-		String API                              = "android.fbreader.action.API";
-		String API_CALLBACK                     = "android.fbreader.action.API_CALLBACK";
-		String VIEW                             = "android.fbreader.action.VIEW";
-		String CANCEL_MENU                      = "android.fbreader.action.CANCEL_MENU";
-		String CONFIG_SERVICE                   = "android.fbreader.action.CONFIG_SERVICE";
-		String LIBRARY_SERVICE                  = "android.fbreader.action.LIBRARY_SERVICE";
-		String BOOK_INFO                        = "android.fbreader.action.BOOK_INFO";
-		String LIBRARY                          = "android.fbreader.action.LIBRARY";
-		String EXTERNAL_LIBRARY                 = "android.fbreader.action.EXTERNAL_LIBRARY";
-		String BOOKMARKS                        = "android.fbreader.action.BOOKMARKS";
-		String EXTERNAL_BOOKMARKS               = "android.fbreader.action.EXTERNAL_BOOKMARKS";
-		String PREFERENCES                      = "android.fbreader.action.PREFERENCES";
-		String NETWORK_LIBRARY                  = "android.fbreader.action.NETWORK_LIBRARY";
-		String OPEN_NETWORK_CATALOG             = "android.fbreader.action.OPEN_NETWORK_CATALOG";
-		String ERROR                            = "android.fbreader.action.ERROR";
-		String CRASH                            = "android.fbreader.action.CRASH";
-		String PLUGIN                           = "android.fbreader.action.PLUGIN";
-		String CLOSE                            = "android.fbreader.action.CLOSE";
-		String PLUGIN_CRASH                     = "android.fbreader.action.PLUGIN_CRASH";
-		String EDIT_STYLES                      = "android.fbreader.action.EDIT_STYLES";
-		String EDIT_BOOKMARK                    = "android.fbreader.action.EDIT_BOOKMARK";
-		String SWITCH_YOTA_SCREEN               = "android.fbreader.action.SWITCH_YOTA_SCREEN";
+    public static Intent defaultInternalIntent(String action) {
+        return internalIntent(action).addCategory(Intent.CATEGORY_DEFAULT);
+    }
 
-		String SYNC_START                       = "android.fbreader.action.sync.START";
-		String SYNC_STOP                        = "android.fbreader.action.sync.STOP";
-		String SYNC_SYNC                        = "android.fbreader.action.sync.SYNC";
-		String SYNC_QUICK_SYNC                  = "android.fbreader.action.sync.QUICK_SYNC";
+    public static Intent internalIntent(String action) {
+        return new Intent(action).setPackage(DEFAULT_PACKAGE);
+    }
 
-		String PLUGIN_VIEW                      = "android.fbreader.action.plugin.VIEW";
-		String PLUGIN_KILL                      = "android.fbreader.action.plugin.KILL";
-		String PLUGIN_CONNECT_COVER_SERVICE     = "android.fbreader.action.plugin.CONNECT_COVER_SERVICE";
-	}
+    public static void putBookExtra(Intent intent, String key, Book book) {
+        intent.putExtra(key, SerializerUtil.serialize(book));
+    }
 
-	public interface Event {
-		String CONFIG_OPTION_CHANGE             = "fbreader.config_service.option_change_event";
+    public static void putBookExtra(Intent intent, Book book) {
+        putBookExtra(intent, Key.BOOK, book);
+    }
 
-		String LIBRARY_BOOK                     = "fbreader.library_service.book_event";
-		String LIBRARY_BUILD                    = "fbreader.library_service.build_event";
-		String LIBRARY_COVER_READY              = "fbreader.library_service.cover_ready";
+    public static <B extends AbstractBook> B getBookExtra(Intent intent, String key, AbstractSerializer.BookCreator<B> creator) {
+        return SerializerUtil.deserializeBook(intent.getStringExtra(key), creator);
+    }
 
-		String SYNC_UPDATED                     = "android.fbreader.event.sync.UPDATED";
-	}
+    public static <B extends AbstractBook> B getBookExtra(Intent intent, AbstractSerializer.BookCreator<B> creator) {
+        return getBookExtra(intent, Key.BOOK, creator);
+    }
 
-	public interface Key {
-		String BOOK                             = "fbreader.book";
-		String BOOKMARK                         = "fbreader.bookmark";
-		String PLUGIN                           = "fbreader.plugin";
-		String TYPE                             = "fbreader.type";
-	}
+    public static void putBookmarkExtra(Intent intent, String key, Bookmark bookmark) {
+        intent.putExtra(key, SerializerUtil.serialize(bookmark));
+    }
 
-	public static Intent defaultInternalIntent(String action) {
-		return internalIntent(action).addCategory(Intent.CATEGORY_DEFAULT);
-	}
+    public static void putBookmarkExtra(Intent intent, Bookmark bookmark) {
+        putBookmarkExtra(intent, Key.BOOKMARK, bookmark);
+    }
 
-	public static Intent internalIntent(String action) {
-		return new Intent(action).setPackage(DEFAULT_PACKAGE);
-	}
+    public static Bookmark getBookmarkExtra(Intent intent, String key) {
+        return SerializerUtil.deserializeBookmark(intent.getStringExtra(key));
+    }
 
-	public static void putBookExtra(Intent intent, String key, Book book) {
-		intent.putExtra(key, SerializerUtil.serialize(book));
-	}
+    public static Bookmark getBookmarkExtra(Intent intent) {
+        return getBookmarkExtra(intent, Key.BOOKMARK);
+    }
 
-	public static void putBookExtra(Intent intent, Book book) {
-		putBookExtra(intent, Key.BOOK, book);
-	}
+    public interface Action {
+        String API = "android.fbreader.action.API";
+        String API_CALLBACK = "android.fbreader.action.API_CALLBACK";
+        String VIEW = "android.fbreader.action.VIEW";
+        String CANCEL_MENU = "android.fbreader.action.CANCEL_MENU";
+        String CONFIG_SERVICE = "android.fbreader.action.CONFIG_SERVICE";
+        String LIBRARY_SERVICE = "android.fbreader.action.LIBRARY_SERVICE";
+        String BOOK_INFO = "android.fbreader.action.BOOK_INFO";
+        String LIBRARY = "android.fbreader.action.LIBRARY";
+        String EXTERNAL_LIBRARY = "android.fbreader.action.EXTERNAL_LIBRARY";
+        String BOOKMARKS = "android.fbreader.action.BOOKMARKS";
+        String EXTERNAL_BOOKMARKS = "android.fbreader.action.EXTERNAL_BOOKMARKS";
+        String PREFERENCES = "android.fbreader.action.PREFERENCES";
+        String NETWORK_LIBRARY = "android.fbreader.action.NETWORK_LIBRARY";
+        String OPEN_NETWORK_CATALOG = "android.fbreader.action.OPEN_NETWORK_CATALOG";
+        String ERROR = "android.fbreader.action.ERROR";
+        String CRASH = "android.fbreader.action.CRASH";
+        String PLUGIN = "android.fbreader.action.PLUGIN";
+        String CLOSE = "android.fbreader.action.CLOSE";
+        String PLUGIN_CRASH = "android.fbreader.action.PLUGIN_CRASH";
+        String EDIT_STYLES = "android.fbreader.action.EDIT_STYLES";
+        String EDIT_BOOKMARK = "android.fbreader.action.EDIT_BOOKMARK";
+        String SWITCH_YOTA_SCREEN = "android.fbreader.action.SWITCH_YOTA_SCREEN";
 
-	public static <B extends AbstractBook> B getBookExtra(Intent intent, String key, AbstractSerializer.BookCreator<B> creator) {
-		return SerializerUtil.deserializeBook(intent.getStringExtra(key), creator);
-	}
+        String SYNC_START = "android.fbreader.action.sync.START";
+        String SYNC_STOP = "android.fbreader.action.sync.STOP";
+        String SYNC_SYNC = "android.fbreader.action.sync.SYNC";
+        String SYNC_QUICK_SYNC = "android.fbreader.action.sync.QUICK_SYNC";
 
-	public static <B extends AbstractBook> B getBookExtra(Intent intent, AbstractSerializer.BookCreator<B> creator) {
-		return getBookExtra(intent, Key.BOOK, creator);
-	}
+        String PLUGIN_VIEW = "android.fbreader.action.plugin.VIEW";
+        String PLUGIN_KILL = "android.fbreader.action.plugin.KILL";
+        String PLUGIN_CONNECT_COVER_SERVICE = "android.fbreader.action.plugin.CONNECT_COVER_SERVICE";
+    }
 
-	public static void putBookmarkExtra(Intent intent, String key, Bookmark bookmark) {
-		intent.putExtra(key, SerializerUtil.serialize(bookmark));
-	}
+    public interface Event {
+        String CONFIG_OPTION_CHANGE = "fbreader.config_service.option_change_event";
 
-	public static void putBookmarkExtra(Intent intent, Bookmark bookmark) {
-		putBookmarkExtra(intent, Key.BOOKMARK, bookmark);
-	}
+        String LIBRARY_BOOK = "fbreader.library_service.book_event";
+        String LIBRARY_BUILD = "fbreader.library_service.build_event";
+        String LIBRARY_COVER_READY = "fbreader.library_service.cover_ready";
 
-	public static Bookmark getBookmarkExtra(Intent intent, String key) {
-		return SerializerUtil.deserializeBookmark(intent.getStringExtra(key));
-	}
+        String SYNC_UPDATED = "android.fbreader.event.sync.UPDATED";
+    }
 
-	public static Bookmark getBookmarkExtra(Intent intent) {
-		return getBookmarkExtra(intent, Key.BOOKMARK);
-	}
+    public interface Key {
+        String BOOK = "fbreader.book";
+        String BOOKMARK = "fbreader.bookmark";
+        String PLUGIN = "fbreader.plugin";
+        String TYPE = "fbreader.type";
+    }
 }

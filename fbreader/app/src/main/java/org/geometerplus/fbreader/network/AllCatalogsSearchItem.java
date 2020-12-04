@@ -19,74 +19,75 @@
 
 package org.geometerplus.fbreader.network;
 
-import java.util.LinkedList;
-
-import org.geometerplus.zlibrary.core.network.*;
+import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
-import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import java.util.LinkedList;
 
 public class AllCatalogsSearchItem extends SearchItem {
-	private final NetworkLibrary myLibrary;
+    private final NetworkLibrary myLibrary;
 
-	public AllCatalogsSearchItem(NetworkLibrary library) {
-		super(
-			null,
-			NetworkLibrary.resource().getResource("search").getResource("summaryAllCatalogs").getValue()
-		);
-		myLibrary = library;
-	}
+    public AllCatalogsSearchItem(NetworkLibrary library) {
+        super(
+                null,
+                NetworkLibrary.resource().getResource("search").getResource("summaryAllCatalogs").getValue()
+        );
+        myLibrary = library;
+    }
 
-	@Override
-	public void runSearch(ZLNetworkContext nc, NetworkItemsLoader loader, String pattern) throws ZLNetworkException {
-		final LinkedList<ZLNetworkRequest> requestList = new LinkedList<ZLNetworkRequest>();
-		final LinkedList<NetworkOperationData> dataList = new LinkedList<NetworkOperationData>();
+    @Override
+    public void runSearch(ZLNetworkContext nc, NetworkItemsLoader loader, String pattern) throws ZLNetworkException {
+        final LinkedList<ZLNetworkRequest> requestList = new LinkedList<ZLNetworkRequest>();
+        final LinkedList<NetworkOperationData> dataList = new LinkedList<NetworkOperationData>();
 
-		boolean containsCyrillicLetters = false;
-		for (char c : pattern.toLowerCase().toCharArray()) {
-			if ("абвгдеёжзийклмнопрстуфхцчшщъыьэюя".indexOf(c) >= 0) {
-				containsCyrillicLetters = true;
-				break;
-			}
-		}
-		for (INetworkLink link : myLibrary.activeLinks()) {
-			if (containsCyrillicLetters) {
-				if ("ebooks.qumran.org".equals(link.getHostName())) {
-					continue;
-				}
-			}
-			final NetworkOperationData data = link.createOperationData(loader);
-			final ZLNetworkRequest request = link.simpleSearchRequest(pattern, data);
-			if (request != null) {
-				dataList.add(data);
-				requestList.add(request);
-			}
-		}
+        boolean containsCyrillicLetters = false;
+        for (char c : pattern.toLowerCase().toCharArray()) {
+            if ("абвгдеёжзийклмнопрстуфхцчшщъыьэюя".indexOf(c) >= 0) {
+                containsCyrillicLetters = true;
+                break;
+            }
+        }
+        for (INetworkLink link : myLibrary.activeLinks()) {
+            if (containsCyrillicLetters) {
+                if ("ebooks.qumran.org".equals(link.getHostName())) {
+                    continue;
+                }
+            }
+            final NetworkOperationData data = link.createOperationData(loader);
+            final ZLNetworkRequest request = link.simpleSearchRequest(pattern, data);
+            if (request != null) {
+                dataList.add(data);
+                requestList.add(request);
+            }
+        }
 
-		while (!requestList.isEmpty()) {
-			nc.perform(requestList);
+        while (!requestList.isEmpty()) {
+            nc.perform(requestList);
 
-			requestList.clear();
+            requestList.clear();
 
-			if (loader.confirmInterruption()) {
-				return;
-			}
-			for (NetworkOperationData data : dataList) {
-				ZLNetworkRequest request = data.resume();
-				if (request != null) {
-					requestList.add(request);
-				}
-			}
-		}
-	}
+            if (loader.confirmInterruption()) {
+                return;
+            }
+            for (NetworkOperationData data : dataList) {
+                ZLNetworkRequest request = data.resume();
+                if (request != null) {
+                    requestList.add(request);
+                }
+            }
+        }
+    }
 
-	@Override
-	public MimeType getMimeType() {
-		return MimeType.APP_ATOM_XML;
-	}
+    @Override
+    public MimeType getMimeType() {
+        return MimeType.APP_ATOM_XML;
+    }
 
-	@Override
-	public String getUrl(String pattern) {
-		return null;
-	}
+    @Override
+    public String getUrl(String pattern) {
+        return null;
+    }
 }

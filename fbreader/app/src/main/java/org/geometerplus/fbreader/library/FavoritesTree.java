@@ -20,59 +20,58 @@
 package org.geometerplus.fbreader.library;
 
 import org.fbreader.util.Pair;
-
+import org.geometerplus.fbreader.book.Book;
+import org.geometerplus.fbreader.book.Filter;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.fbreader.book.*;
-
 public class FavoritesTree extends FilteredTree {
-	private final ZLResource myResource;
+    private final ZLResource myResource;
 
-	FavoritesTree(RootTree root) {
-		super(root, new Filter.ByLabel(Book.FAVORITE_LABEL), -1);
-		myResource = resource().getResource(ROOT_FAVORITES);
-	}
+    FavoritesTree(RootTree root) {
+        super(root, new Filter.ByLabel(Book.FAVORITE_LABEL), -1);
+        myResource = resource().getResource(ROOT_FAVORITES);
+    }
 
-	@Override
-	public String getName() {
-		return myResource.getValue();
-	}
+    @Override
+    public String getName() {
+        return myResource.getValue();
+    }
 
-	@Override
-	public Pair<String,String> getTreeTitle() {
-		return new Pair(getSummary(), null);
-	}
+    @Override
+    public Pair<String, String> getTreeTitle() {
+        return new Pair(getSummary(), null);
+    }
 
-	@Override
-	public String getSummary() {
-		return myResource.getResource("summary").getValue();
-	}
+    @Override
+    public String getSummary() {
+        return myResource.getResource("summary").getValue();
+    }
 
-	@Override
-	protected String getStringId() {
-		return ROOT_FAVORITES;
-	}
+    @Override
+    protected String getStringId() {
+        return ROOT_FAVORITES;
+    }
 
-	@Override
-	public boolean isSelectable() {
-		return false;
-	}
+    @Override
+    public boolean isSelectable() {
+        return false;
+    }
 
-	@Override
-	public Status getOpeningStatus() {
-		return Collection.hasBooks(new Filter.ByLabel(Book.FAVORITE_LABEL))
-			? Status.ALWAYS_RELOAD_BEFORE_OPENING
-			: Status.CANNOT_OPEN;
-	}
+    @Override
+    public Status getOpeningStatus() {
+        return Collection.hasBooks(new Filter.ByLabel(Book.FAVORITE_LABEL))
+                ? Status.ALWAYS_RELOAD_BEFORE_OPENING
+                : Status.CANNOT_OPEN;
+    }
 
-	@Override
-	public String getOpeningStatusMessage() {
-		return getOpeningStatus() == Status.CANNOT_OPEN
-			? "noFavorites" : super.getOpeningStatusMessage();
-	}
+    @Override
+    public String getOpeningStatusMessage() {
+        return getOpeningStatus() == Status.CANNOT_OPEN
+                ? "noFavorites" : super.getOpeningStatusMessage();
+    }
 
-	@Override
-	protected boolean createSubtree(Book book) {
-		return createBookWithAuthorsSubtree(book);
-	}
+    @Override
+    protected boolean createSubtree(Book book) {
+        return createBookWithAuthorsSubtree(book);
+    }
 }

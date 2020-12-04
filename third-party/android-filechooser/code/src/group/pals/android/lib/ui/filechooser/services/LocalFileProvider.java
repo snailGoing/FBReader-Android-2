@@ -7,11 +7,7 @@
 
 package group.pals.android.lib.ui.filechooser.services;
 
-import group.pals.android.lib.ui.filechooser.io.IFile;
-import group.pals.android.lib.ui.filechooser.io.IFileFilter;
-import group.pals.android.lib.ui.filechooser.io.localfile.LocalFile;
-import group.pals.android.lib.ui.filechooser.io.localfile.ParentFile;
-import group.pals.android.lib.ui.filechooser.utils.FileComparator;
+import android.os.Environment;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -19,12 +15,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import android.os.Environment;
+import group.pals.android.lib.ui.filechooser.io.IFile;
+import group.pals.android.lib.ui.filechooser.io.IFileFilter;
+import group.pals.android.lib.ui.filechooser.io.localfile.LocalFile;
+import group.pals.android.lib.ui.filechooser.utils.FileComparator;
 
 /**
  * This is simple local file provider - as its name means.<br>
  * It handles file request on local device.
- * 
+ *
  * @author Hai Bison
  * @since v2.1 alpha
  */
@@ -76,7 +75,7 @@ public class LocalFileProvider extends FileProviderService {
         final List<IFile> _files = new ArrayList<IFile>();
 
         try {
-            
+
             IFile root = dir.parentFile();
             if (root.parentFile() == null && LocalFileProvider.this.accept(root))
                 _files.add(root);
@@ -116,7 +115,7 @@ public class LocalFileProvider extends FileProviderService {
 
         try {
             final List<IFile> _files = new ArrayList<IFile>();
-            
+
             IFile root = dir.parentFile();
             if (root.parentFile() == null)
                 _files.add(root);
@@ -142,13 +141,13 @@ public class LocalFileProvider extends FileProviderService {
     public List<IFile> listAllFiles(IFile dir, final IFileFilter filter) {
         if (!(dir instanceof File))
             return null;
-        
+
         final List<IFile> _res = new ArrayList<IFile>();
         try {
             IFile root = dir.parentFile();
-            if(root == null || filter == null || filter.accept(root))
+            if (root == null || filter == null || filter.accept(root))
                 _res.add(root);
-            
+
             File[] files = ((File) dir).listFiles(new FileFilter() {
 
                 @Override
@@ -173,19 +172,19 @@ public class LocalFileProvider extends FileProviderService {
             return false;
 
         switch (getFilterMode()) {
-        case FilesOnly:
-            if (getRegexFilenameFilter() != null && pathname.isFile())
-                return pathname.getName().matches(getRegexFilenameFilter());
-            return true;
+            case FilesOnly:
+                if (getRegexFilenameFilter() != null && pathname.isFile())
+                    return pathname.getName().matches(getRegexFilenameFilter());
+                return true;
 
-        case AnyDirectories:
-        case DirectoriesOnly:
-            return pathname.isDirectory();
+            case AnyDirectories:
+            case DirectoriesOnly:
+                return pathname.isDirectory();
 
-        default:
-            if (getRegexFilenameFilter() != null && pathname.isFile())
-                return pathname.getName().matches(getRegexFilenameFilter());
-            return true;
+            default:
+                if (getRegexFilenameFilter() != null && pathname.isFile())
+                    return pathname.getName().matches(getRegexFilenameFilter());
+                return true;
         }// switch
     }// accept()
 }

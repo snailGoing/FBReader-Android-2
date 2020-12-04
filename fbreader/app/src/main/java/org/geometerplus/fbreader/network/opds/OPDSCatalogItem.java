@@ -19,93 +19,99 @@
 
 package org.geometerplus.fbreader.network.opds;
 
-import java.util.*;
-
-import org.geometerplus.zlibrary.core.network.*;
+import org.geometerplus.fbreader.network.NetworkOperationData;
+import org.geometerplus.fbreader.network.NetworkURLCatalogItem;
+import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import org.geometerplus.fbreader.network.urlInfo.RelatedUrlInfo;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfoCollection;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.fbreader.network.urlInfo.*;
-import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import java.util.HashSet;
+import java.util.Map;
 
 public class OPDSCatalogItem extends NetworkURLCatalogItem {
-	static class State extends NetworkOperationData {
-		public String LastLoadedId;
-		public final HashSet<String> LoadedIds = new HashSet<String>();
+    private final Map<String, String> myExtraData;
+    private State myLoadingState;
 
-		public State(OPDSNetworkLink link, NetworkItemsLoader loader) {
-			super(link, loader);
-		}
-	}
-	private State myLoadingState;
-	private final Map<String,String> myExtraData;
+    OPDSCatalogItem(OPDSNetworkLink link, RelatedUrlInfo info) {
+        this(link, info.Title, null, createSimpleCollection(info.Url));
+    }
 
-	OPDSCatalogItem(OPDSNetworkLink link, RelatedUrlInfo info) {
-		this(link, info.Title, null, createSimpleCollection(info.Url));
-	}
+    OPDSCatalogItem(OPDSNetworkLink link, CharSequence title, CharSequence summary, UrlInfoCollection<?> urls) {
+        this(link, title, summary, urls, Accessibility.ALWAYS, FLAGS_DEFAULT, null);
+    }
 
-	OPDSCatalogItem(OPDSNetworkLink link, CharSequence title, CharSequence summary, UrlInfoCollection<?> urls) {
-		this(link, title, summary, urls, Accessibility.ALWAYS, FLAGS_DEFAULT, null);
-	}
+    protected OPDSCatalogItem(OPDSNetworkLink link, CharSequence title, CharSequence summary, UrlInfoCollection<?> urls, Accessibility accessibility, int flags, Map<String, String> extraData) {
+        super(link, title, summary, urls, accessibility, flags);
+        myExtraData = extraData;
+    }
 
-	protected OPDSCatalogItem(OPDSNetworkLink link, CharSequence title, CharSequence summary, UrlInfoCollection<?> urls, Accessibility accessibility, int flags, Map<String,String> extraData) {
-		super(link, title, summary, urls, accessibility, flags);
-		myExtraData = extraData;
-	}
+    private static UrlInfoCollection<UrlInfo> createSimpleCollection(String url) {
+        final UrlInfoCollection<UrlInfo> collection = new UrlInfoCollection<UrlInfo>();
+        collection.addInfo(new UrlInfo(UrlInfo.Type.Catalog, url, MimeType.APP_ATOM_XML));
+        return collection;
+    }
 
-	private static UrlInfoCollection<UrlInfo> createSimpleCollection(String url) {
-		final UrlInfoCollection<UrlInfo> collection = new UrlInfoCollection<UrlInfo>();
-		collection.addInfo(new UrlInfo(UrlInfo.Type.Catalog, url, MimeType.APP_ATOM_XML));
-		return collection;
-	}
+    private void doLoadChildren(ZLNetworkRequest networkRequest, Runnable onSuccess, final ZLNetworkContext.OnError onError) {
+        super.doLoadChildren(
+                myLoadingState, networkRequest, onSuccess, new ZLNetworkContext.OnError() {
+                    public void run(ZLNetworkException e) {
+                        myLoadingState = null;
+                        if (onError != null) {
+                            onError.run(e);
+                        }
+                    }
+                }
+        );
+    }
 
-	private void doLoadChildren(ZLNetworkRequest networkRequest, Runnable onSuccess, final ZLNetworkContext.OnError onError) {
-		super.doLoadChildren(
-			myLoadingState, networkRequest, onSuccess, new ZLNetworkContext.OnError() {
-				public void run(ZLNetworkException e) {
-					myLoadingState = null;
-					if (onError != null) {
-						onError.run(e);
-					}
-				}
-			}
-		);
-	}
+    @Override
+    public final Map<String, String> extraData() {
+        return myExtraData;
+    }
 
-	@Override
-	public final Map<String,String> extraData() {
-		return myExtraData;
-	}
+    @Override
+    public final void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        final OPDSNetworkLink opdsLink = (OPDSNetworkLink) Link;
 
-	@Override
-	public final void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		final OPDSNetworkLink opdsLink = (OPDSNetworkLink)Link;
+        myLoadingState = opdsLink.createOperationData(loader);
 
-		myLoadingState = opdsLink.createOperationData(loader);
+        doLoadChildren(
+                opdsLink.createNetworkData(getCatalogUrl(), myLoadingState), onSuccess, onError
+        );
+    }
 
-		doLoadChildren(
-			opdsLink.createNetworkData(getCatalogUrl(), myLoadingState), onSuccess, onError
-		);
-	}
+    @Override
+    public final boolean supportsResumeLoading() {
+        return true;
+    }
 
-	@Override
-	public final boolean supportsResumeLoading() {
-		return true;
-	}
+    @Override
+    public final boolean canResumeLoading() {
+        return myLoadingState != null && myLoadingState.ResumeURI != null;
+    }
 
-	@Override
-	public final boolean canResumeLoading() {
-		return myLoadingState != null && myLoadingState.ResumeURI != null;
-	}
+    @Override
+    public final void resumeLoading(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        if (canResumeLoading()) {
+            myLoadingState.Loader = loader;
+            final ZLNetworkRequest networkRequest = myLoadingState.resume();
+            doLoadChildren(networkRequest, onSuccess, onError);
+        } else if (onSuccess != null) {
+            onSuccess.run();
+        }
+    }
 
-	@Override
-	public final void resumeLoading(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		if (canResumeLoading()) {
-			myLoadingState.Loader = loader;
-			final ZLNetworkRequest networkRequest = myLoadingState.resume();
-			doLoadChildren(networkRequest, onSuccess, onError);
-		} else if (onSuccess != null) {
-			onSuccess.run();
-		}
-	}
+    static class State extends NetworkOperationData {
+        public final HashSet<String> LoadedIds = new HashSet<String>();
+        public String LastLoadedId;
+
+        public State(OPDSNetworkLink link, NetworkItemsLoader loader) {
+            super(link, loader);
+        }
+    }
 }

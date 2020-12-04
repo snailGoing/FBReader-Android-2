@@ -19,170 +19,169 @@
 
 package org.geometerplus.fbreader.sort;
 
-import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.annotation.TargetApi;
 import android.os.Build;
 
 import org.fbreader.util.NaturalOrderComparator;
 
+import java.text.Normalizer;
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class TitledEntity<T extends TitledEntity<T>> implements Comparable<T> {
-	private static final NaturalOrderComparator ourComparator = new NaturalOrderComparator();
+    private static final NaturalOrderComparator ourComparator = new NaturalOrderComparator();
+    private final static Map<String, String[]> ARTICLES = new HashMap<String, String[]>();
+    // English articles
+    private final static String[] EN_ARTICLES = new String[]{
+            "the ", "a ", "an "
+    };
+    // French articles
+    private final static String[] FR_ARTICLES = new String[]{
+            "un ", "une ", "le ", "la ", "les ", "du ", "de ",
+            "des ", "de la", "l ", "de l "
+    };
+    // German articles
+    private final static String[] GE_ARTICLES = new String[]{
+            "das ", "des ", "dem ", "die ", "der ", "den ",
+            "ein ", "eine ", "einer ", "einem ", "einen ", "eines "
+    };
+    // Italian articles
+    private final static String[] IT_ARTICLES = new String[]{
+            "il ", "lo ", "la ", "l ", "un ", "uno ", "una ",
+            "i ", "gli ", "le "
+    };
+    // Spanish articles
+    private final static String[] SP_ARTICLES = new String[]{
+            "el ", "la ", "los ", "las ", "un ", "unos ", "una ", "unas "
+    };
 
-	private String myTitle;
-	private String mySortKey;
+    static {
+        ARTICLES.put("en", EN_ARTICLES);
+        ARTICLES.put("fr", FR_ARTICLES);
+        ARTICLES.put("de", GE_ARTICLES);
+        ARTICLES.put("it", IT_ARTICLES);
+        ARTICLES.put("es", SP_ARTICLES);
+    }
 
-	public TitledEntity(String title) {
-		myTitle = title;
-	}
+    private String myTitle;
+    private String mySortKey;
 
-	public String getTitle() {
-		return myTitle != null ? myTitle : "";
-	}
+    public TitledEntity(String title) {
+        myTitle = title;
+    }
 
-	public void clearTitle() {
-		myTitle = null;
-		mySortKey = null;
-	}
+    private static String trim(String s, String language) {
+        if (s == null) {
+            return "";
+        }
 
-	public boolean isTitleEmpty() {
-		return myTitle == null || "".equals(myTitle);
-	}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            s = normalize(s);
+        }
+        final StringBuilder buffer = new StringBuilder();
+        int start = 0;
+        if (s.startsWith("M\'") || s.startsWith("Mc")) {
+            buffer.append("Mac");
+            start = 2;
+        }
 
-	public void setTitle(String title) {
-		myTitle = title;
-		mySortKey = null;
-	}
+        boolean afterSpace = false;
+        for (int i = start; i < s.length(); ++i) {
+            char ch = s.charAt(i);
+            // In case it is d' or l', may be it is "I'm", but it's OK.
+            if (ch == '\'' || Character.isWhitespace(ch)) {
+                ch = ' ';
+            }
 
-	protected void resetSortKey() {
-		mySortKey = null;
-	}
+            switch (Character.getType(ch)) {
+                default:
+                    // we do ignore all other symbols
+                    break;
+                case Character.UPPERCASE_LETTER:
+                case Character.TITLECASE_LETTER:
+                case Character.OTHER_LETTER:
+                case Character.MODIFIER_LETTER:
+                case Character.LOWERCASE_LETTER:
+                case Character.DECIMAL_DIGIT_NUMBER:
+                case Character.LETTER_NUMBER:
+                case Character.OTHER_NUMBER:
+                    buffer.append(Character.toLowerCase(ch));
+                    afterSpace = false;
+                    break;
+                case Character.SPACE_SEPARATOR:
+                    if (!afterSpace && buffer.length() > 0) {
+                        buffer.append(' ');
+                    }
+                    afterSpace = true;
+                    break;
+            }
+        }
 
-	public abstract String getLanguage();
+        final String result = buffer.toString();
+        if (result.startsWith("a is")) {
+            return result;
+        }
 
-	public String getSortKey() {
-		if (null == mySortKey) {
-			try {
-				mySortKey = trim(myTitle, getLanguage());
-			} catch (Throwable t) {
-				mySortKey = myTitle;
-			}
-		}
-		return mySortKey;
-	}
+        if (null != ARTICLES.get(language)) {
+            for (String a : ARTICLES.get(language)) {
+                if (result.startsWith(a)) {
+                    return result.substring(a.length());
+                }
+            }
+        }
+        return result;
+    }
 
-	@Override
-	public int compareTo(T other) {
-		return ourComparator.compare(getSortKey(), other.getSortKey());
-	}
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+    private static String normalize(String s) {
+        return Normalizer.normalize(s, Normalizer.Form.NFKD);
+    }
 
-	private final static Map<String, String[]> ARTICLES = new HashMap<String, String[]>();
-	// English articles
-	private final static String[] EN_ARTICLES = new String[] {
-		"the ", "a ", "an "
-	};
-	// French articles
-	private final static String[] FR_ARTICLES = new String[] {
-		"un ", "une ", "le ", "la ", "les ", "du ", "de ",
-		"des ", "de la", "l ", "de l "
-	};
-	// German articles
-	private final static String[] GE_ARTICLES = new String[] {
-		"das ", "des ", "dem ", "die ", "der ", "den ",
-		"ein ", "eine ", "einer ", "einem ", "einen ", "eines "
-	};
-	// Italian articles
-	private final static String[] IT_ARTICLES = new String[] {
-		"il ", "lo ", "la ", "l ", "un ", "uno ", "una ",
-		"i ", "gli ", "le "
-	};
-	// Spanish articles
-	private final static String[] SP_ARTICLES = new String[] {
-		"el ", "la ", "los ", "las ", "un ", "unos ", "una ", "unas "
-	};
+    public String getTitle() {
+        return myTitle != null ? myTitle : "";
+    }
 
-	static {
-		ARTICLES.put("en", EN_ARTICLES);
-		ARTICLES.put("fr", FR_ARTICLES);
-		ARTICLES.put("de", GE_ARTICLES);
-		ARTICLES.put("it", IT_ARTICLES);
-		ARTICLES.put("es", SP_ARTICLES);
-	}
+    public void setTitle(String title) {
+        myTitle = title;
+        mySortKey = null;
+    }
 
-	private static String trim(String s, String language) {
-		if (s == null) {
-			return "";
-		}
+    public void clearTitle() {
+        myTitle = null;
+        mySortKey = null;
+    }
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-			s = normalize(s);
-		}
-		final StringBuilder buffer = new StringBuilder();
-		int start = 0;
-		if (s.startsWith("M\'") || s.startsWith("Mc")) {
-			buffer.append("Mac");
-			start = 2;
-		}
+    public boolean isTitleEmpty() {
+        return myTitle == null || "".equals(myTitle);
+    }
 
-		boolean afterSpace = false;
-		for (int i = start; i < s.length(); ++i) {
-			char ch = s.charAt(i);
-			// In case it is d' or l', may be it is "I'm", but it's OK.
-			if (ch == '\'' || Character.isWhitespace(ch)) {
-				ch = ' ';
-			}
+    protected void resetSortKey() {
+        mySortKey = null;
+    }
 
-			switch (Character.getType(ch))	{
-				default:
-					// we do ignore all other symbols
-					break;
-				case Character.UPPERCASE_LETTER:
-				case Character.TITLECASE_LETTER:
-				case Character.OTHER_LETTER:
-				case Character.MODIFIER_LETTER:
-				case Character.LOWERCASE_LETTER:
-				case Character.DECIMAL_DIGIT_NUMBER:
-				case Character.LETTER_NUMBER:
-				case Character.OTHER_NUMBER:
-					buffer.append(Character.toLowerCase(ch));
-					afterSpace = false;
-					break;
-				case Character.SPACE_SEPARATOR:
-					if (!afterSpace && buffer.length() > 0) {
-						buffer.append(' ');
-					}
-					afterSpace = true;
-					break;
-			}
-		}
+    public abstract String getLanguage();
 
-		final String result = buffer.toString();
-		if (result.startsWith("a is")) {
-			return result;
-		}
+    public String getSortKey() {
+        if (null == mySortKey) {
+            try {
+                mySortKey = trim(myTitle, getLanguage());
+            } catch (Throwable t) {
+                mySortKey = myTitle;
+            }
+        }
+        return mySortKey;
+    }
 
-		if (null != ARTICLES.get(language)) {
-			for (String a : ARTICLES.get(language)) {
-				if (result.startsWith(a)) {
-					return result.substring(a.length());
-				}
-			}
-		}
-		return result;
-	}
+    @Override
+    public int compareTo(T other) {
+        return ourComparator.compare(getSortKey(), other.getSortKey());
+    }
 
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
-	private static String normalize(String s) {
-		return Normalizer.normalize(s, Normalizer.Form.NFKD);
-	}
-
-	public String firstTitleLetter() {
-		final String str = getSortKey();
-		if (str == null || "".equals(str)) {
-			return null;
-		}
-		return String.valueOf(Character.toUpperCase(str.charAt(0)));
-	}
+    public String firstTitleLetter() {
+        final String str = getSortKey();
+        if (str == null || "".equals(str)) {
+            return null;
+        }
+        return String.valueOf(Character.toUpperCase(str.charAt(0)));
+    }
 }

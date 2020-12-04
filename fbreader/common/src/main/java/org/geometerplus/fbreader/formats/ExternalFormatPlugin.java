@@ -19,45 +19,44 @@
 
 package org.geometerplus.fbreader.formats;
 
+import org.geometerplus.fbreader.book.AbstractBook;
 import org.geometerplus.zlibrary.core.encodings.AutoEncodingCollection;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.util.SystemInfo;
 
-import org.geometerplus.fbreader.book.AbstractBook;
-
 public abstract class ExternalFormatPlugin extends FormatPlugin {
-	protected ExternalFormatPlugin(SystemInfo systemInfo, String fileType) {
-		super(systemInfo, fileType);
-	}
+    protected ExternalFormatPlugin(SystemInfo systemInfo, String fileType) {
+        super(systemInfo, fileType);
+    }
 
-	@Override
-	public int priority() {
-		return 10;
-	}
+    @Override
+    public int priority() {
+        return 10;
+    }
 
-	public abstract String packageName();
+    public abstract String packageName();
 
-	@Override
-	public PluginImage readCover(ZLFile file) {
-		return new PluginImage(file, this);
-	}
+    @Override
+    public PluginImage readCover(ZLFile file) {
+        return new PluginImage(file, this);
+    }
 
-	@Override
-	public AutoEncodingCollection supportedEncodings() {
-		return new AutoEncodingCollection();
-	}
+    @Override
+    public AutoEncodingCollection supportedEncodings() {
+        return new AutoEncodingCollection();
+    }
 
-	@Override
-	public void detectLanguageAndEncoding(AbstractBook book) {
-	}
+    @Override
+    public void detectLanguageAndEncoding(AbstractBook book) {
+    }
 
-	@Override
-	public String readAnnotation(ZLFile file) {
-		return null;
-	}
+    @Override
+    public String readAnnotation(ZLFile file) {
+        return null;
+    }
 
-	@Override
-	public String toString() {
-		return "ExternalFormatPlugin [" + supportedFileType() + "]";
-	}
+    @Override
+    public String toString() {
+        return "ExternalFormatPlugin [" + supportedFileType() + "]";
+    }
 }

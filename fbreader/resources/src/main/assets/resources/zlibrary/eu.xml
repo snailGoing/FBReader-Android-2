@@ -1,90 +1,90 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Basque zlibrary resources, by Bixerdo for librezale.eus -->
+<?xml version="1.0" encoding="UTF-8"?><!-- Basque zlibrary resources, by Bixerdo for librezale.eus -->
 <resources>
-	<node name="dialog">
-		<node name="button">
-			<node name="ok" value="Ados"/>
-			<node name="cancel" value="Utzi"/>
-			<node name="yes" value="Bai"/>
-			<node name="no" value="Ez"/>
-			<node name="apply" value="Aplikatu"/>
-		</node>
-		<node name="networkError">
-			<node name="title" value="Sare-errorea"/>
-			<node name="unknownErrorMessage" value="Errore ezezaguna"/>
-			<node name="operationTimedOutMessage" value="Eragiketa honek denbora-muga gainditu du"/>
-			<node name="somethingWrongMessage" value="Arazoren bat izan da %s(e)rekin"/>
-			<node name="couldntCreateDirectoryMessage" value="Ezin izan da %s direktorioa sortu"/>
-			<node name="couldntCreateFileMessage" value="Ezin izan da %s fitxategia sortu"/>
-			<node name="couldntConnectMessage" value="Ezin izan da %s ostalarira konektatu"/>
-			<node name="couldntResolveHostMessage" value="Ezin izan da %s ostalaria ebatzi"/>
-			<node name="authenticationFailed" value="Autentifikazioak huts egin du"/>
-			<node name="unsupportedProtocol" value="Ez da onartzen protokoloa"/>
-			<node name="invalidURL" value="URL baliogabea"/>
-			<node name="hostCantBeReached" value="Ezin da %s ostalaria atzitu"/>
-			<node name="connectionRefused" value="Konexioa ukatu egin da %s(e)gaitik"/>
-			<node name="networkNotAvailable" value="Sarea ez dago erabilgarri"/>
-		</node>
-	</node>
-	<node name="color">
-		<node name="red" value="Gorria"/>
-		<node name="green" value="Berdea"/>
-		<node name="blue" value="Urdina"/>
-	</node>
-	<node name="language">
-		<node name="ar" value="Arabiera"/>
-		<node name="be" value="Bielorrusiera"/>
-		<node name="bg" value="Bulgariera"/>
-		<node name="ca" value="Katalan"/>
-		<node name="cs" value="¨Txekiera"/>
-		<node name="da" value="Daniera"/>
-		<node name="de" value="Germaniera"/>
-		<node name="de-traditional" value="Germaniera (ahozkatze tradizionala)"/>
-		<node name="el" value="Greziera"/>
-		<node name="en" value="Ingelesa"/>
-		<node name="en_US" value="Ingelesa (AEB)"/>
-		<node name="eo" value="Esperanto"/>
-		<node name="es" value="Gaztelania"/>
-		<node name="eu" value="Euskara"/>
-		<node name="fa" value="Persiera"/>
-		<node name="fi" value="Suomiera"/>
-		<node name="fr" value="Frantsesa"/>
-		<node name="gl" value="Galiziera"/>
-		<node name="he" value="Hebreera"/>
-		<node name="hu" value="Hungariera"/>
-		<node name="hy" value="Armeniera"/>
-		<node name="id" value="Indonesiera"/>
-		<node name="it" value="Italiera"/>
-		<node name="ja" value="Japoniera"/>
-		<node name="ka" value="Georgiera"/>
-		<node name="ko" value="Koreera"/>
-		<node name="lt" value="Lituaniera"/>
-		<node name="nb" value="Norvegiera"/>
-		<node name="nl" value="Nederlandera"/>
-		<node name="pl" value="Poloniera"/>
-		<node name="pt" value="Portugesa"/>
-		<node name="ro" value="Errumaniera"/>
-		<node name="ru" value="Errusiera"/>
-		<node name="sr" value="Serbiera"/>
-		<node name="sv" value="Suediera"/>
-		<node name="ta" value="Tamilera"/>
-		<node name="th" value="Thaiera"/>
-		<node name="tr" value="Turkiera"/>
-		<node name="uk" value="Ukrainera"/>
-		<node name="vi" value="Vietnamera"/>
-		<node name="zh" value="Txinera"/>
-		<node name="zh_TW" value="Txinera (tradizionala)"/>
-		<node name="any" value="Edozeian"/>
-		<node name="other" value="Besteren bat"/>
-		<node name="multi" value="Hizkuntza-aniztuna"/>
-		<node name="system" value="Sistema"/>
-	</node>
-	<node name="boolean3">
-		<node name="on" value="On"/>
-		<node name="off" value="Off"/>
-		<node name="unchanged" value="Aldatu gabe"/>
-	</node>
-	<node name="keyOptionView">
-		<node name="actionFor" value="Ekintza teklarako"/>
-	</node>
+    <node name="dialog">
+        <node name="button">
+            <node name="ok" value="Ados" />
+            <node name="cancel" value="Utzi" />
+            <node name="yes" value="Bai" />
+            <node name="no" value="Ez" />
+            <node name="apply" value="Aplikatu" />
+        </node>
+        <node name="networkError">
+            <node name="title" value="Sare-errorea" />
+            <node name="unknownErrorMessage" value="Errore ezezaguna" />
+            <node name="operationTimedOutMessage"
+                value="Eragiketa honek denbora-muga gainditu du" />
+            <node name="somethingWrongMessage" value="Arazoren bat izan da %s(e)rekin" />
+            <node name="couldntCreateDirectoryMessage" value="Ezin izan da %s direktorioa sortu" />
+            <node name="couldntCreateFileMessage" value="Ezin izan da %s fitxategia sortu" />
+            <node name="couldntConnectMessage" value="Ezin izan da %s ostalarira konektatu" />
+            <node name="couldntResolveHostMessage" value="Ezin izan da %s ostalaria ebatzi" />
+            <node name="authenticationFailed" value="Autentifikazioak huts egin du" />
+            <node name="unsupportedProtocol" value="Ez da onartzen protokoloa" />
+            <node name="invalidURL" value="URL baliogabea" />
+            <node name="hostCantBeReached" value="Ezin da %s ostalaria atzitu" />
+            <node name="connectionRefused" value="Konexioa ukatu egin da %s(e)gaitik" />
+            <node name="networkNotAvailable" value="Sarea ez dago erabilgarri" />
+        </node>
+    </node>
+    <node name="color">
+        <node name="red" value="Gorria" />
+        <node name="green" value="Berdea" />
+        <node name="blue" value="Urdina" />
+    </node>
+    <node name="language">
+        <node name="ar" value="Arabiera" />
+        <node name="be" value="Bielorrusiera" />
+        <node name="bg" value="Bulgariera" />
+        <node name="ca" value="Katalan" />
+        <node name="cs" value="¨Txekiera" />
+        <node name="da" value="Daniera" />
+        <node name="de" value="Germaniera" />
+        <node name="de-traditional" value="Germaniera (ahozkatze tradizionala)" />
+        <node name="el" value="Greziera" />
+        <node name="en" value="Ingelesa" />
+        <node name="en_US" value="Ingelesa (AEB)" />
+        <node name="eo" value="Esperanto" />
+        <node name="es" value="Gaztelania" />
+        <node name="eu" value="Euskara" />
+        <node name="fa" value="Persiera" />
+        <node name="fi" value="Suomiera" />
+        <node name="fr" value="Frantsesa" />
+        <node name="gl" value="Galiziera" />
+        <node name="he" value="Hebreera" />
+        <node name="hu" value="Hungariera" />
+        <node name="hy" value="Armeniera" />
+        <node name="id" value="Indonesiera" />
+        <node name="it" value="Italiera" />
+        <node name="ja" value="Japoniera" />
+        <node name="ka" value="Georgiera" />
+        <node name="ko" value="Koreera" />
+        <node name="lt" value="Lituaniera" />
+        <node name="nb" value="Norvegiera" />
+        <node name="nl" value="Nederlandera" />
+        <node name="pl" value="Poloniera" />
+        <node name="pt" value="Portugesa" />
+        <node name="ro" value="Errumaniera" />
+        <node name="ru" value="Errusiera" />
+        <node name="sr" value="Serbiera" />
+        <node name="sv" value="Suediera" />
+        <node name="ta" value="Tamilera" />
+        <node name="th" value="Thaiera" />
+        <node name="tr" value="Turkiera" />
+        <node name="uk" value="Ukrainera" />
+        <node name="vi" value="Vietnamera" />
+        <node name="zh" value="Txinera" />
+        <node name="zh_TW" value="Txinera (tradizionala)" />
+        <node name="any" value="Edozeian" />
+        <node name="other" value="Besteren bat" />
+        <node name="multi" value="Hizkuntza-aniztuna" />
+        <node name="system" value="Sistema" />
+    </node>
+    <node name="boolean3">
+        <node name="on" value="On" />
+        <node name="off" value="Off" />
+        <node name="unchanged" value="Aldatu gabe" />
+    </node>
+    <node name="keyOptionView">
+        <node name="actionFor" value="Ekintza teklarako" />
+    </node>
 </resources>

@@ -24,29 +24,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class ViewUtil {
-	private static final Object NULL_VIEW = new Object();
+    private static final Object NULL_VIEW = new Object();
 
-	public static View findView(View container, int id) {
-		Object view = container.getTag(id);
-		if (view == null) {
-			view = container.findViewById(id);
-			container.setTag(id, view != null ? view : NULL_VIEW);
-		}
-		return view != NULL_VIEW ? (View)view : null;
-	}
+    public static View findView(View container, int id) {
+        Object view = container.getTag(id);
+        if (view == null) {
+            view = container.findViewById(id);
+            container.setTag(id, view != null ? view : NULL_VIEW);
+        }
+        return view != NULL_VIEW ? (View) view : null;
+    }
 
-	public static TextView findTextView(View container, int id) {
-		return (TextView)findView(container, id);
-	}
+    public static TextView findTextView(View container, int id) {
+        return (TextView) findView(container, id);
+    }
 
-	public static ImageView findImageView(View container, int id) {
-		return (ImageView)findView(container, id);
-	}
+    public static ImageView findImageView(View container, int id) {
+        return (ImageView) findView(container, id);
+    }
 
-	public static void setSubviewText(View view, int resourceId, String text) {
-		final TextView textView = findTextView(view, resourceId);
-		if (textView != null) {
-			textView.setText(text);
-		}
-	}
+    public static void setSubviewText(View view, int resourceId, String text) {
+        final TextView textView = findTextView(view, resourceId);
+        if (textView != null) {
+            textView.setText(text);
+        }
+    }
 }

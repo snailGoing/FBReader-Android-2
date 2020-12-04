@@ -19,113 +19,121 @@
 
 package org.geometerplus.fbreader.network.authentication;
 
-import java.util.*;
-
-import org.geometerplus.zlibrary.core.options.ZLStringOption;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.NetworkBookItem;
+import org.geometerplus.fbreader.network.NetworkException;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.authentication.litres.LitResAuthenticationManager;
+import org.geometerplus.fbreader.network.opds.OPDSNetworkLink;
+import org.geometerplus.fbreader.network.urlInfo.BookUrlInfo;
+import org.geometerplus.zlibrary.core.money.Money;
 import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-import org.geometerplus.zlibrary.core.money.Money;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
 
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.fbreader.network.opds.OPDSNetworkLink;
-import org.geometerplus.fbreader.network.authentication.litres.LitResAuthenticationManager;
-import org.geometerplus.fbreader.network.urlInfo.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class NetworkAuthenticationManager {
-	private static final HashMap<String,NetworkAuthenticationManager> ourManagers = new HashMap<String,NetworkAuthenticationManager>();
+    private static final HashMap<String, NetworkAuthenticationManager> ourManagers = new HashMap<String, NetworkAuthenticationManager>();
+    public final INetworkLink Link;
+    protected final ZLStringOption UserNameOption;
 
-	public static NetworkAuthenticationManager createManager(NetworkLibrary library, INetworkLink link, Class<? extends NetworkAuthenticationManager> managerClass) {
-		NetworkAuthenticationManager mgr = ourManagers.get(link.getStringId());
-		if (mgr == null) {
-			if (managerClass == LitResAuthenticationManager.class) {
-				mgr = new LitResAuthenticationManager(library, (OPDSNetworkLink)link);
-			}
-			if (mgr != null) {
-				ourManagers.put(link.getStringId(), mgr);
-			}
-		}
-		return mgr;
-	}
+    protected NetworkAuthenticationManager(INetworkLink link) {
+        Link = link;
+        UserNameOption = new ZLStringOption(link.getStringId(), "userName", "");
+    }
 
+    public static NetworkAuthenticationManager createManager(NetworkLibrary library, INetworkLink link, Class<? extends NetworkAuthenticationManager> managerClass) {
+        NetworkAuthenticationManager mgr = ourManagers.get(link.getStringId());
+        if (mgr == null) {
+            if (managerClass == LitResAuthenticationManager.class) {
+                mgr = new LitResAuthenticationManager(library, (OPDSNetworkLink) link);
+            }
+            if (mgr != null) {
+                ourManagers.put(link.getStringId(), mgr);
+            }
+        }
+        return mgr;
+    }
 
-	public final INetworkLink Link;
-	protected final ZLStringOption UserNameOption;
+    public String getUserName() {
+        return UserNameOption.getValue();
+    }
 
-	protected NetworkAuthenticationManager(INetworkLink link) {
-		Link = link;
-		UserNameOption = new ZLStringOption(link.getStringId(), "userName", "");
-	}
+    public String getVisibleUserName() {
+        final String username = getUserName();
+        return username.startsWith("fbreader-auto-") ? "auto" : username;
+    }
 
-	public String getUserName() {
-		return UserNameOption.getValue();
-	}
+    /*
+     * Common manager methods
+     */
+    public abstract boolean isAuthorised(boolean useNetwork /* = true */) throws ZLNetworkException;
 
-	public String getVisibleUserName() {
-		final String username = getUserName();
-		return username.startsWith("fbreader-auto-") ? "auto" : username;
-	}
+    public abstract void authorise(String username, String password) throws ZLNetworkException;
 
-	/*
-	 * Common manager methods
-	 */
-	public abstract boolean isAuthorised(boolean useNetwork /* = true */) throws ZLNetworkException;
-	public abstract void authorise(String username, String password) throws ZLNetworkException;
-	public abstract void logOut();
-	public abstract BookUrlInfo downloadReference(NetworkBookItem book);
-	public abstract void refreshAccountInformation() throws ZLNetworkException;
+    public abstract void logOut();
 
-	public final boolean mayBeAuthorised(boolean useNetwork) {
-		try {
-			return isAuthorised(useNetwork);
-		} catch (ZLNetworkException e) {
-		}
-		return true;
-	}
+    public abstract BookUrlInfo downloadReference(NetworkBookItem book);
 
-	public boolean needsInitialization() {
-		return false;
-	}
+    public abstract void refreshAccountInformation() throws ZLNetworkException;
 
-	public void initialize() throws ZLNetworkException {
-		throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
-	}
+    public final boolean mayBeAuthorised(boolean useNetwork) {
+        try {
+            return isAuthorised(useNetwork);
+        } catch (ZLNetworkException e) {
+        }
+        return true;
+    }
 
-	// returns true if link must be purchased before downloading
-	public boolean needPurchase(NetworkBookItem book) {
-		return true;
-	}
+    public boolean needsInitialization() {
+        return false;
+    }
 
-	public void purchaseBook(NetworkBookItem book) throws ZLNetworkException {
-		throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
-	}
+    public void initialize() throws ZLNetworkException {
+        throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
+    }
 
-	public List<NetworkBookItem> purchasedBooks() {
-		return Collections.emptyList();
-	}
+    // returns true if link must be purchased before downloading
+    public boolean needPurchase(NetworkBookItem book) {
+        return true;
+    }
 
-	public Money currentAccount() {
-		return null;
-	}
+    public void purchaseBook(NetworkBookItem book) throws ZLNetworkException {
+        throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
+    }
 
-	/*
-	 * topup account
-	 */
+    public List<NetworkBookItem> purchasedBooks() {
+        return Collections.emptyList();
+    }
 
-	public String topupLink(ZLNetworkContext nc, Money sum) throws ZLNetworkException {
-		return null;
-	}
-	public Map<String,String> getTopupData() {
-		return Collections.emptyMap();
-	}
+    public Money currentAccount() {
+        return null;
+    }
 
-	/*
-	 * Password Recovery
-	 */
-	public boolean passwordRecoverySupported() {
-		return false;
-	}
+    /*
+     * topup account
+     */
 
-	public void recoverPassword(String email) throws ZLNetworkException {
-		throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
-	}
+    public String topupLink(ZLNetworkContext nc, Money sum) throws ZLNetworkException {
+        return null;
+    }
+
+    public Map<String, String> getTopupData() {
+        return Collections.emptyMap();
+    }
+
+    /*
+     * Password Recovery
+     */
+    public boolean passwordRecoverySupported() {
+        return false;
+    }
+
+    public void recoverPassword(String email) throws ZLNetworkException {
+        throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
+    }
 }

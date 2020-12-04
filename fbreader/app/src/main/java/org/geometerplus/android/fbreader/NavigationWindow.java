@@ -19,45 +19,46 @@
 
 package org.geometerplus.android.fbreader;
 
-import android.animation.*;
+import android.animation.Animator;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.*;
-import android.widget.*;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.LinearLayout;
 
 public class NavigationWindow extends LinearLayout {
-	public NavigationWindow(Context context) {
-		super(context);
-	}
+    private Animator myShowHideAnimator;
 
-	public NavigationWindow(Context context, AttributeSet attrs) {
-		super(context, attrs);
-	}
+    public NavigationWindow(Context context) {
+        super(context);
+    }
 
-	public NavigationWindow(Context context, AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
-	}
+    public NavigationWindow(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
-	private Animator myShowHideAnimator;
+    public NavigationWindow(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		return true;
-	}
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return true;
+    }
 
-	public void show() {
-		post(new Runnable() {
-			public void run() {
-				setVisibility(View.VISIBLE);
-			}
-		});
-	}
+    public void show() {
+        post(new Runnable() {
+            public void run() {
+                setVisibility(View.VISIBLE);
+            }
+        });
+    }
 
-	public void hide() {
-		post(new Runnable() {
-			public void run() {
-				setVisibility(View.GONE);
-			}
-		});
-	}
+    public void hide() {
+        post(new Runnable() {
+            public void run() {
+                setVisibility(View.GONE);
+            }
+        });
+    }
 }

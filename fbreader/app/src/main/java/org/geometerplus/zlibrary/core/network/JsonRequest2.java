@@ -19,19 +19,21 @@
 
 package org.geometerplus.zlibrary.core.network;
 
-import java.io.*;
-
 import org.json.simple.JSONValue;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public abstract class JsonRequest2 extends ZLNetworkRequest.PostWithBody {
-	public JsonRequest2(String url, Object data) {
-		super(url, JSONValue.toJSONString(data), false);
-	}
+    public JsonRequest2(String url, Object data) {
+        super(url, JSONValue.toJSONString(data), false);
+    }
 
-	@Override
-	public void handleStream(InputStream stream, int length) throws IOException, ZLNetworkException {
-		processResponse(JSONValue.parse(new InputStreamReader(stream)));
-	}
+    @Override
+    public void handleStream(InputStream stream, int length) throws IOException, ZLNetworkException {
+        processResponse(JSONValue.parse(new InputStreamReader(stream)));
+    }
 
-	protected abstract void processResponse(Object response);
+    protected abstract void processResponse(Object response);
 }

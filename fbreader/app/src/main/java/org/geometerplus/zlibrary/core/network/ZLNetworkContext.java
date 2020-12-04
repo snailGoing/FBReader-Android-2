@@ -19,140 +19,142 @@
 
 package org.geometerplus.zlibrary.core.network;
 
-import java.io.*;
+import org.apache.http.cookie.Cookie;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.http.cookie.Cookie;
-
-import org.geometerplus.zlibrary.core.options.ZLStringOption;
-
 public abstract class ZLNetworkContext implements ZLNetworkManager.BearerAuthenticator {
-	public static interface OnError {
-		void run(ZLNetworkException e);
-	}
+    private final ZLNetworkManager myManager = ZLNetworkManager.Instance();
 
-	private final ZLNetworkManager myManager = ZLNetworkManager.Instance();
+    protected ZLNetworkContext() {
+    }
 
-	protected ZLNetworkContext() {
-	}
+    public static String getAccountName(String host, String realm) {
+        final String accountName = getAccountOption(host, realm).getValue();
+        return "".equals(accountName) ? null : accountName;
+    }
 
-	public ZLNetworkManager.CookieStore cookieStore() {
-		return myManager.CookieStore;
-	}
+    public static void setAccountName(String host, String realm, String accountName) {
+        getAccountOption(host, realm).setValue(accountName != null ? accountName : "");
+    }
 
-	public void removeCookiesForDomain(String domain) {
-		myManager.CookieStore.clearDomain(domain);
-	}
+    private static ZLStringOption getAccountOption(String host, String realm) {
+        return new ZLStringOption("auth", host + ":" + realm, "");
+    }
 
-	public void reloadCookie() {
-		myManager.CookieStore.reset();
-	}
+    public ZLNetworkManager.CookieStore cookieStore() {
+        return myManager.CookieStore;
+    }
 
-	public String getCookieValue(String domain, String name) {
-		for (Cookie c : cookieStore().getCookies()) {
-			if (domain.equals(c.getDomain()) && name.equals(c.getName())) {
-				return c.getValue();
-			}
-		}
-		return null;
-	}
+    public void removeCookiesForDomain(String domain) {
+        myManager.CookieStore.clearDomain(domain);
+    }
 
-	protected void perform(ZLNetworkRequest request, int socketTimeout, int connectionTimeout) throws ZLNetworkException {
-		myManager.perform(request, this, socketTimeout, connectionTimeout);
-	}
+    public void reloadCookie() {
+        myManager.CookieStore.reset();
+    }
 
-	public final void perform(ZLNetworkRequest request) throws ZLNetworkException {
-		perform(request, 30000, 15000);
-	}
+    public String getCookieValue(String domain, String name) {
+        for (Cookie c : cookieStore().getCookies()) {
+            if (domain.equals(c.getDomain()) && name.equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
+    }
 
-	public void perform(ZLNetworkRequest request, Runnable onSuccess, OnError onError) {
-		try {
-			perform(request);
-			if (onSuccess != null) {
-				onSuccess.run();
-			}
-		} catch (ZLNetworkException e) {
-			if (onError != null) {
-				onError.run(e);
-			}
-		}
-	}
+    protected void perform(ZLNetworkRequest request, int socketTimeout, int connectionTimeout) throws ZLNetworkException {
+        myManager.perform(request, this, socketTimeout, connectionTimeout);
+    }
 
-	public final boolean performQuietly(ZLNetworkRequest request) {
-		try {
-			perform(request);
-			return true;
-		} catch (ZLNetworkException e) {
-			return false;
-		}
-	}
+    public final void perform(ZLNetworkRequest request) throws ZLNetworkException {
+        perform(request, 30000, 15000);
+    }
 
-	public final void perform(List<? extends ZLNetworkRequest> requests) throws ZLNetworkException {
-		if (requests.size() == 0) {
-			return;
-		}
-		if (requests.size() == 1) {
-			perform(requests.get(0));
-			return;
-		}
-		HashSet<String> errors = new HashSet<String>();
-		// TODO: implement concurrent execution !!!
-		for (ZLNetworkRequest r : requests) {
-			try {
-				perform(r);
-			} catch (ZLNetworkException e) {
-				e.printStackTrace();
-				errors.add(e.getMessage());
-			}
-		}
-		if (errors.size() > 0) {
-			StringBuilder message = new StringBuilder();
-			for (String e : errors) {
-				if (message.length() != 0) {
-					message.append(", ");
-				}
-				message.append(e);
-			}
-			throw new ZLNetworkException(message.toString());
-		}
-	}
+    public void perform(ZLNetworkRequest request, Runnable onSuccess, OnError onError) {
+        try {
+            perform(request);
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+        } catch (ZLNetworkException e) {
+            if (onError != null) {
+                onError.run(e);
+            }
+        }
+    }
 
-	public final void downloadToFile(String url, final File outFile) throws ZLNetworkException {
-		downloadToFile(url, outFile, 8192);
-	}
+    public final boolean performQuietly(ZLNetworkRequest request) {
+        try {
+            perform(request);
+            return true;
+        } catch (ZLNetworkException e) {
+            return false;
+        }
+    }
 
-	private final void downloadToFile(String url, final File outFile, final int bufferSize) throws ZLNetworkException {
-		perform(new ZLNetworkRequest.Get(url) {
-			public void handleStream(InputStream inputStream, int length) throws IOException, ZLNetworkException {
-				OutputStream outStream = new FileOutputStream(outFile);
-				try {
-					final byte[] buffer = new byte[bufferSize];
-					while (true) {
-						final int size = inputStream.read(buffer);
-						if (size <= 0) {
-							break;
-						}
-						outStream.write(buffer, 0, size);
-					}
-				} finally {
-					outStream.close();
-				}
-			}
-		}, 0, 0);
-	}
+    public final void perform(List<? extends ZLNetworkRequest> requests) throws ZLNetworkException {
+        if (requests.size() == 0) {
+            return;
+        }
+        if (requests.size() == 1) {
+            perform(requests.get(0));
+            return;
+        }
+        HashSet<String> errors = new HashSet<String>();
+        // TODO: implement concurrent execution !!!
+        for (ZLNetworkRequest r : requests) {
+            try {
+                perform(r);
+            } catch (ZLNetworkException e) {
+                e.printStackTrace();
+                errors.add(e.getMessage());
+            }
+        }
+        if (errors.size() > 0) {
+            StringBuilder message = new StringBuilder();
+            for (String e : errors) {
+                if (message.length() != 0) {
+                    message.append(", ");
+                }
+                message.append(e);
+            }
+            throw new ZLNetworkException(message.toString());
+        }
+    }
 
-	public static String getAccountName(String host, String realm) {
-		final String accountName = getAccountOption(host, realm).getValue();
-		return "".equals(accountName) ? null : accountName;
-	}
+    public final void downloadToFile(String url, final File outFile) throws ZLNetworkException {
+        downloadToFile(url, outFile, 8192);
+    }
 
-	public static void setAccountName(String host, String realm, String accountName) {
-		getAccountOption(host, realm).setValue(accountName != null ? accountName : "");
-	}
+    private final void downloadToFile(String url, final File outFile, final int bufferSize) throws ZLNetworkException {
+        perform(new ZLNetworkRequest.Get(url) {
+            public void handleStream(InputStream inputStream, int length) throws IOException, ZLNetworkException {
+                OutputStream outStream = new FileOutputStream(outFile);
+                try {
+                    final byte[] buffer = new byte[bufferSize];
+                    while (true) {
+                        final int size = inputStream.read(buffer);
+                        if (size <= 0) {
+                            break;
+                        }
+                        outStream.write(buffer, 0, size);
+                    }
+                } finally {
+                    outStream.close();
+                }
+            }
+        }, 0, 0);
+    }
 
-	private static ZLStringOption getAccountOption(String host, String realm) {
-		return new ZLStringOption("auth", host + ":" + realm, "");
-	}
+    public static interface OnError {
+        void run(ZLNetworkException e);
+    }
 }

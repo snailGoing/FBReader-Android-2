@@ -19,30 +19,29 @@
 
 package org.geometerplus.fbreader.formats;
 
-import org.geometerplus.zlibrary.core.util.SystemInfo;
-
 import org.geometerplus.fbreader.book.AbstractBook;
 import org.geometerplus.fbreader.book.BookUtil;
+import org.geometerplus.zlibrary.core.util.SystemInfo;
 
 public class ComicBookPlugin extends ExternalFormatPlugin {
-	public ComicBookPlugin(SystemInfo systemInfo) {
-		super(systemInfo, "CBZ");
-	}
+    public ComicBookPlugin(SystemInfo systemInfo) {
+        super(systemInfo, "CBZ");
+    }
 
-	@Override
-	public String packageName() {
-		return "org.geometerplus.fbreader.plugin.comicbook";
-	}
+    @Override
+    public String packageName() {
+        return "org.geometerplus.fbreader.plugin.comicbook";
+    }
 
-	@Override
-	public void readMetainfo(AbstractBook book) {
-		// TODO: implement
-	}
+    @Override
+    public void readMetainfo(AbstractBook book) {
+        // TODO: implement
+    }
 
-	@Override
-	public void readUids(AbstractBook book) {
-		if (book.uids().isEmpty()) {
-			book.addUid(BookUtil.createUid(book, "SHA-256"));
-		}
-	}
+    @Override
+    public void readUids(AbstractBook book) {
+        if (book.uids().isEmpty()) {
+            book.addUid(BookUtil.createUid(book, "SHA-256"));
+        }
+    }
 }

@@ -14,7 +14,7 @@ import android.os.IBinder;
 
 /**
  * Base service for a file provider.
- * 
+ *
  * @author Hai Bison
  * @since v3.1
  */
@@ -24,10 +24,90 @@ public abstract class FileProviderService extends Service implements IFileProvid
      * Service
      */
 
+    // This is the object that receives interactions from clients. See
+    // RemoteService for a more complete example.
+    private final IBinder mBinder = new LocalBinder();
+    private boolean mDisplayHiddenFiles = false;
+    private String mRegexFilenameFilter = null;
+
+    /*-------------------------------------------------------------------
+     * IFileProvider
+     */
+    private FilterMode mFilterMode = FilterMode.FilesOnly;
+    private int mMaxFileCount = 1024;
+    private SortType mSortType = SortType.SortByName;
+    private SortOrder mSortOrder = SortOrder.Ascending;
+
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
+
+    @Override
+    public boolean isDisplayHiddenFiles() {
+        return mDisplayHiddenFiles;
+    }
+
+    @Override
+    public void setDisplayHiddenFiles(boolean display) {
+        mDisplayHiddenFiles = display;
+    }
+
+    ;
+
+    @Override
+    public String getRegexFilenameFilter() {
+        return mRegexFilenameFilter;
+    }
+
+    @Override
+    public void setRegexFilenameFilter(String regex) {
+        mRegexFilenameFilter = regex;
+    }
+
+    ;
+
+    @Override
+    public FilterMode getFilterMode() {
+        return mFilterMode;
+    }
+
+    @Override
+    public void setFilterMode(FilterMode fm) {
+        mFilterMode = fm;
+    }
+
+    @Override
+    public SortType getSortType() {
+        return mSortType;
+    }
+
+    @Override
+    public void setSortType(SortType st) {
+        mSortType = st;
+    }
+
+    @Override
+    public SortOrder getSortOrder() {
+        return mSortOrder;
+    }
+
+    @Override
+    public void setSortOrder(SortOrder so) {
+        mSortOrder = so;
+    }
+
+    @Override
+    public int getMaxFileCount() {
+        return mMaxFileCount;
+    }
+
+    @Override
+    public void setMaxFileCount(int max) {
+        mMaxFileCount = max;
+    }
+
+    ;
 
     /**
      * Class for clients to access. Because we know this service always runs in
@@ -39,79 +119,4 @@ public abstract class FileProviderService extends Service implements IFileProvid
             return FileProviderService.this;
         }
     }// LocalBinder
-
-    // This is the object that receives interactions from clients. See
-    // RemoteService for a more complete example.
-    private final IBinder mBinder = new LocalBinder();
-
-    /*-------------------------------------------------------------------
-     * IFileProvider
-     */
-
-    private boolean mDisplayHiddenFiles = false;
-    private String mRegexFilenameFilter = null;
-    private FilterMode mFilterMode = FilterMode.FilesOnly;
-    private int mMaxFileCount = 1024;
-    private SortType mSortType = SortType.SortByName;
-    private SortOrder mSortOrder = SortOrder.Ascending;
-
-    @Override
-    public void setDisplayHiddenFiles(boolean display) {
-        mDisplayHiddenFiles = display;
-    };
-
-    @Override
-    public boolean isDisplayHiddenFiles() {
-        return mDisplayHiddenFiles;
-    }
-
-    @Override
-    public void setRegexFilenameFilter(String regex) {
-        mRegexFilenameFilter = regex;
-    };
-
-    @Override
-    public String getRegexFilenameFilter() {
-        return mRegexFilenameFilter;
-    }
-
-    @Override
-    public void setFilterMode(FilterMode fm) {
-        mFilterMode = fm;
-    }
-
-    @Override
-    public FilterMode getFilterMode() {
-        return mFilterMode;
-    }
-
-    @Override
-    public void setSortType(SortType st) {
-        mSortType = st;
-    }
-
-    @Override
-    public SortType getSortType() {
-        return mSortType;
-    }
-
-    @Override
-    public void setSortOrder(SortOrder so) {
-        mSortOrder = so;
-    }
-
-    @Override
-    public SortOrder getSortOrder() {
-        return mSortOrder;
-    }
-
-    @Override
-    public void setMaxFileCount(int max) {
-        mMaxFileCount = max;
-    };
-
-    @Override
-    public int getMaxFileCount() {
-        return mMaxFileCount;
-    }
 }

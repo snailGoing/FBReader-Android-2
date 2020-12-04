@@ -19,152 +19,154 @@
 
 package org.geometerplus.fbreader.formats;
 
-import java.util.*;
-
-import org.geometerplus.zlibrary.core.drm.FileEncryptionInfo;
-import org.geometerplus.zlibrary.core.encodings.EncodingCollection;
-import org.geometerplus.zlibrary.core.encodings.JavaEncodingCollection;
-import org.geometerplus.zlibrary.core.filesystem.ZLFile;
-import org.geometerplus.zlibrary.core.image.*;
-import org.geometerplus.zlibrary.core.util.SystemInfo;
-import org.geometerplus.zlibrary.text.model.CachedCharStorageException;
-
 import org.geometerplus.fbreader.book.AbstractBook;
 import org.geometerplus.fbreader.book.BookUtil;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.formats.fb2.FB2NativePlugin;
 import org.geometerplus.fbreader.formats.oeb.OEBNativePlugin;
+import org.geometerplus.zlibrary.core.drm.FileEncryptionInfo;
+import org.geometerplus.zlibrary.core.encodings.EncodingCollection;
+import org.geometerplus.zlibrary.core.encodings.JavaEncodingCollection;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.image.ZLFileImage;
+import org.geometerplus.zlibrary.core.image.ZLFileImageProxy;
+import org.geometerplus.zlibrary.core.util.SystemInfo;
+import org.geometerplus.zlibrary.text.model.CachedCharStorageException;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class NativeFormatPlugin extends BuiltinFormatPlugin {
-	private static final Object ourNativeLock = new Object();
+    private static final Object ourNativeLock = new Object();
 
-	public static NativeFormatPlugin create(SystemInfo systemInfo, String fileType) {
-		if ("fb2".equals(fileType)) {
-			return new FB2NativePlugin(systemInfo);
-		} else if ("ePub".equals(fileType)) {
-			return new OEBNativePlugin(systemInfo);
-		} else {
-			return new NativeFormatPlugin(systemInfo, fileType);
-		}
-	}
+    protected NativeFormatPlugin(SystemInfo systemInfo, String fileType) {
+        super(systemInfo, fileType);
+    }
 
-	protected NativeFormatPlugin(SystemInfo systemInfo, String fileType) {
-		super(systemInfo, fileType);
-	}
+    public static NativeFormatPlugin create(SystemInfo systemInfo, String fileType) {
+        if ("fb2".equals(fileType)) {
+            return new FB2NativePlugin(systemInfo);
+        } else if ("ePub".equals(fileType)) {
+            return new OEBNativePlugin(systemInfo);
+        } else {
+            return new NativeFormatPlugin(systemInfo, fileType);
+        }
+    }
 
-	@Override
-	synchronized public void readMetainfo(AbstractBook book) throws BookReadingException {
-		final int code;
-		synchronized (ourNativeLock) {
-			code = readMetainfoNative(book);
-		}
-		if (code != 0) {
-			throw new BookReadingException(
-				"nativeCodeFailure",
-				BookUtil.fileByBook(book),
-				new String[] { String.valueOf(code), book.getPath() }
-			);
-		}
-	}
+    @Override
+    synchronized public void readMetainfo(AbstractBook book) throws BookReadingException {
+        final int code;
+        synchronized (ourNativeLock) {
+            code = readMetainfoNative(book);
+        }
+        if (code != 0) {
+            throw new BookReadingException(
+                    "nativeCodeFailure",
+                    BookUtil.fileByBook(book),
+                    new String[]{String.valueOf(code), book.getPath()}
+            );
+        }
+    }
 
-	private native int readMetainfoNative(AbstractBook book);
+    private native int readMetainfoNative(AbstractBook book);
 
-	@Override
-	public List<FileEncryptionInfo> readEncryptionInfos(AbstractBook book) {
-		final FileEncryptionInfo[] infos;
-		synchronized (ourNativeLock) {
-			infos = readEncryptionInfosNative(book);
-		}
-		return infos != null
-			? Arrays.<FileEncryptionInfo>asList(infos)
-			: Collections.<FileEncryptionInfo>emptyList();
-	}
+    @Override
+    public List<FileEncryptionInfo> readEncryptionInfos(AbstractBook book) {
+        final FileEncryptionInfo[] infos;
+        synchronized (ourNativeLock) {
+            infos = readEncryptionInfosNative(book);
+        }
+        return infos != null
+                ? Arrays.<FileEncryptionInfo>asList(infos)
+                : Collections.<FileEncryptionInfo>emptyList();
+    }
 
-	private native FileEncryptionInfo[] readEncryptionInfosNative(AbstractBook book);
+    private native FileEncryptionInfo[] readEncryptionInfosNative(AbstractBook book);
 
-	@Override
-	synchronized public void readUids(AbstractBook book) throws BookReadingException {
-		synchronized (ourNativeLock) {
-			readUidsNative(book);
-		}
-		if (book.uids().isEmpty()) {
-			book.addUid(BookUtil.createUid(book, "SHA-256"));
-		}
-	}
+    @Override
+    synchronized public void readUids(AbstractBook book) throws BookReadingException {
+        synchronized (ourNativeLock) {
+            readUidsNative(book);
+        }
+        if (book.uids().isEmpty()) {
+            book.addUid(BookUtil.createUid(book, "SHA-256"));
+        }
+    }
 
-	private native boolean readUidsNative(AbstractBook book);
+    private native boolean readUidsNative(AbstractBook book);
 
-	@Override
-	public void detectLanguageAndEncoding(AbstractBook book) {
-		synchronized (ourNativeLock) {
-			detectLanguageAndEncodingNative(book);
-		}
-	}
+    @Override
+    public void detectLanguageAndEncoding(AbstractBook book) {
+        synchronized (ourNativeLock) {
+            detectLanguageAndEncodingNative(book);
+        }
+    }
 
-	private native void detectLanguageAndEncodingNative(AbstractBook book);
+    private native void detectLanguageAndEncodingNative(AbstractBook book);
 
-	@Override
-	synchronized public void readModel(BookModel model) throws BookReadingException {
-		final int code;
-		final String tempDirectory = SystemInfo.tempDirectory();
-		synchronized (ourNativeLock) {
-			code = readModelNative(model, tempDirectory);
-		}
-		switch (code) {
-			case 0:
-				return;
-			case 3:
-				throw new CachedCharStorageException(
-					"Cannot write file from native code to " + tempDirectory
-				);
-			default:
-				throw new BookReadingException(
-					"nativeCodeFailure",
-					BookUtil.fileByBook(model.Book),
-					new String[] { String.valueOf(code), model.Book.getPath() }
-				);
-		}
-	}
+    @Override
+    synchronized public void readModel(BookModel model) throws BookReadingException {
+        final int code;
+        final String tempDirectory = SystemInfo.tempDirectory();
+        synchronized (ourNativeLock) {
+            code = readModelNative(model, tempDirectory);
+        }
+        switch (code) {
+            case 0:
+                return;
+            case 3:
+                throw new CachedCharStorageException(
+                        "Cannot write file from native code to " + tempDirectory
+                );
+            default:
+                throw new BookReadingException(
+                        "nativeCodeFailure",
+                        BookUtil.fileByBook(model.Book),
+                        new String[]{String.valueOf(code), model.Book.getPath()}
+                );
+        }
+    }
 
-	private native int readModelNative(BookModel model, String cacheDir);
+    private native int readModelNative(BookModel model, String cacheDir);
 
-	@Override
-	public final ZLFileImageProxy readCover(ZLFile file) {
-		return new ZLFileImageProxy(file) {
-			@Override
-			protected ZLFileImage retrieveRealImage() {
-				final ZLFileImage[] box = new ZLFileImage[1];
-				synchronized (ourNativeLock) {
-					readCoverNative(File, box);
-				}
-				return box[0];
-			}
-		};
-	}
+    @Override
+    public final ZLFileImageProxy readCover(ZLFile file) {
+        return new ZLFileImageProxy(file) {
+            @Override
+            protected ZLFileImage retrieveRealImage() {
+                final ZLFileImage[] box = new ZLFileImage[1];
+                synchronized (ourNativeLock) {
+                    readCoverNative(File, box);
+                }
+                return box[0];
+            }
+        };
+    }
 
-	private native void readCoverNative(ZLFile file, ZLFileImage[] box);
+    private native void readCoverNative(ZLFile file, ZLFileImage[] box);
 
-	@Override
-	public String readAnnotation(ZLFile file) {
-		synchronized (ourNativeLock) {
-			return readAnnotationNative(file);
-		}
-	}
+    @Override
+    public String readAnnotation(ZLFile file) {
+        synchronized (ourNativeLock) {
+            return readAnnotationNative(file);
+        }
+    }
 
-	private native String readAnnotationNative(ZLFile file);
+    private native String readAnnotationNative(ZLFile file);
 
-	@Override
-	public int priority() {
-		return 5;
-	}
+    @Override
+    public int priority() {
+        return 5;
+    }
 
-	@Override
-	public EncodingCollection supportedEncodings() {
-		return JavaEncodingCollection.Instance();
-	}
+    @Override
+    public EncodingCollection supportedEncodings() {
+        return JavaEncodingCollection.Instance();
+    }
 
-	@Override
-	public String toString() {
-		return "NativeFormatPlugin [" + supportedFileType() + "]";
-	}
+    @Override
+    public String toString() {
+        return "NativeFormatPlugin [" + supportedFileType() + "]";
+    }
 }

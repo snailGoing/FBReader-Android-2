@@ -19,60 +19,63 @@
 
 package org.geometerplus.zlibrary.text.model;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public final class CachedCharStorage {
-	protected final ArrayList<WeakReference<char[]>> myArray =
-		new ArrayList<WeakReference<char[]>>();
+    protected final ArrayList<WeakReference<char[]>> myArray =
+            new ArrayList<WeakReference<char[]>>();
 
-	private final String myDirectoryName;
-	private final String myFileExtension;
+    private final String myDirectoryName;
+    private final String myFileExtension;
 
-	public CachedCharStorage(String directoryName, String fileExtension, int blocksNumber) {
-		myDirectoryName = directoryName + '/';
-		myFileExtension = '.' + fileExtension;
-		myArray.addAll(Collections.nCopies(blocksNumber, new WeakReference<char[]>(null)));
-	}
+    public CachedCharStorage(String directoryName, String fileExtension, int blocksNumber) {
+        myDirectoryName = directoryName + '/';
+        myFileExtension = '.' + fileExtension;
+        myArray.addAll(Collections.nCopies(blocksNumber, new WeakReference<char[]>(null)));
+    }
 
-	private String fileName(int index) {
-		return myDirectoryName + index + myFileExtension;
-	}
+    private String fileName(int index) {
+        return myDirectoryName + index + myFileExtension;
+    }
 
-	public int size() {
-		return myArray.size();
-	}
+    public int size() {
+        return myArray.size();
+    }
 
-	public char[] block(int index) {
-		if (index < 0 || index >= myArray.size()) {
-			return null;
-		}
-		char[] block = myArray.get(index).get();
-		if (block == null) {
-			try {
-				File file = new File(fileName(index));
-				int size = (int)file.length();
-				if (size < 0) {
-					throw new CachedCharStorageException("Error during reading " + fileName(index) + "; size = " + size);
-				}
-				block = new char[size / 2];
-				InputStreamReader reader =
-					new InputStreamReader(
-						new FileInputStream(file),
-						"UTF-16LE"
-					);
-				final int rd = reader.read(block);
-				if (rd != block.length) {
-					throw new CachedCharStorageException("Error during reading " + fileName(index) + "; " + rd + " != " + block.length);
-				}
-				reader.close();
-			} catch (IOException e) {
-				throw new CachedCharStorageException("Error during reading " + fileName(index), e);
-			}
-			myArray.set(index, new WeakReference<char[]>(block));
-		}
-		return block;
-	}
+    public char[] block(int index) {
+        if (index < 0 || index >= myArray.size()) {
+            return null;
+        }
+        char[] block = myArray.get(index).get();
+        if (block == null) {
+            try {
+                File file = new File(fileName(index));
+                int size = (int) file.length();
+                if (size < 0) {
+                    throw new CachedCharStorageException("Error during reading " + fileName(index) + "; size = " + size);
+                }
+                block = new char[size / 2];
+                InputStreamReader reader =
+                        new InputStreamReader(
+                                new FileInputStream(file),
+                                "UTF-16LE"
+                        );
+                final int rd = reader.read(block);
+                if (rd != block.length) {
+                    throw new CachedCharStorageException("Error during reading " + fileName(index) + "; " + rd + " != " + block.length);
+                }
+                reader.close();
+            } catch (IOException e) {
+                throw new CachedCharStorageException("Error during reading " + fileName(index), e);
+            }
+            myArray.set(index, new WeakReference<char[]>(block));
+        }
+        return block;
+    }
 }

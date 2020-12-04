@@ -19,85 +19,86 @@
 
 package org.geometerplus.fbreader.library;
 
-import org.geometerplus.zlibrary.core.image.ZLImage;
-
-import org.geometerplus.fbreader.book.*;
+import org.geometerplus.fbreader.book.Book;
+import org.geometerplus.fbreader.book.CoverUtil;
+import org.geometerplus.fbreader.book.IBookCollection;
 import org.geometerplus.fbreader.formats.PluginCollection;
 import org.geometerplus.fbreader.tree.FBTree;
+import org.geometerplus.zlibrary.core.image.ZLImage;
 
 public class BookTree extends LibraryTree {
-	public final Book Book;
+    public final Book Book;
 
-	BookTree(IBookCollection<Book> collection, PluginCollection pluginCollection, Book book) {
-		super(collection, pluginCollection);
-		Book = book;
-	}
+    BookTree(IBookCollection<Book> collection, PluginCollection pluginCollection, Book book) {
+        super(collection, pluginCollection);
+        Book = book;
+    }
 
-	BookTree(LibraryTree parent, Book book) {
-		super(parent);
-		Book = book;
-	}
+    BookTree(LibraryTree parent, Book book) {
+        super(parent);
+        Book = book;
+    }
 
-	BookTree(LibraryTree parent, Book book, int position) {
-		super(parent, position);
-		Book = book;
-	}
+    BookTree(LibraryTree parent, Book book, int position) {
+        super(parent, position);
+        Book = book;
+    }
 
-	@Override
-	public String getName() {
-		return Book.getTitle();
-	}
+    @Override
+    public String getName() {
+        return Book.getTitle();
+    }
 
-	@Override
-	public String getSummary() {
-		return "";
-	}
+    @Override
+    public String getSummary() {
+        return "";
+    }
 
-	@Override
-	public Book getBook() {
-		return Book;
-	}
+    @Override
+    public Book getBook() {
+        return Book;
+    }
 
-	@Override
-	protected String getStringId() {
-		return "@BookTree " + getName();
-	}
+    @Override
+    protected String getStringId() {
+        return "@BookTree " + getName();
+    }
 
-	@Override
-	protected ZLImage createCover() {
-		return CoverUtil.getCover(Book, PluginCollection);
-	}
+    @Override
+    protected ZLImage createCover() {
+        return CoverUtil.getCover(Book, PluginCollection);
+    }
 
-	@Override
-	public boolean containsBook(Book book) {
-		return Collection.sameBook(book, Book);
-	}
+    @Override
+    public boolean containsBook(Book book) {
+        return Collection.sameBook(book, Book);
+    }
 
-	@Override
-	protected String getSortKey() {
-		return Book.getSortKey();
-	}
+    @Override
+    protected String getSortKey() {
+        return Book.getSortKey();
+    }
 
-	@Override
-	public int compareTo(FBTree tree) {
-		final int cmp = super.compareTo(tree);
-		if (cmp == 0 && tree instanceof BookTree) {
-			final Book b = ((BookTree)tree).Book;
-			if (Book != null && b != null) {
-				return Book.getPath().compareTo(b.getPath());
-			}
-		}
-		return cmp;
-	}
+    @Override
+    public int compareTo(FBTree tree) {
+        final int cmp = super.compareTo(tree);
+        if (cmp == 0 && tree instanceof BookTree) {
+            final Book b = ((BookTree) tree).Book;
+            if (Book != null && b != null) {
+                return Book.getPath().compareTo(b.getPath());
+            }
+        }
+        return cmp;
+    }
 
-	@Override
-	public boolean equals(Object object) {
-		if (object == this) {
-			return true;
-		}
-		if (!(object instanceof BookTree)) {
-			return false;
-		}
-		return Book.equals(((BookTree)object).Book);
-	}
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (!(object instanceof BookTree)) {
+            return false;
+        }
+        return Book.equals(((BookTree) object).Book);
+    }
 }

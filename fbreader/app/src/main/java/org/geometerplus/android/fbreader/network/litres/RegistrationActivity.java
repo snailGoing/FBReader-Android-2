@@ -19,8 +19,6 @@
 
 package org.geometerplus.android.fbreader.network.litres;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -31,157 +29,159 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.geometerplus.android.fbreader.network.Util;
+import org.geometerplus.android.fbreader.network.auth.ActivityNetworkContext;
+import org.geometerplus.fbreader.network.authentication.litres.LitResLoginXMLReader;
+import org.geometerplus.fbreader.network.authentication.litres.LitResNetworkRequest;
+import org.geometerplus.fbreader.network.authentication.litres.LitResRegisterUserXMLReader;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.ui.android.R;
 
-import org.geometerplus.fbreader.network.authentication.litres.*;
-
-import org.geometerplus.android.fbreader.network.Util;
-import org.geometerplus.android.fbreader.network.auth.ActivityNetworkContext;
+import java.util.List;
 
 abstract class RegistrationActivity extends Activity implements UserRegistrationConstants {
-	protected final ActivityNetworkContext myNetworkContext = new ActivityNetworkContext(this);
+    protected final ActivityNetworkContext myNetworkContext = new ActivityNetworkContext(this);
 
-	protected ZLResource myResource;
+    protected ZLResource myResource;
 
-	protected String myCatalogURL;
-	private String mySignInURL;
-	private String mySignUpURL;
-	protected String myRecoverPasswordURL;
+    protected String myCatalogURL;
+    protected String myRecoverPasswordURL;
+    private String mySignInURL;
+    private String mySignUpURL;
 
-	protected void reportSuccess(String username, String password, String sid) {
-		final Intent data = new Intent(Util.SIGNIN_ACTION);
-		data.putExtra(USER_REGISTRATION_USERNAME, username);
-		data.putExtra(USER_REGISTRATION_PASSWORD, password);
-		data.putExtra(USER_REGISTRATION_LITRES_SID, sid);
-		data.putExtra(CATALOG_URL, myCatalogURL);
-		sendBroadcast(data);
-	}
+    protected void reportSuccess(String username, String password, String sid) {
+        final Intent data = new Intent(Util.SIGNIN_ACTION);
+        data.putExtra(USER_REGISTRATION_USERNAME, username);
+        data.putExtra(USER_REGISTRATION_PASSWORD, password);
+        data.putExtra(USER_REGISTRATION_LITRES_SID, sid);
+        data.putExtra(CATALOG_URL, myCatalogURL);
+        sendBroadcast(data);
+    }
 
-	@Override
-	protected void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
+    @Override
+    protected void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
 
-		final Intent intent = getIntent();
-		myCatalogURL = intent.getStringExtra(CATALOG_URL);
-		mySignInURL = intent.getStringExtra(SIGNIN_URL);
-		mySignUpURL = intent.getStringExtra(SIGNUP_URL);
-		myRecoverPasswordURL = intent.getStringExtra(RECOVER_PASSWORD_URL);
-	}
+        final Intent intent = getIntent();
+        myCatalogURL = intent.getStringExtra(CATALOG_URL);
+        mySignInURL = intent.getStringExtra(SIGNIN_URL);
+        mySignUpURL = intent.getStringExtra(SIGNUP_URL);
+        myRecoverPasswordURL = intent.getStringExtra(RECOVER_PASSWORD_URL);
+    }
 
-	protected static interface NetworkRunnable {
-		void run() throws ZLNetworkException;
-	}
+    protected synchronized void runWithMessage(String key, final NetworkRunnable action, final PostRunnable postAction) {
+        final String message =
+                ZLResource.resource("dialog").getResource("waitMessage").getResource(key).getValue();
+        final ProgressDialog progress = ProgressDialog.show(this, null, message, true, false);
 
-	protected class RegistrationNetworkRunnable implements NetworkRunnable {
-		final String Username;
-		final String Password;
-		final String Email;
-		final LitResRegisterUserXMLReader XmlReader = new LitResRegisterUserXMLReader();
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    action.run();
+                    postRun(null);
+                } catch (ZLNetworkException e) {
+                    postRun(e);
+                }
+            }
 
-		public RegistrationNetworkRunnable(String username, String password, String email) {
-			Username = username;
-			Password = password;
-			Email = email;
-		}
+            private void postRun(final ZLNetworkException e) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        progress.dismiss();
+                        postAction.run(e);
+                    }
+                });
+            }
+        }).start();
+    }
 
-		public void run() throws ZLNetworkException {
-			final LitResNetworkRequest request = new LitResNetworkRequest(mySignUpURL, XmlReader);
-			request.addPostParameter("new_login", Username);
-			request.addPostParameter("new_pwd1", Password);
-			request.addPostParameter("mail", Email);
-			myNetworkContext.perform(request);
-		}
-	}
+    protected void setupEmailControl(View emailControl, String eMailToSkip) {
+        final Button emailListButton = (Button) emailControl.findViewById(R.id.lr_email_button);
+        final TextView emailTextView = (TextView) emailControl.findViewById(R.id.lr_email_edit);
 
-	protected class SignInNetworkRunnable implements NetworkRunnable {
-		final String Username;
-		final String Password;
-		final LitResLoginXMLReader XmlReader = new LitResLoginXMLReader();
+        final List<String> emails = new RegistrationUtils(getApplicationContext()).eMails();
 
-		public SignInNetworkRunnable(String username, String password) {
-			Username = username;
-			Password = password;
-		}
+        emailListButton.setVisibility(emails.size() > 1 ? View.VISIBLE : View.GONE);
+        if (!emails.isEmpty()) {
+            emailTextView.setText(emails.get(0));
+            for (String e : emails) {
+                if (!e.equals(eMailToSkip)) {
+                    emailTextView.setText(e);
+                    break;
+                }
+            }
 
-		public void run() throws ZLNetworkException {
-			final LitResNetworkRequest request = new LitResNetworkRequest(mySignInURL, XmlReader);
-			request.addPostParameter("login", Username);
-			request.addPostParameter("pwd", Password);
-			myNetworkContext.perform(request);
-		}
-	}
+            final DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    if (which >= 0 && which < emails.size()) {
+                        emailTextView.setText(emails.get(which));
+                    }
+                    dialog.dismiss();
+                }
+            };
 
-	protected static interface PostRunnable {
-		void run(ZLNetworkException exception);
-	}
+            emailListButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    final String selectedEmail = emailTextView.getText().toString().trim();
+                    final int selected = emails.indexOf(selectedEmail);
+                    final ZLResource buttonResource = ZLResource.resource("dialog").getResource("button");
+                    final AlertDialog dialog = new AlertDialog.Builder(RegistrationActivity.this)
+                            .setSingleChoiceItems(emails.toArray(new String[emails.size()]), selected, listener)
+                            .setTitle(myResource.getResource("email").getValue())
+                            .setNegativeButton(buttonResource.getResource("cancel").getValue(), null)
+                            .create();
 
-	protected synchronized void runWithMessage(String key, final NetworkRunnable action, final PostRunnable postAction) {
-		final String message =
-			ZLResource.resource("dialog").getResource("waitMessage").getResource(key).getValue();
-		final ProgressDialog progress = ProgressDialog.show(this, null, message, true, false);
+                    dialog.show();
+                }
+            });
+        }
+    }
 
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					action.run();
-					postRun(null);
-				} catch (ZLNetworkException e) {
-					postRun(e);
-				}
-			}
+    protected static interface NetworkRunnable {
+        void run() throws ZLNetworkException;
+    }
 
-			private void postRun(final ZLNetworkException e) {
-				runOnUiThread(new Runnable() {
-					public void run() {
-						progress.dismiss();
-						postAction.run(e);
-					}
-				});
-			}
-		}).start();
-	}
+    protected static interface PostRunnable {
+        void run(ZLNetworkException exception);
+    }
 
-	protected void setupEmailControl(View emailControl, String eMailToSkip) {
-		final Button emailListButton = (Button)emailControl.findViewById(R.id.lr_email_button);
-		final TextView emailTextView = (TextView)emailControl.findViewById(R.id.lr_email_edit);
+    protected class RegistrationNetworkRunnable implements NetworkRunnable {
+        final String Username;
+        final String Password;
+        final String Email;
+        final LitResRegisterUserXMLReader XmlReader = new LitResRegisterUserXMLReader();
 
-		final List<String> emails = new RegistrationUtils(getApplicationContext()).eMails();
+        public RegistrationNetworkRunnable(String username, String password, String email) {
+            Username = username;
+            Password = password;
+            Email = email;
+        }
 
-		emailListButton.setVisibility(emails.size() > 1 ? View.VISIBLE : View.GONE);
-		if (!emails.isEmpty()) {
-			emailTextView.setText(emails.get(0));
-			for (String e : emails) {
-				if (!e.equals(eMailToSkip)) {
-					emailTextView.setText(e);
-					break;
-				}
-			}
+        public void run() throws ZLNetworkException {
+            final LitResNetworkRequest request = new LitResNetworkRequest(mySignUpURL, XmlReader);
+            request.addPostParameter("new_login", Username);
+            request.addPostParameter("new_pwd1", Password);
+            request.addPostParameter("mail", Email);
+            myNetworkContext.perform(request);
+        }
+    }
 
-			final DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					if (which >= 0 && which < emails.size()) {
-						emailTextView.setText(emails.get(which));
-					}
-					dialog.dismiss();
-				}
-			};
+    protected class SignInNetworkRunnable implements NetworkRunnable {
+        final String Username;
+        final String Password;
+        final LitResLoginXMLReader XmlReader = new LitResLoginXMLReader();
 
-			emailListButton.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					final String selectedEmail = emailTextView.getText().toString().trim();
-					final int selected = emails.indexOf(selectedEmail);
-					final ZLResource buttonResource = ZLResource.resource("dialog").getResource("button");
-					final AlertDialog dialog = new AlertDialog.Builder(RegistrationActivity.this)
-						.setSingleChoiceItems(emails.toArray(new String[emails.size()]), selected, listener)
-						.setTitle(myResource.getResource("email").getValue())
-						.setNegativeButton(buttonResource.getResource("cancel").getValue(), null)
-						.create();
+        public SignInNetworkRunnable(String username, String password) {
+            Username = username;
+            Password = password;
+        }
 
-					dialog.show();
-				}
-			});
-		}
-	}
+        public void run() throws ZLNetworkException {
+            final LitResNetworkRequest request = new LitResNetworkRequest(mySignInURL, XmlReader);
+            request.addPostParameter("login", Username);
+            request.addPostParameter("pwd", Password);
+            myNetworkContext.perform(request);
+        }
+    }
 }

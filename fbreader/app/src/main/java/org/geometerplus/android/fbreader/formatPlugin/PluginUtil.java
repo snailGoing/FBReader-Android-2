@@ -24,7 +24,7 @@ import android.content.Intent;
 import org.geometerplus.fbreader.formats.ExternalFormatPlugin;
 
 public abstract class PluginUtil {
-	public static Intent createIntent(ExternalFormatPlugin plugin, String action) {
-		return new Intent(action).setPackage(plugin.packageName());
-	}
+    public static Intent createIntent(ExternalFormatPlugin plugin, String action) {
+        return new Intent(action).setPackage(plugin.packageName());
+    }
 }

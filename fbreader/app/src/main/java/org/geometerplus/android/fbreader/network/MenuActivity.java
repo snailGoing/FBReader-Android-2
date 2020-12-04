@@ -19,105 +19,112 @@
 
 package org.geometerplus.android.fbreader.network;
 
-import java.util.*;
-
 import android.app.ListActivity;
-import android.content.Intent;
 import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.*;
-import android.widget.*;
-
-import org.geometerplus.zlibrary.ui.android.R;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 import org.geometerplus.android.fbreader.api.PluginApi;
+import org.geometerplus.zlibrary.ui.android.R;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 abstract class MenuActivity extends ListActivity implements AdapterView.OnItemClickListener {
-	protected List<PluginApi.MenuActionInfo> myInfos;
+    protected List<PluginApi.MenuActionInfo> myInfos;
 
-	@Override
-	protected void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
-		myInfos = new ArrayList<PluginApi.MenuActionInfo>();
+    @Override
+    protected void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        myInfos = new ArrayList<PluginApi.MenuActionInfo>();
 
-		init();
+        init();
 
-		try {
-			startActivityForResult(new Intent(getAction(), getIntent().getData()), 0);
-		} catch (ActivityNotFoundException e) {
-			if (finishInitialization()) {
-				return;
-			}
-		}
+        try {
+            startActivityForResult(new Intent(getAction(), getIntent().getData()), 0);
+        } catch (ActivityNotFoundException e) {
+            if (finishInitialization()) {
+                return;
+            }
+        }
 
-		setListAdapter(new ActionListAdapter());
-		getListView().setOnItemClickListener(this);
-	}
+        setListAdapter(new ActionListAdapter());
+        getListView().setOnItemClickListener(this);
+    }
 
-	public final void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		if (runItem(myInfos.get(position))) {
-			finish();
-		}
-	}
+    public final void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (runItem(myInfos.get(position))) {
+            finish();
+        }
+    }
 
-	private boolean finishInitialization() {
-		switch (myInfos.size()) {
-			default:
-				return false;
-			case 0:
-				finish();
-				return true;
-			case 1:
-				if (runItem(myInfos.get(0))) {
-					finish();
-				}
-				return true;
-		}
-	}
+    private boolean finishInitialization() {
+        switch (myInfos.size()) {
+            default:
+                return false;
+            case 0:
+                finish();
+                return true;
+            case 1:
+                if (runItem(myInfos.get(0))) {
+                    finish();
+                }
+                return true;
+        }
+    }
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		if (intent != null) {
-			final List<PluginApi.MenuActionInfo> actions =
-				intent.<PluginApi.MenuActionInfo>getParcelableArrayListExtra(
-					PluginApi.PluginInfo.KEY
-				);
-			if (actions != null) {
-				myInfos.addAll(actions);
-			}
-			if (finishInitialization()) {
-				return;
-			}
-			Collections.sort(myInfos);
-			((ActionListAdapter)getListAdapter()).notifyDataSetChanged();
-			getListView().invalidateViews();
-		}
-	}
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (intent != null) {
+            final List<PluginApi.MenuActionInfo> actions =
+                    intent.<PluginApi.MenuActionInfo>getParcelableArrayListExtra(
+                            PluginApi.PluginInfo.KEY
+                    );
+            if (actions != null) {
+                myInfos.addAll(actions);
+            }
+            if (finishInitialization()) {
+                return;
+            }
+            Collections.sort(myInfos);
+            ((ActionListAdapter) getListAdapter()).notifyDataSetChanged();
+            getListView().invalidateViews();
+        }
+    }
 
-	protected abstract void init();
-	protected abstract String getAction();
-	protected abstract boolean runItem(final PluginApi.MenuActionInfo info);
+    protected abstract void init();
 
-	private class ActionListAdapter extends BaseAdapter {
-		public final int getCount() {
-			return myInfos.size();
-		}
+    protected abstract String getAction();
 
-		public final PluginApi.MenuActionInfo getItem(int position) {
-			return myInfos.get(position);
-		}
+    protected abstract boolean runItem(final PluginApi.MenuActionInfo info);
 
-		public final long getItemId(int position) {
-			return position;
-		}
+    private class ActionListAdapter extends BaseAdapter {
+        public final int getCount() {
+            return myInfos.size();
+        }
 
-		public View getView(int position, View convertView, final ViewGroup parent) {
-			final View view = convertView != null
-				? convertView
-				: LayoutInflater.from(parent.getContext()).inflate(R.layout.menu_item, parent, false);
-			final TextView titleView = (TextView)view.findViewById(R.id.menu_item_title);
-			titleView.setText(getItem(position).MenuItemName);
-			return view;
-		}
-	}
+        public final PluginApi.MenuActionInfo getItem(int position) {
+            return myInfos.get(position);
+        }
+
+        public final long getItemId(int position) {
+            return position;
+        }
+
+        public View getView(int position, View convertView, final ViewGroup parent) {
+            final View view = convertView != null
+                    ? convertView
+                    : LayoutInflater.from(parent.getContext()).inflate(R.layout.menu_item, parent, false);
+            final TextView titleView = (TextView) view.findViewById(R.id.menu_item_title);
+            titleView.setText(getItem(position).MenuItemName);
+            return view;
+        }
+    }
 }

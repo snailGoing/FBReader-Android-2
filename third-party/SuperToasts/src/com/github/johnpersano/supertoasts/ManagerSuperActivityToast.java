@@ -1,18 +1,17 @@
 /**
- *  Copyright 2014 John Persano
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *	you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *	Unless required by applicable law or agreed to in writing, software
- *	distributed under the License is distributed on an "AS IS" BASIS,
- *	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *	See the License for the specific language governing permissions and
- *	limitations under the License.
- *
+ * Copyright 2014 John Persano
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.github.johnpersano.supertoasts;
@@ -22,7 +21,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.*;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -34,18 +39,7 @@ class ManagerSuperActivityToast extends Handler {
 
     @SuppressWarnings("UnusedDeclaration")
     private static final String TAG = "ManagerSuperActivityToast";
-
-    /* Potential messages for the handler to send **/
-    private static final class Messages {
-
-        /* Hexadecimal numbers that represent acronyms for the operation. **/
-        private static final int DISPLAY = 0x44534154;
-        private static final int REMOVE = 0x52534154;
-
-    }
-
     private static ManagerSuperActivityToast mManagerSuperActivityToast;
-
     private final LinkedList<SuperActivityToast> mList;
 
     /* Private method to create a new list if the manager is being initialized */
@@ -110,7 +104,6 @@ class ManagerSuperActivityToast extends Handler {
 
     }
 
-
     @Override
     public void handleMessage(Message message) {
 
@@ -149,7 +142,7 @@ class ManagerSuperActivityToast extends Handler {
     private void displaySuperToast(SuperActivityToast superActivityToast) {
 
         /* If this SuperActivityToast is somehow already showing do nothing */
-        if(superActivityToast.isShowing()) {
+        if (superActivityToast.isShowing()) {
 
             return;
 
@@ -159,19 +152,19 @@ class ManagerSuperActivityToast extends Handler {
 
         final View toastView = superActivityToast.getView();
 
-        if(viewGroup != null) {
+        if (viewGroup != null) {
 
             try {
 
                 viewGroup.addView(toastView);
 
-                if(!superActivityToast.getShowImmediate()) {
+                if (!superActivityToast.getShowImmediate()) {
 
                     toastView.startAnimation(getShowAnimation(superActivityToast));
 
                 }
 
-            } catch(IllegalStateException e) {
+            } catch (IllegalStateException e) {
 
                 this.cancelAllSuperActivityToastsForActivity(superActivityToast.getActivity());
 
@@ -180,7 +173,7 @@ class ManagerSuperActivityToast extends Handler {
         }
 
         /* Dismiss the SuperActivityToast at the set duration time unless indeterminate */
-        if(!superActivityToast.isIndeterminate()) {
+        if (!superActivityToast.isIndeterminate()) {
 
             Message message = obtainMessage(Messages.REMOVE);
             message.obj = superActivityToast;
@@ -197,7 +190,7 @@ class ManagerSuperActivityToast extends Handler {
     void removeSuperToast(final SuperActivityToast superActivityToast) {
 
         /* If SuperActivityToast has been dismissed before it shows, do not attempt to show it */
-        if(!superActivityToast.isShowing()) {
+        if (!superActivityToast.isShowing()) {
 
             mList.remove(superActivityToast);
 
@@ -228,7 +221,7 @@ class ManagerSuperActivityToast extends Handler {
                 @Override
                 public void onAnimationEnd(Animation animation) {
 
-                    if(superActivityToast.getOnDismissWrapper() != null){
+                    if (superActivityToast.getOnDismissWrapper() != null) {
 
                         superActivityToast.getOnDismissWrapper().onDismiss(superActivityToast.getView());
 
@@ -319,7 +312,7 @@ class ManagerSuperActivityToast extends Handler {
     /**
      * Used in SuperActivityToast saveState().
      */
-    LinkedList<SuperActivityToast> getList(){
+    LinkedList<SuperActivityToast> getList() {
 
         return mList;
 
@@ -379,7 +372,7 @@ class ManagerSuperActivityToast extends Handler {
 
         } else {
 
-            Animation animation= new AlphaAnimation(0f, 1f);
+            Animation animation = new AlphaAnimation(0f, 1f);
             animation.setDuration(500);
             animation.setInterpolator(new DecelerateInterpolator());
 
@@ -450,6 +443,15 @@ class ManagerSuperActivityToast extends Handler {
             return alphaAnimation;
 
         }
+
+    }
+
+    /* Potential messages for the handler to send **/
+    private static final class Messages {
+
+        /* Hexadecimal numbers that represent acronyms for the operation. **/
+        private static final int DISPLAY = 0x44534154;
+        private static final int REMOVE = 0x52534154;
 
     }
 

@@ -20,11 +20,11 @@
 package org.geometerplus.fbreader.book;
 
 public enum BookEvent {
-	Added,
-	Updated,
-	Removed,
-	Opened,
-	ProgressUpdated,
-	BookmarksUpdated,
-	BookmarkStyleChanged
+    Added,
+    Updated,
+    Removed,
+    Opened,
+    ProgressUpdated,
+    BookmarksUpdated,
+    BookmarkStyleChanged
 }

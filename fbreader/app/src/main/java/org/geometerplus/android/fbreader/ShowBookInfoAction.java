@@ -21,28 +21,27 @@ package org.geometerplus.android.fbreader;
 
 import android.content.Intent;
 
-import org.geometerplus.fbreader.fbreader.FBReaderApp;
-
 import org.geometerplus.android.fbreader.api.FBReaderIntents;
 import org.geometerplus.android.fbreader.library.BookInfoActivity;
 import org.geometerplus.android.util.OrientationUtil;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 class ShowBookInfoAction extends FBAndroidAction {
-	ShowBookInfoAction(FBReader baseActivity, FBReaderApp fbreader) {
-		super(baseActivity, fbreader);
-	}
+    ShowBookInfoAction(FBReader baseActivity, FBReaderApp fbreader) {
+        super(baseActivity, fbreader);
+    }
 
-	@Override
-	public boolean isVisible() {
-		return Reader.Model != null;
-	}
+    @Override
+    public boolean isVisible() {
+        return Reader.Model != null;
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		final Intent intent =
-			new Intent(BaseActivity.getApplicationContext(), BookInfoActivity.class)
-				.putExtra(BookInfoActivity.FROM_READING_MODE_KEY, true);
-		FBReaderIntents.putBookExtra(intent, Reader.getCurrentBook());
-		OrientationUtil.startActivity(BaseActivity, intent);
-	}
+    @Override
+    protected void run(Object... params) {
+        final Intent intent =
+                new Intent(BaseActivity.getApplicationContext(), BookInfoActivity.class)
+                        .putExtra(BookInfoActivity.FROM_READING_MODE_KEY, true);
+        FBReaderIntents.putBookExtra(intent, Reader.getCurrentBook());
+        OrientationUtil.startActivity(BaseActivity, intent);
+    }
 }

@@ -13,9 +13,8 @@ import android.view.inputmethod.InputMethodManager;
 
 /**
  * UI utilities.
- * 
+ *
  * @author Hai Bison
- * 
  */
 public class Ui {
 

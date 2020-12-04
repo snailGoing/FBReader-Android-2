@@ -19,120 +19,118 @@
 
 package org.geometerplus.android.fbreader.covers;
 
-import java.util.concurrent.Future;
-
-import android.widget.ImageView;
 import android.graphics.Bitmap;
-
-import org.geometerplus.zlibrary.core.image.ZLImageProxy;
+import android.widget.ImageView;
 
 import org.geometerplus.fbreader.tree.FBTree;
+import org.geometerplus.zlibrary.core.image.ZLImageProxy;
+
+import java.util.concurrent.Future;
 
 class CoverHolder {
-	private final CoverManager myManager;
-	final ImageView CoverView;
-	volatile FBTree.Key Key;
+    final ImageView CoverView;
+    private final CoverManager myManager;
+    volatile FBTree.Key Key;
+    Future<?> coverBitmapTask;
+    private CoverSyncRunnable coverSyncRunnable;
+    private Runnable coverBitmapRunnable;
 
-	private CoverSyncRunnable coverSyncRunnable;
-	Future<?> coverBitmapTask;
-	private Runnable coverBitmapRunnable;
+    CoverHolder(CoverManager manager, ImageView coverView, FBTree.Key key) {
+        myManager = manager;
+        manager.setupCoverView(coverView);
+        CoverView = coverView;
+        Key = key;
 
-	CoverHolder(CoverManager manager, ImageView coverView, FBTree.Key key) {
-		myManager = manager;
-		manager.setupCoverView(coverView);
-		CoverView = coverView;
-		Key = key;
+        myManager.Cache.HoldersCounter++;
+    }
 
-		myManager.Cache.HoldersCounter++;
-	}
+    synchronized void setKey(FBTree.Key key) {
+        if (!Key.equals(key)) {
+            if (coverBitmapTask != null) {
+                coverBitmapTask.cancel(true);
+                coverBitmapTask = null;
+            }
+            coverBitmapRunnable = null;
+        }
+        Key = key;
+    }
 
-	synchronized void setKey(FBTree.Key key) {
-		if (!Key.equals(key)) {
-			if (coverBitmapTask != null) {
-				coverBitmapTask.cancel(true);
-				coverBitmapTask = null;
-			}
-			coverBitmapRunnable = null;
-		}
-		Key = key;
-	}
+    class CoverSyncRunnable implements Runnable {
+        private final ZLImageProxy myImage;
+        private final FBTree.Key myKey;
 
-	class CoverSyncRunnable implements Runnable {
-		private final ZLImageProxy myImage;
-		private final FBTree.Key myKey;
+        CoverSyncRunnable(ZLImageProxy image) {
+            myImage = image;
+            synchronized (CoverHolder.this) {
+                myKey = Key;
+                coverSyncRunnable = this;
+            }
+        }
 
-		CoverSyncRunnable(ZLImageProxy image) {
-			myImage = image;
-			synchronized (CoverHolder.this) {
-				myKey = Key;
-				coverSyncRunnable = this;
-			}
-		}
+        public void run() {
+            synchronized (CoverHolder.this) {
+                try {
+                    if (coverSyncRunnable != this) {
+                        return;
+                    }
+                    if (!Key.equals(myKey)) {
+                        return;
+                    }
+                    if (!myImage.isSynchronized()) {
+                        return;
+                    }
+                    myManager.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            synchronized (CoverHolder.this) {
+                                if (Key.equals(myKey)) {
+                                    myManager.setCoverForView(CoverHolder.this, myImage);
+                                }
+                            }
+                        }
+                    });
+                } finally {
+                    if (coverSyncRunnable == this) {
+                        coverSyncRunnable = null;
+                    }
+                }
+            }
+        }
+    }
 
-		public void run() {
-			synchronized (CoverHolder.this) {
-				try {
-					if (coverSyncRunnable != this) {
-						return;
-					}
-					if (!Key.equals(myKey)) {
-						return;
-					}
-					if (!myImage.isSynchronized()) {
-						return;
-					}
-					myManager.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							synchronized (CoverHolder.this) {
-								if (Key.equals(myKey)) {
-									myManager.setCoverForView(CoverHolder.this, myImage);
-								}
-							}
-						}
-					});
-				} finally {
-					if (coverSyncRunnable == this) {
-						coverSyncRunnable = null;
-					}
-				}
-			}
-		}
-	}
+    class CoverBitmapRunnable implements Runnable {
+        private final ZLImageProxy myImage;
+        private final FBTree.Key myKey;
 
-	class CoverBitmapRunnable implements Runnable {
-		private final ZLImageProxy myImage;
-		private final FBTree.Key myKey;
+        CoverBitmapRunnable(ZLImageProxy image) {
+            myImage = image;
+            synchronized (CoverHolder.this) {
+                myKey = Key;
+                coverBitmapRunnable = this;
+            }
+        }
 
-		CoverBitmapRunnable(ZLImageProxy image) {
-			myImage = image;
-			synchronized (CoverHolder.this) {
-				myKey = Key;
-				coverBitmapRunnable = this;
-			}
-		}
-
-		public void run() {
-			synchronized (CoverHolder.this) {
-				if (coverBitmapRunnable != this) {
-					return;
-				}
-			}
-			try {
-				if (!myImage.isSynchronized()) {
-					return;
-				}
-				final Bitmap coverBitmap = myManager.getBitmap(myImage);
-				if (coverBitmap == null) {
-					// If bitmap is null, then there's no image
-					// and CoverView already has a stock image
-					myManager.Cache.putBitmap(myKey, null);
-					return;
-				}
-				if (Thread.currentThread().isInterrupted()) {
-					// We have been cancelled
-					return;
-				}
+        public void run() {
+            synchronized (CoverHolder.this) {
+                if (coverBitmapRunnable != this) {
+                    return;
+                }
+            }
+            try {
+                if (!myImage.isSynchronized()) {
+                    return;
+                }
+                final Bitmap coverBitmap = myManager.getBitmap(myImage);
+                if (coverBitmap == null) {
+                    // If bitmap is null, then there's no image
+                    // and CoverView already has a stock image
+                    myManager.Cache.putBitmap(myKey, null);
+                    return;
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    // We have been cancelled
+                    return;
+                }
 				/*
 				synchronized (CoverHolder.this) {
 					// I'm not sure why, but cover bitmaps disappear all the time
@@ -143,25 +141,25 @@ class CoverHolder {
 					}
 				}
 				*/
-				myManager.Cache.putBitmap(myKey, coverBitmap);
-				myManager.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						synchronized (CoverHolder.this) {
-							if (Key.equals(myKey)) {
-								CoverView.setImageBitmap(coverBitmap);
-							}
-						}
-					}
-				});
-			} finally {
-				synchronized (CoverHolder.this) {
-					if (coverBitmapRunnable == this) {
-						coverBitmapRunnable = null;
-						coverBitmapTask = null;
-					}
-				}
-			}
-		}
-	}
+                myManager.Cache.putBitmap(myKey, coverBitmap);
+                myManager.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (CoverHolder.this) {
+                            if (Key.equals(myKey)) {
+                                CoverView.setImageBitmap(coverBitmap);
+                            }
+                        }
+                    }
+                });
+            } finally {
+                synchronized (CoverHolder.this) {
+                    if (coverBitmapRunnable == this) {
+                        coverBitmapRunnable = null;
+                        coverBitmapTask = null;
+                    }
+                }
+            }
+        }
+    }
 }

@@ -19,108 +19,104 @@
 
 package org.geometerplus.android.fbreader.network.auth;
 
-import java.net.URI;
-import java.util.*;
-
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.text.TextUtils;
 
-import org.geometerplus.zlibrary.core.network.*;
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
-import org.geometerplus.android.util.OrientationUtil;
+import org.geometerplus.zlibrary.core.network.ZLNetworkAuthenticationException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
+
+import java.util.Map;
 
 public final class ActivityNetworkContext extends AndroidNetworkContext {
-	private static class AuthorizationInProgressException extends ZLNetworkAuthenticationException {
-	}
+    private final Activity myActivity;
+    private volatile boolean myAuthorizationConfirmed;
+    private volatile DelayedAction myDelayed;
+    private volatile String myAccountName;
 
-	private class DelayedAction {
-		public final ZLNetworkRequest Request;
-		public final Runnable OnSuccess;
-		public final OnError OnError;
+    public ActivityNetworkContext(Activity activity) {
+        myActivity = activity;
+    }
 
-		public DelayedAction(ZLNetworkRequest request, Runnable onSuccess, OnError onError) {
-			Request = request;
-			OnSuccess = onSuccess;
-			OnError = onError;
-		}
-	}
+    public Context getContext() {
+        return myActivity;
+    }
 
-	private final Activity myActivity;
-	private volatile boolean myAuthorizationConfirmed;
-	private volatile DelayedAction myDelayed;
+    public synchronized void onResume() {
+        final DelayedAction action = myDelayed;
+        if (action == null) {
+            return;
+        }
 
-	private volatile String myAccountName;
+        cookieStore().reset();
+        myDelayed = null;
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    perform(action.Request);
+                    if (action.OnSuccess != null) {
+                        action.OnSuccess.run();
+                    }
+                } catch (ZLNetworkException e) {
+                    if (action.OnError != null) {
+                        action.OnError.run(e);
+                    }
+                }
+                return null;
+            }
+        }.execute();
+    }
 
-	public ActivityNetworkContext(Activity activity) {
-		myActivity = activity;
-	}
+    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+        return false;
+    }
 
-	public Context getContext() {
-		return myActivity;
-	}
+    @Override
+    protected Map<String, String> authenticateWeb(String realm, Uri uri) throws ZLNetworkAuthenticationException {
+        if (myDelayed == null) {
+            throw new ZLNetworkAuthenticationException();
+        }
 
-	public synchronized void onResume() {
-		final DelayedAction action = myDelayed;
-		if (action == null) {
-			return;
-		}
+        final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        myActivity.startActivity(intent);
+        throw new AuthorizationInProgressException();
+    }
 
-		cookieStore().reset();
-		myDelayed = null;
-		new AsyncTask<Void,Void,Void>() {
-			@Override
-			protected Void doInBackground(Void ... params) {
-				try {
-					perform(action.Request);
-					if (action.OnSuccess != null) {
-						action.OnSuccess.run();
-					}
-				} catch (ZLNetworkException e) {
-					if (action.OnError != null) {
-						action.OnError.run(e);
-					}
-				}
-				return null;
-			}
-		}.execute();
-	}
+    @Override
+    public final void perform(ZLNetworkRequest request, Runnable onSuccess, OnError onError) {
+        myDelayed = new DelayedAction(request, onSuccess, onError);
+        try {
+            perform(request);
+            myDelayed = null;
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+        } catch (AuthorizationInProgressException e) {
+        } catch (ZLNetworkException e) {
+            final DelayedAction action = myDelayed;
+            myDelayed = null;
+            if (action != null && action.OnError != null) {
+                action.OnError.run(e);
+            }
+        }
+    }
 
-	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-		return false;
-	}
+    private static class AuthorizationInProgressException extends ZLNetworkAuthenticationException {
+    }
 
-	@Override
-	protected Map<String,String> authenticateWeb(String realm, Uri uri) throws ZLNetworkAuthenticationException {
-		if (myDelayed == null) {
-			throw new ZLNetworkAuthenticationException();
-		}
+    private class DelayedAction {
+        public final ZLNetworkRequest Request;
+        public final Runnable OnSuccess;
+        public final OnError OnError;
 
-		final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		myActivity.startActivity(intent);
-		throw new AuthorizationInProgressException();
-	}
-
-	@Override
-	public final void perform(ZLNetworkRequest request, Runnable onSuccess, OnError onError) {
-		myDelayed = new DelayedAction(request, onSuccess, onError);
-		try {
-			perform(request);
-			myDelayed = null;
-			if (onSuccess != null) {
-				onSuccess.run();
-			}
-		} catch (AuthorizationInProgressException e) {
-		} catch (ZLNetworkException e) {
-			final DelayedAction action = myDelayed;
-			myDelayed = null;
-			if (action != null && action.OnError != null) {
-				action.OnError.run(e);
-			}
-		}
-	}
+        public DelayedAction(ZLNetworkRequest request, Runnable onSuccess, OnError onError) {
+            Request = request;
+            OnSuccess = onSuccess;
+            OnError = onError;
+        }
+    }
 }

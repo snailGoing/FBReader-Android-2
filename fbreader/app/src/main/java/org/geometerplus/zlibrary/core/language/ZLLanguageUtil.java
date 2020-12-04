@@ -19,43 +19,48 @@
 
 package org.geometerplus.zlibrary.core.language;
 
-import java.util.*;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.filesystem.ZLResourceFile;
 
-import org.geometerplus.zlibrary.core.filesystem.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
 
 public abstract class ZLLanguageUtil {
-	private static ArrayList<String> ourLanguageCodes = new ArrayList<String>();
+    private static ArrayList<String> ourLanguageCodes = new ArrayList<String>();
 
-	private ZLLanguageUtil() {
-	}
+    private ZLLanguageUtil() {
+    }
 
-	public static String defaultLanguageCode() {
-		return Locale.getDefault().getLanguage();
-	}
+    public static String defaultLanguageCode() {
+        return Locale.getDefault().getLanguage();
+    }
 
-	public static List<String> languageCodes() {
-		if (ourLanguageCodes.isEmpty()) {
-			TreeSet<String> codes = new TreeSet<String>();
-			for (ZLFile file : patternsFile().children()) {
-				String name = file.getShortName();
-				final int index = name.indexOf("_");
-				if (index != -1) {
-					String str = name.substring(0, index);
-					if (!codes.contains(str)) {
-						codes.add(str);
-					}
-				}
-			}
-			codes.add("id");
-			codes.add("de-traditional");
+    public static List<String> languageCodes() {
+        if (ourLanguageCodes.isEmpty()) {
+            TreeSet<String> codes = new TreeSet<String>();
+            for (ZLFile file : patternsFile().children()) {
+                String name = file.getShortName();
+                final int index = name.indexOf("_");
+                if (index != -1) {
+                    String str = name.substring(0, index);
+                    if (!codes.contains(str)) {
+                        codes.add(str);
+                    }
+                }
+            }
+            codes.add("id");
+            codes.add("de-traditional");
 
-			ourLanguageCodes.addAll(codes);
-		}
+            ourLanguageCodes.addAll(codes);
+        }
 
-		return Collections.unmodifiableList(ourLanguageCodes);
-	}
+        return Collections.unmodifiableList(ourLanguageCodes);
+    }
 
-	public static ZLFile patternsFile() {
-		return ZLResourceFile.createResourceFile("languagePatterns");
-	}
+    public static ZLFile patternsFile() {
+        return ZLResourceFile.createResourceFile("languagePatterns");
+    }
 }

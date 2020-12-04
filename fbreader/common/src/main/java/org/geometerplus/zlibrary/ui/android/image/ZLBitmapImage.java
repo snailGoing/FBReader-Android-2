@@ -19,23 +19,23 @@
 
 package org.geometerplus.zlibrary.ui.android.image;
 
-import org.geometerplus.zlibrary.core.image.ZLImage;
-
 import android.graphics.Bitmap;
 
+import org.geometerplus.zlibrary.core.image.ZLImage;
+
 public class ZLBitmapImage implements ZLImage {
-	private final Bitmap myBitmap;
+    private final Bitmap myBitmap;
 
-	public ZLBitmapImage(Bitmap bitmap) {
-		myBitmap = bitmap;
-	}
+    public ZLBitmapImage(Bitmap bitmap) {
+        myBitmap = bitmap;
+    }
 
-	public Bitmap getBitmap() {
-		return myBitmap;
-	}
+    public Bitmap getBitmap() {
+        return myBitmap;
+    }
 
-	@Override
-	public String getURI() {
-		return "bitmap image";
-	}
+    @Override
+    public String getURI() {
+        return "bitmap image";
+    }
 }

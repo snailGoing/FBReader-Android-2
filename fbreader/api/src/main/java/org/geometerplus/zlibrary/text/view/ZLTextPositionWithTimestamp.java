@@ -20,36 +20,36 @@
 package org.geometerplus.zlibrary.text.view;
 
 public class ZLTextPositionWithTimestamp {
-	public final ZLTextFixedPosition Position;
-	public final long Timestamp;
+    public final ZLTextFixedPosition Position;
+    public final long Timestamp;
 
-	public ZLTextPositionWithTimestamp(ZLTextFixedPosition position, Long stamp) {
-		Position = position;
-		Timestamp = stamp != null ? stamp : -1;
-	}
+    public ZLTextPositionWithTimestamp(ZLTextFixedPosition position, Long stamp) {
+        Position = position;
+        Timestamp = stamp != null ? stamp : -1;
+    }
 
-	public ZLTextPositionWithTimestamp(int paragraphIndex, int elementIndex, int charIndex, Long stamp) {
-		this(new ZLTextFixedPosition(paragraphIndex, elementIndex, charIndex), stamp);
-	}
+    public ZLTextPositionWithTimestamp(int paragraphIndex, int elementIndex, int charIndex, Long stamp) {
+        this(new ZLTextFixedPosition(paragraphIndex, elementIndex, charIndex), stamp);
+    }
 
-	@Override
-	public String toString() {
-		return Position.toString() + "; timestamp = " + Timestamp;
-	}
+    @Override
+    public String toString() {
+        return Position.toString() + "; timestamp = " + Timestamp;
+    }
 
-	@Override
-	public boolean equals(Object other) {
-		if (this == other) {
-			return true;
-		}
-		if (other == null) {
-			return false;
-		}
-		try {
-			final ZLTextPositionWithTimestamp pwt = (ZLTextPositionWithTimestamp)other;
-			return Timestamp == pwt.Timestamp && Position.equals(pwt.Position);
-		} catch (ClassCastException e) {
-			return false;
-		}
-	}
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
+        try {
+            final ZLTextPositionWithTimestamp pwt = (ZLTextPositionWithTimestamp) other;
+            return Timestamp == pwt.Timestamp && Position.equals(pwt.Position);
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
 }

@@ -19,54 +19,55 @@
 
 package org.geometerplus.fbreader.network;
 
+import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfoCollection;
 import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
-import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
-import org.geometerplus.fbreader.network.urlInfo.*;
-
 public abstract class SearchItem extends NetworkCatalogItem {
-	private String myPattern;
+    private String myPattern;
 
-	protected SearchItem(INetworkLink link, String summary) {
-		super(
-			link,
-			NetworkLibrary.resource().getResource("search").getValue(),
-			summary,
-			new UrlInfoCollection<UrlInfo>(),
-			Accessibility.ALWAYS,
-			FLAGS_DEFAULT
-		);
-	}
+    protected SearchItem(INetworkLink link, String summary) {
+        super(
+                link,
+                NetworkLibrary.resource().getResource("search").getValue(),
+                summary,
+                new UrlInfoCollection<UrlInfo>(),
+                Accessibility.ALWAYS,
+                FLAGS_DEFAULT
+        );
+    }
 
-	public void setPattern(String pattern) {
-		myPattern = pattern;
-	}
+    public String getPattern() {
+        return myPattern;
+    }
 
-	public String getPattern() {
-		return myPattern;
-	}
+    public void setPattern(String pattern) {
+        myPattern = pattern;
+    }
 
-	@Override
-	public boolean canBeOpened() {
-		return myPattern != null;
-	}
+    @Override
+    public boolean canBeOpened() {
+        return myPattern != null;
+    }
 
-	@Override
-	public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		if (onSuccess != null) {
-			onSuccess.run();
-		}
-	}
+    @Override
+    public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        if (onSuccess != null) {
+            onSuccess.run();
+        }
+    }
 
-	public abstract void runSearch(ZLNetworkContext context, NetworkItemsLoader loader, String pattern) throws ZLNetworkException;
+    public abstract void runSearch(ZLNetworkContext context, NetworkItemsLoader loader, String pattern) throws ZLNetworkException;
 
-	@Override
-	public String getStringId() {
-		return "@Search";
-	}
+    @Override
+    public String getStringId() {
+        return "@Search";
+    }
 
-	public abstract MimeType getMimeType();
-	public abstract String getUrl(String pattern);
+    public abstract MimeType getMimeType();
+
+    public abstract String getUrl(String pattern);
 }

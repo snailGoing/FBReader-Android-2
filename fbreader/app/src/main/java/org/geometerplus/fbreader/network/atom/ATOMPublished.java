@@ -22,9 +22,9 @@ package org.geometerplus.fbreader.network.atom;
 import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 public class ATOMPublished extends ATOMDateConstruct {
-	public ATOMPublished(ZLStringMap attributes) {
-		super(attributes);
-	}
+    public ATOMPublished(ZLStringMap attributes) {
+        super(attributes);
+    }
 
 	/*
 	public ATOMPublished(int year) {

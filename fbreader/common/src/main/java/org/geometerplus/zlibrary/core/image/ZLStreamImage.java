@@ -22,5 +22,5 @@ package org.geometerplus.zlibrary.core.image;
 import java.io.InputStream;
 
 public interface ZLStreamImage extends ZLImage {
-	public abstract InputStream inputStream();
+    public abstract InputStream inputStream();
 }

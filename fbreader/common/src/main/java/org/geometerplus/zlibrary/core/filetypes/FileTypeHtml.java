@@ -19,34 +19,34 @@
 
 package org.geometerplus.zlibrary.core.filetypes;
 
-import java.util.List;
-
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
+import java.util.List;
+
 class FileTypeHtml extends FileType {
-	FileTypeHtml() {
-		super("HTML");
-	}
+    FileTypeHtml() {
+        super("HTML");
+    }
 
-	@Override
-	public boolean acceptsFile(ZLFile file) {
-		final String extension = file.getExtension().toLowerCase();
-		return extension.endsWith("html") || "htm".equals(extension);
-	}
+    @Override
+    public boolean acceptsFile(ZLFile file) {
+        final String extension = file.getExtension().toLowerCase();
+        return extension.endsWith("html") || "htm".equals(extension);
+    }
 
-	@Override
-	public List<MimeType> mimeTypes() {
-		return MimeType.TYPES_HTML;
-	}
+    @Override
+    public List<MimeType> mimeTypes() {
+        return MimeType.TYPES_HTML;
+    }
 
-	@Override
-	public MimeType mimeType(ZLFile file) {
-		return acceptsFile(file) ? MimeType.TEXT_HTML : MimeType.NULL;
-	}
+    @Override
+    public MimeType mimeType(ZLFile file) {
+        return acceptsFile(file) ? MimeType.TEXT_HTML : MimeType.NULL;
+    }
 
-	@Override
-	public String defaultExtension(MimeType mime) {
-		return "html";
-	}
+    @Override
+    public String defaultExtension(MimeType mime) {
+        return "html";
+    }
 }

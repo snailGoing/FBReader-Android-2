@@ -17,7 +17,7 @@ import android.util.Log;
 /**
  * An {@link AsyncTask}, used to show {@link ProgressDialog} while doing some
  * background tasks.<br>
- * 
+ *
  * @author Hai Bison
  * @since v2.1 alpha
  */
@@ -39,13 +39,10 @@ public abstract class LoadingDialog extends AsyncTask<Void, Void, Object> {
 
     /**
      * Creates new {@link LoadingDialog}
-     * 
-     * @param context
-     *            {@link Context}
-     * @param msg
-     *            message will be shown in the dialog.
-     * @param cancelable
-     *            as the name means.
+     *
+     * @param context    {@link Context}
+     * @param msg        message will be shown in the dialog.
+     * @param cancelable as the name means.
      */
     public LoadingDialog(Context context, String msg, boolean cancelable) {
         mDialog = new ProgressDialog(context);
@@ -66,13 +63,10 @@ public abstract class LoadingDialog extends AsyncTask<Void, Void, Object> {
 
     /**
      * Creates new {@link LoadingDialog}
-     * 
-     * @param context
-     *            {@link Context}
-     * @param msgId
-     *            resource id of the message will be shown in the dialog.
-     * @param cancelable
-     *            as the name means.
+     *
+     * @param context    {@link Context}
+     * @param msgId      resource id of the message will be shown in the dialog.
+     * @param cancelable as the name means.
      */
     public LoadingDialog(Context context, int msgId, boolean cancelable) {
         this(context, context.getString(msgId), cancelable);
@@ -136,7 +130,7 @@ public abstract class LoadingDialog extends AsyncTask<Void, Void, Object> {
 
     /**
      * Gets the delay time before showing the dialog.
-     * 
+     *
      * @return the delay time
      */
     public int getDelayTime() {
@@ -145,9 +139,8 @@ public abstract class LoadingDialog extends AsyncTask<Void, Void, Object> {
 
     /**
      * Sets the delay time before showing the dialog.
-     * 
-     * @param delayTime
-     *            the delay time to set
+     *
+     * @param delayTime the delay time to set
      * @return {@link LoadingDialog}
      */
     public LoadingDialog setDelayTime(int delayTime) {
@@ -156,22 +149,21 @@ public abstract class LoadingDialog extends AsyncTask<Void, Void, Object> {
     }
 
     /**
-     * Sets last exception. This method is useful in case an exception raises
-     * inside {@link #doInBackground(Void...)}
-     * 
-     * @param t
-     *            {@link Throwable}
-     */
-    protected void setLastException(Throwable t) {
-        mLastException = t;
-    }
-
-    /**
      * Gets last exception.
-     * 
+     *
      * @return {@link Throwable}
      */
     protected Throwable getLastException() {
         return mLastException;
+    }
+
+    /**
+     * Sets last exception. This method is useful in case an exception raises
+     * inside {@link #doInBackground(Void...)}
+     *
+     * @param t {@link Throwable}
+     */
+    protected void setLastException(Throwable t) {
+        mLastException = t;
     }
 }

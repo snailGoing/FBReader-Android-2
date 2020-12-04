@@ -1,105 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-	<node name="dialog">
-		<node name="button">
-			<node name="ok" value="Ok"/>
-			<node name="cancel" value="Cancelar"/>
-			<node name="yes" value="Sim"/>
-			<node name="no" value="Não"/>
-			<node name="apply" value="Aplicar"/>
-		</node>
-		<node name="networkError">
-			<node name="title" value="Erro de rede"/>
-			<node name="unknownErrorMessage" value="Erro desconhecido"/>
-			<node name="operationTimedOutMessage" value="O tempo de operação esgotou"/>
-			<node name="somethingWrongMessage" value="Aconteceu um erro com %s"/>
-			<node name="couldntCreateDirectoryMessage" value="Não foi possível criar o diretório %s"/>
-			<node name="couldntCreateFileMessage" value="Não foi possível criar o ficheiro %s"/>
-			<node name="couldntConnectMessage" value="Não foi possível ligar ao servidor %s"/>
-			<node name="couldntResolveHostMessage" value="Não foi possível mapear o IP do servidor %s"/>
-			<node name="authenticationFailed" value="Falha na autenticação"/>
-			<node name="unsupportedProtocol" value="Protocolo não suportado"/>
-			<node name="invalidURL" value="URL inválido"/>
-			<node name="hostCantBeReached" value="Não foi possível alcançar o servidor %s"/>
-			<node name="connectionRefused" value="A ligação foi recusada por %s"/>
-			<node name="networkNotAvailable" value="Rede não disponível"/>
-		</node>
-	</node>
-	<node name="color">
-		<node name="red" value="Vermelho"/>
-		<node name="green" value="Verde"/>
-		<node name="blue" value="Azul"/>
-	</node>
-	<node name="language">
-		<node name="ar" value="Árabe"/>
-		<node name="be" value="Bielorusso"/>
-		<node name="bg" value="Búlgaro"/>
-		<node name="ca" value="Catalão"/>
-		<node name="cs" value="Checo"/>
-		<node name="da" value="Dinamarquês"/>
-		<node name="de" value="Alemão"/>
-		<node name="de-traditional" value="Alemão (ortografia tradicional)"/>
-		<node name="el" value="Grego"/>
-		<node name="en" value="Inglês (GB)"/>
-		<node name="en_US" value="Inglês (EUA)"/>
-		<node name="eo" value="Esperanto"/>
-		<node name="es" value="Espanhol"/>
-		<node name="eu" value="Basco"/>
-		<node name="fa" value="Persa"/>
-		<node name="fi" value="Finlandês"/>
-		<node name="fr" value="Francês"/>
-		<node name="gl" value="Galego"/>
-		<node name="he" value="Hebraico"/>
-		<node name="hu" value="Húngaro"/>
-		<node name="hy" value="Arménio"/>
-		<node name="id" value="Indonésio"/>
-		<node name="it" value="Italiano"/>
-		<node name="ja" value="Japonês"/>
-		<node name="ka" value="Georgiano"/>
-		<node name="ko" value="Coreano"/>
-		<node name="lt" value="Lituano"/>
-		<node name="nb" value="Norueguês"/>
-		<node name="nl" value="Holandês"/>
-		<node name="pl" value="Polaco"/>
-		<node name="pt" value="Português (Portugal)"/>
-		<node name="ro" value="Romanian" toBeTranslated="true"/>
-		<node name="ru" value="Russian" toBeTranslated="true"/>
-		<node name="sr" value="Serbian" toBeTranslated="true"/>
-		<node name="sv" value="Swedish" toBeTranslated="true"/>
-		<node name="ta" value="Tamil" toBeTranslated="true"/>
-		<node name="th" value="Thai" toBeTranslated="true"/>
-		<node name="tr" value="Turkish" toBeTranslated="true"/>
-		<node name="uk" value="Ukrainian" toBeTranslated="true"/>
-		<node name="vi" value="Vietnamese" toBeTranslated="true"/>
-		<node name="zh" value="Chinese" toBeTranslated="true"/>
-		<node name="zh_TW" value="Chinese (traditional)" toBeTranslated="true"/>
-		<node name="any" value="Any" toBeTranslated="true"/>
-		<node name="other" value="Other" toBeTranslated="true"/>
-		<node name="multi" value="Multilanguage" toBeTranslated="true"/>
-		<node name="system" value="System" toBeTranslated="true"/>
-		<node name="pt_BR" value="Português (Brasil)"/>
-		<node name="ro" value="Romeno"/>
-		<node name="ru" value="Russo"/>
-		<node name="sr" value="Sérvio"/>
-		<node name="sv" value="Sueco"/>
-		<node name="ta" value="Tâmil"/>
-		<node name="th" value="Tailandês"/>
-		<node name="tr" value="Turco"/>
-		<node name="uk" value="Ucraniano"/>
-		<node name="vi" value="Vietnamita"/>
-		<node name="zh" value="Chinês (Simplificado)"/>
-		<node name="zh_TW" value="Chinês (Tradicional)"/>
-		<node name="any" value="Qualquer"/>
-		<node name="other" value="Outro"/>
-		<node name="multi" value="Multi-idioma"/>
-		<node name="system" value="Sistema"/>
-	</node>
-	<node name="boolean3">
-		<node name="on" value="Ligado"/>
-		<node name="off" value="Desligado"/>
-		<node name="unchanged" value="Inalterado"/>
-	</node>
-	<node name="keyOptionView">
-		<node name="actionFor" value="Ação para tecla"/>
-	</node>
+    <node name="dialog">
+        <node name="button">
+            <node name="ok" value="Ok" />
+            <node name="cancel" value="Cancelar" />
+            <node name="yes" value="Sim" />
+            <node name="no" value="Não" />
+            <node name="apply" value="Aplicar" />
+        </node>
+        <node name="networkError">
+            <node name="title" value="Erro de rede" />
+            <node name="unknownErrorMessage" value="Erro desconhecido" />
+            <node name="operationTimedOutMessage" value="O tempo de operação esgotou" />
+            <node name="somethingWrongMessage" value="Aconteceu um erro com %s" />
+            <node name="couldntCreateDirectoryMessage"
+                value="Não foi possível criar o diretório %s" />
+            <node name="couldntCreateFileMessage" value="Não foi possível criar o ficheiro %s" />
+            <node name="couldntConnectMessage" value="Não foi possível ligar ao servidor %s" />
+            <node name="couldntResolveHostMessage"
+                value="Não foi possível mapear o IP do servidor %s" />
+            <node name="authenticationFailed" value="Falha na autenticação" />
+            <node name="unsupportedProtocol" value="Protocolo não suportado" />
+            <node name="invalidURL" value="URL inválido" />
+            <node name="hostCantBeReached" value="Não foi possível alcançar o servidor %s" />
+            <node name="connectionRefused" value="A ligação foi recusada por %s" />
+            <node name="networkNotAvailable" value="Rede não disponível" />
+        </node>
+    </node>
+    <node name="color">
+        <node name="red" value="Vermelho" />
+        <node name="green" value="Verde" />
+        <node name="blue" value="Azul" />
+    </node>
+    <node name="language">
+        <node name="ar" value="Árabe" />
+        <node name="be" value="Bielorusso" />
+        <node name="bg" value="Búlgaro" />
+        <node name="ca" value="Catalão" />
+        <node name="cs" value="Checo" />
+        <node name="da" value="Dinamarquês" />
+        <node name="de" value="Alemão" />
+        <node name="de-traditional" value="Alemão (ortografia tradicional)" />
+        <node name="el" value="Grego" />
+        <node name="en" value="Inglês (GB)" />
+        <node name="en_US" value="Inglês (EUA)" />
+        <node name="eo" value="Esperanto" />
+        <node name="es" value="Espanhol" />
+        <node name="eu" value="Basco" />
+        <node name="fa" value="Persa" />
+        <node name="fi" value="Finlandês" />
+        <node name="fr" value="Francês" />
+        <node name="gl" value="Galego" />
+        <node name="he" value="Hebraico" />
+        <node name="hu" value="Húngaro" />
+        <node name="hy" value="Arménio" />
+        <node name="id" value="Indonésio" />
+        <node name="it" value="Italiano" />
+        <node name="ja" value="Japonês" />
+        <node name="ka" value="Georgiano" />
+        <node name="ko" value="Coreano" />
+        <node name="lt" value="Lituano" />
+        <node name="nb" value="Norueguês" />
+        <node name="nl" value="Holandês" />
+        <node name="pl" value="Polaco" />
+        <node name="pt" value="Português (Portugal)" />
+        <node name="ro" toBeTranslated="true" value="Romanian" />
+        <node name="ru" toBeTranslated="true" value="Russian" />
+        <node name="sr" toBeTranslated="true" value="Serbian" />
+        <node name="sv" toBeTranslated="true" value="Swedish" />
+        <node name="ta" toBeTranslated="true" value="Tamil" />
+        <node name="th" toBeTranslated="true" value="Thai" />
+        <node name="tr" toBeTranslated="true" value="Turkish" />
+        <node name="uk" toBeTranslated="true" value="Ukrainian" />
+        <node name="vi" toBeTranslated="true" value="Vietnamese" />
+        <node name="zh" toBeTranslated="true" value="Chinese" />
+        <node name="zh_TW" toBeTranslated="true" value="Chinese (traditional)" />
+        <node name="any" toBeTranslated="true" value="Any" />
+        <node name="other" toBeTranslated="true" value="Other" />
+        <node name="multi" toBeTranslated="true" value="Multilanguage" />
+        <node name="system" toBeTranslated="true" value="System" />
+        <node name="pt_BR" value="Português (Brasil)" />
+        <node name="ro" value="Romeno" />
+        <node name="ru" value="Russo" />
+        <node name="sr" value="Sérvio" />
+        <node name="sv" value="Sueco" />
+        <node name="ta" value="Tâmil" />
+        <node name="th" value="Tailandês" />
+        <node name="tr" value="Turco" />
+        <node name="uk" value="Ucraniano" />
+        <node name="vi" value="Vietnamita" />
+        <node name="zh" value="Chinês (Simplificado)" />
+        <node name="zh_TW" value="Chinês (Tradicional)" />
+        <node name="any" value="Qualquer" />
+        <node name="other" value="Outro" />
+        <node name="multi" value="Multi-idioma" />
+        <node name="system" value="Sistema" />
+    </node>
+    <node name="boolean3">
+        <node name="on" value="Ligado" />
+        <node name="off" value="Desligado" />
+        <node name="unchanged" value="Inalterado" />
+    </node>
+    <node name="keyOptionView">
+        <node name="actionFor" value="Ação para tecla" />
+    </node>
 </resources>

@@ -19,25 +19,26 @@
 
 package org.geometerplus.fbreader.network.tree;
 
-import org.geometerplus.fbreader.network.*;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.NetworkTree;
 
 public class ManageCatalogsItemTree extends NetworkTree {
-	public ManageCatalogsItemTree(NetworkTree parent) {
-		super(parent);
-	}
+    public ManageCatalogsItemTree(NetworkTree parent) {
+        super(parent);
+    }
 
-	@Override
-	public String getName() {
-		return NetworkLibrary.resource().getResource("manageCatalogs").getValue();
-	}
+    @Override
+    public String getName() {
+        return NetworkLibrary.resource().getResource("manageCatalogs").getValue();
+    }
 
-	@Override
-	public String getSummary() {
-		return NetworkLibrary.resource().getResource("manageCatalogs").getResource("summary").getValue();
-	}
+    @Override
+    public String getSummary() {
+        return NetworkLibrary.resource().getResource("manageCatalogs").getResource("summary").getValue();
+    }
 
-	@Override
-	protected String getStringId() {
-		return "@ManageCatalogs";
-	}
+    @Override
+    protected String getStringId() {
+        return "@ManageCatalogs";
+    }
 }

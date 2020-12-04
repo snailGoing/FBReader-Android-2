@@ -7,37 +7,56 @@
 
 package group.pals.android.lib.ui.filechooser.utils.history;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A history store of any object extending {@link Parcelable}.<br>
  * <b>Note:</b> This class does not support storing its {@link HistoryListener}
  * 's into {@link Parcelable}. You must re-build all listeners after getting
  * your {@link HistoryStore} from a {@link Bundle} for example.
- * 
+ *
  * @author Hai Bison
  * @since v2.0 alpha
  */
 public class HistoryStore<A extends Parcelable> implements History<A> {
 
+    @SuppressWarnings("rawtypes")
+    public static final Parcelable.Creator<HistoryStore> CREATOR = new Parcelable.Creator<HistoryStore>() {
+
+        public HistoryStore createFromParcel(Parcel in) {
+            return new HistoryStore(in);
+        }
+
+        public HistoryStore[] newArray(int size) {
+            return new HistoryStore[size];
+        }
+    };
     private final ArrayList<A> mHistoryList = new ArrayList<A>();
     private final int mMaxSize;
     private final List<HistoryListener<A>> mListeners = new ArrayList<HistoryListener<A>>();
 
     /**
      * Creates new {@link HistoryStore}
-     * 
-     * @param maxSize
-     *            the maximum size that allowed, if it is &lt;= {@code 0},
-     *            {@code 100} will be used
+     *
+     * @param maxSize the maximum size that allowed, if it is &lt;= {@code 0},
+     *                {@code 100} will be used
      */
     public HistoryStore(int maxSize) {
         this.mMaxSize = maxSize > 0 ? maxSize : 100;
+    }
+
+    @SuppressWarnings("unchecked")
+    private HistoryStore(Parcel in) {
+        mMaxSize = in.readInt();
+
+        int count = in.readInt();
+        for (int i = 0; i < count; i++)
+            mHistoryList.add((A) in.readParcelable(null));
     }
 
     @Override
@@ -134,6 +153,10 @@ public class HistoryStore<A extends Parcelable> implements History<A> {
         notifyHistoryChanged();
     }
 
+    /*-----------------------------------------------------
+     * Parcelable
+     */
+
     @Override
     public void addListener(HistoryListener<A> listener) {
         mListeners.add(listener);
@@ -143,10 +166,6 @@ public class HistoryStore<A extends Parcelable> implements History<A> {
     public void removeListener(HistoryListener<A> listener) {
         mListeners.remove(listener);
     }
-
-    /*-----------------------------------------------------
-     * Parcelable
-     */
 
     @Override
     public int describeContents() {
@@ -161,26 +180,5 @@ public class HistoryStore<A extends Parcelable> implements History<A> {
         dest.writeInt(size());
         for (int i = 0; i < size(); i++)
             dest.writeParcelable(mHistoryList.get(i), flags);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static final Parcelable.Creator<HistoryStore> CREATOR = new Parcelable.Creator<HistoryStore>() {
-
-        public HistoryStore createFromParcel(Parcel in) {
-            return new HistoryStore(in);
-        }
-
-        public HistoryStore[] newArray(int size) {
-            return new HistoryStore[size];
-        }
-    };
-
-    @SuppressWarnings("unchecked")
-    private HistoryStore(Parcel in) {
-        mMaxSize = in.readInt();
-
-        int count = in.readInt();
-        for (int i = 0; i < count; i++)
-            mHistoryList.add((A) in.readParcelable(null));
     }
 }

@@ -19,145 +19,143 @@
 
 package org.geometerplus.fbreader.tips;
 
-import java.util.*;
-import java.io.File;
-
-import org.geometerplus.zlibrary.core.filesystem.ZLFile;
-import org.geometerplus.zlibrary.core.options.*;
-import org.geometerplus.zlibrary.core.network.QuietNetworkContext;
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-import org.geometerplus.zlibrary.core.util.SystemInfo;
-
 import org.geometerplus.fbreader.network.NetworkLibrary;
 import org.geometerplus.fbreader.network.atom.ATOMXMLReader;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.network.QuietNetworkContext;
+import org.geometerplus.zlibrary.core.options.Config;
+import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
+import org.geometerplus.zlibrary.core.options.ZLIntegerOption;
+import org.geometerplus.zlibrary.core.util.SystemInfo;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class TipsManager {
-	private final SystemInfo mySystemInfo;
+    public static final ZLBooleanOption TipsAreInitializedOption =
+            new ZLBooleanOption("tips", "tipsAreInitialized", false);
+    public static final ZLBooleanOption ShowTipsOption =
+            new ZLBooleanOption("tips", "showTips", false);
+    private final SystemInfo mySystemInfo;
+    // time when last tip was shown, 2^16 milliseconds
+    private final ZLIntegerOption myLastShownOption;
+    // index of next tip to show
+    private final ZLIntegerOption myIndexOption;
+    private final int DELAY = (24 * 60 * 60 * 1000) >> 16; // 1 day
+    private volatile boolean myDownloadInProgress;
+    private List<Tip> myTips;
 
-	public static final ZLBooleanOption TipsAreInitializedOption =
-		new ZLBooleanOption("tips", "tipsAreInitialized", false);
-	public static final ZLBooleanOption ShowTipsOption =
-		new ZLBooleanOption("tips", "showTips", false);
+    public TipsManager(SystemInfo systemInfo) {
+        mySystemInfo = systemInfo;
 
-	// time when last tip was shown, 2^16 milliseconds
-	private final ZLIntegerOption myLastShownOption;
-	// index of next tip to show
-	private final ZLIntegerOption myIndexOption;
+        myLastShownOption = new ZLIntegerOption("tips", "shownAt", 0);
+        myIndexOption = new ZLIntegerOption("tips", "index", 0);
+    }
 
-	private volatile boolean myDownloadInProgress;
+    private String getUrl() {
+        return "https://data.fbreader.org/tips/tips.php";
+    }
 
-	public TipsManager(SystemInfo systemInfo) {
-		mySystemInfo = systemInfo;
+    private String getLocalFilePath() {
+        return mySystemInfo.networkCacheDirectory() + "/tips/tips.xml";
+    }
 
-		myLastShownOption = new ZLIntegerOption("tips", "shownAt", 0);
-		myIndexOption = new ZLIntegerOption("tips", "index", 0);
-	}
+    private List<Tip> getTips() {
+        if (myTips == null) {
+            final ZLFile file = ZLFile.createFileByPath(getLocalFilePath());
+            if (file.exists()) {
+                final TipsFeedHandler handler = new TipsFeedHandler();
+                new ATOMXMLReader(NetworkLibrary.Instance(mySystemInfo), handler, false).readQuietly(file);
+                final List<Tip> tips = Collections.unmodifiableList(handler.Tips);
+                if (tips.size() > 0) {
+                    myTips = tips;
+                }
+            }
+        }
+        return myTips;
+    }
 
-	private String getUrl() {
-		return "https://data.fbreader.org/tips/tips.php";
-	}
+    public boolean hasNextTip() {
+        final List<Tip> tips = getTips();
+        if (tips == null) {
+            return false;
+        }
 
-	private String getLocalFilePath() {
-		return mySystemInfo.networkCacheDirectory() + "/tips/tips.xml";
-	}
+        final int index = myIndexOption.getValue();
+        if (index >= tips.size()) {
+            new File(getLocalFilePath()).delete();
+            myIndexOption.setValue(0);
+            return false;
+        }
 
-	private List<Tip> myTips;
-	private List<Tip> getTips() {
-		if (myTips == null) {
-			final ZLFile file = ZLFile.createFileByPath(getLocalFilePath());
-			if (file.exists()) {
-				final TipsFeedHandler handler = new TipsFeedHandler();
-				new ATOMXMLReader(NetworkLibrary.Instance(mySystemInfo), handler, false).readQuietly(file);
-				final List<Tip> tips = Collections.unmodifiableList(handler.Tips);
-				if (tips.size() > 0) {
-					myTips = tips;
-				}
-			}
-		}
-		return myTips;
-	}
+        return true;
+    }
 
-	public boolean hasNextTip() {
-		final List<Tip> tips = getTips();
-		if (tips == null) {
-			return false;
-		}
+    public Tip getNextTip() {
+        final List<Tip> tips = getTips();
+        if (tips == null) {
+            return null;
+        }
 
-		final int index = myIndexOption.getValue();
-		if (index >= tips.size()) {
-			new File(getLocalFilePath()).delete();
-			myIndexOption.setValue(0);
-			return false;
-		}
+        final int index = myIndexOption.getValue();
+        if (index >= tips.size()) {
+            new File(getLocalFilePath()).delete();
+            myIndexOption.setValue(0);
+            return null;
+        }
 
-		return true;
-	}
+        myIndexOption.setValue(index + 1);
+        myLastShownOption.setValue(currentTime());
+        return tips.get(index);
+    }
 
-	public Tip getNextTip() {
-		final List<Tip> tips = getTips();
-		if (tips == null) {
-			return null;
-		}
+    private int currentTime() {
+        return (int) (new Date().getTime() >> 16);
+    }
 
-		final int index = myIndexOption.getValue();
-		if (index >= tips.size()) {
-			new File(getLocalFilePath()).delete();
-			myIndexOption.setValue(0);
-			return null;
-		}
+    public Action requiredAction() {
+        if (ShowTipsOption.getValue()) {
+            if (hasNextTip()) {
+                return myLastShownOption.getValue() + DELAY < currentTime()
+                        ? Action.Show : Action.None;
+            } else {
+                return myDownloadInProgress
+                        ? Action.None : Action.Download;
+            }
+        } else if (!TipsAreInitializedOption.getValue()) {
+            //return Action.Initialize;
+            return Action.None;
+        }
+        return Action.None;
+    }
 
-		myIndexOption.setValue(index + 1);
-		myLastShownOption.setValue(currentTime());
-		return tips.get(index);
-	}
+    public synchronized void startDownloading() {
+        if (requiredAction() != Action.Download) {
+            return;
+        }
 
-	private final int DELAY = (24 * 60 * 60 * 1000) >> 16; // 1 day
+        myDownloadInProgress = true;
 
-	private int currentTime() {
-		return (int)(new Date().getTime() >> 16);
-	}
+        Config.Instance().runOnConnect(new Runnable() {
+            public void run() {
+                final File tipsFile = new File(getLocalFilePath());
+                tipsFile.getParentFile().mkdirs();
+                new Thread(new Runnable() {
+                    public void run() {
+                        new QuietNetworkContext().downloadToFileQuietly(getUrl(), tipsFile);
+                        myDownloadInProgress = false;
+                    }
+                }).start();
+            }
+        });
+    }
 
-	public static enum Action {
-		Initialize,
-		Show,
-		Download,
-		None
-	}
-
-	public Action requiredAction() {
-		if (ShowTipsOption.getValue()) {
-			if (hasNextTip()) {
-				return myLastShownOption.getValue() + DELAY < currentTime()
-					? Action.Show : Action.None;
-			} else {
-				return myDownloadInProgress
-					? Action.None : Action.Download;
-			}
-		} else if (!TipsAreInitializedOption.getValue()) {
-			//return Action.Initialize;
-			return Action.None;
-		}
-		return Action.None;
-	}
-
-	public synchronized void startDownloading() {
-		if (requiredAction() != Action.Download) {
-			return;
-		}
-
-		myDownloadInProgress = true;
-
-		Config.Instance().runOnConnect(new Runnable() {
-			public void run() {
-				final File tipsFile = new File(getLocalFilePath());
-				tipsFile.getParentFile().mkdirs();
-				new Thread(new Runnable() {
-					public void run() {
-						new QuietNetworkContext().downloadToFileQuietly(getUrl(), tipsFile);
-						myDownloadInProgress = false;
-					}
-				}).start();
-			}
-		});
-	}
+    public static enum Action {
+        Initialize,
+        Show,
+        Download,
+        None
+    }
 }

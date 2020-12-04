@@ -21,56 +21,54 @@ package org.geometerplus.android.fbreader.network.action;
 
 import android.app.Activity;
 
-import org.geometerplus.zlibrary.core.money.Money;
-
+import org.geometerplus.android.fbreader.network.TopupMenuActivity;
 import org.geometerplus.fbreader.network.INetworkLink;
 import org.geometerplus.fbreader.network.NetworkTree;
+import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
 import org.geometerplus.fbreader.network.tree.NetworkCatalogRootTree;
 import org.geometerplus.fbreader.network.tree.TopUpTree;
-import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
-
-import org.geometerplus.android.fbreader.network.TopupMenuActivity;
+import org.geometerplus.zlibrary.core.money.Money;
 
 public class TopupAction extends Action {
-	public TopupAction(Activity activity) {
-		super(activity, ActionCode.TOPUP, "topup", -1);
-	}
+    public TopupAction(Activity activity) {
+        super(activity, ActionCode.TOPUP, "topup", -1);
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (tree instanceof TopUpTree) {
-			return true;
-		} else if (tree instanceof NetworkCatalogRootTree) {
-			final INetworkLink link = tree.getLink();
-			final NetworkAuthenticationManager mgr = link.authenticationManager();
-			return
-				mgr != null &&
-				mgr.mayBeAuthorised(false) &&
-				mgr.currentAccount() != null &&
-				TopupMenuActivity.isTopupSupported(link);
-		} else {
-			return false;
-		}
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (tree instanceof TopUpTree) {
+            return true;
+        } else if (tree instanceof NetworkCatalogRootTree) {
+            final INetworkLink link = tree.getLink();
+            final NetworkAuthenticationManager mgr = link.authenticationManager();
+            return
+                    mgr != null &&
+                            mgr.mayBeAuthorised(false) &&
+                            mgr.currentAccount() != null &&
+                            TopupMenuActivity.isTopupSupported(link);
+        } else {
+            return false;
+        }
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		final INetworkLink link = tree.getLink();
-		if (link != null) {
-			TopupMenuActivity.runMenu(myActivity, link, null);
-		}
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        final INetworkLink link = tree.getLink();
+        if (link != null) {
+            TopupMenuActivity.runMenu(myActivity, link, null);
+        }
+    }
 
-	@Override
-	public String getContextLabel(NetworkTree tree) {
-		final INetworkLink link = tree.getLink();
-		Money account = null;
-		if (link != null) {
-			final NetworkAuthenticationManager mgr = link.authenticationManager();
-			if (mgr != null && mgr.mayBeAuthorised(false)) {
-				account = mgr.currentAccount();
-			}
-		}
-		return super.getContextLabel(tree).replace("%s", account != null ? account.toString() : "");
-	}
+    @Override
+    public String getContextLabel(NetworkTree tree) {
+        final INetworkLink link = tree.getLink();
+        Money account = null;
+        if (link != null) {
+            final NetworkAuthenticationManager mgr = link.authenticationManager();
+            if (mgr != null && mgr.mayBeAuthorised(false)) {
+                account = mgr.currentAccount();
+            }
+        }
+        return super.getContextLabel(tree).replace("%s", account != null ? account.toString() : "");
+    }
 }

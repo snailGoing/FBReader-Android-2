@@ -24,8 +24,8 @@ import android.content.Intent;
 import android.os.IBinder;
 
 public class ApiService extends Service {
-	@Override
-	public IBinder onBind(Intent intent) {
-		return new ApiServerImplementation(this);
-	}
+    @Override
+    public IBinder onBind(Intent intent) {
+        return new ApiServerImplementation(this);
+    }
 }

@@ -19,31 +19,31 @@
 
 package org.geometerplus.zlibrary.text.view;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ZLTextHyperlink {
-	public final byte Type;
-	public final String Id;
+    public static final ZLTextHyperlink NO_LINK = new ZLTextHyperlink((byte) 0, null);
+    public final byte Type;
+    public final String Id;
+    private List<Integer> myElementIndexes;
 
-	private List<Integer> myElementIndexes;
+    ZLTextHyperlink(byte type, String id) {
+        Type = type;
+        Id = id;
+    }
 
-	public static final ZLTextHyperlink NO_LINK = new ZLTextHyperlink((byte)0, null);
+    void addElementIndex(int elementIndex) {
+        if (myElementIndexes == null) {
+            myElementIndexes = new LinkedList<Integer>();
+        }
+        myElementIndexes.add(elementIndex);
+    }
 
-	ZLTextHyperlink(byte type, String id) {
-		Type = type;
-		Id = id;
-	}
-
-	void addElementIndex(int elementIndex) {
-		if (myElementIndexes == null) {
-			myElementIndexes = new LinkedList<Integer>();
-		}
-		myElementIndexes.add(elementIndex);
-	}
-
-	List<Integer> elementIndexes() {
-		return myElementIndexes != null
-			? Collections.unmodifiableList(myElementIndexes)
-			: Collections.<Integer>emptyList();
-	}
+    List<Integer> elementIndexes() {
+        return myElementIndexes != null
+                ? Collections.unmodifiableList(myElementIndexes)
+                : Collections.<Integer>emptyList();
+    }
 }

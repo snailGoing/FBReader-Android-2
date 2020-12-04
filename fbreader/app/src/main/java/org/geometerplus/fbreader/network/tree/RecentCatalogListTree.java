@@ -22,7 +22,7 @@ package org.geometerplus.fbreader.network.tree;
 import org.geometerplus.fbreader.network.RecentCatalogListItem;
 
 public class RecentCatalogListTree extends NetworkCatalogTree {
-	public RecentCatalogListTree(RootTree parent, RecentCatalogListItem item) {
-		super(parent, null, item, -1);
-	}
+    public RecentCatalogListTree(RootTree parent, RecentCatalogListItem item) {
+        super(parent, null, item, -1);
+    }
 }

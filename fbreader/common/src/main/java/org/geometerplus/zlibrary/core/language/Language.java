@@ -19,76 +19,75 @@
 
 package org.geometerplus.zlibrary.core.language;
 
-import java.text.Normalizer;
-
 import android.annotation.TargetApi;
 import android.os.Build;
 
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
+import java.text.Normalizer;
+
 public class Language implements Comparable<Language> {
-	public static final String ANY_CODE = "any";
-	public static final String OTHER_CODE = "other";
-	public static final String MULTI_CODE = "multi";
-	public static final String SYSTEM_CODE = "system";
+    public static final String ANY_CODE = "any";
+    public static final String OTHER_CODE = "other";
+    public static final String MULTI_CODE = "multi";
+    public static final String SYSTEM_CODE = "system";
+    public final String Code;
+    public final String Name;
+    private final String mySortKey;
+    private final Order myOrder;
 
-	private static enum Order {
-		Before,
-		Normal,
-		After
-	}
+    public Language(String code) {
+        this(code, ZLResource.resource("language"));
+    }
 
-	public final String Code;
-	public final String Name;
-	private final String mySortKey;
-	private final Order myOrder;
+    public Language(String code, ZLResource root) {
+        Code = code;
+        final ZLResource resource = root.getResource(code);
+        Name = resource.hasValue() ? resource.getValue() : code;
 
-	public Language(String code) {
-		this(code, ZLResource.resource("language"));
-	}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+            mySortKey = normalize(Name);
+        } else {
+            mySortKey = Name.toLowerCase();
+        }
+        if (SYSTEM_CODE.equals(code) || ANY_CODE.equals(code)) {
+            myOrder = Order.Before;
+        } else if (MULTI_CODE.equals(code) || OTHER_CODE.equals(code)) {
+            myOrder = Order.After;
+        } else {
+            myOrder = Order.Normal;
+        }
+    }
 
-	public Language(String code, ZLResource root) {
-		Code = code;
-		final ZLResource resource = root.getResource(code);
-		Name = resource.hasValue() ? resource.getValue() : code;
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+    private static String normalize(String s) {
+        return Normalizer.normalize(s, Normalizer.Form.NFKD);
+    }
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-			mySortKey = normalize(Name);
-		} else {
-			mySortKey = Name.toLowerCase();
-		}
-		if (SYSTEM_CODE.equals(code) || ANY_CODE.equals(code)) {
-			myOrder = Order.Before;
-		} else if (MULTI_CODE.equals(code) || OTHER_CODE.equals(code)) {
-			myOrder = Order.After;
-		} else {
-			myOrder = Order.Normal;
-		}
-	}
+    public int compareTo(Language other) {
+        final int diff = myOrder.compareTo(other.myOrder);
+        return diff != 0 ? diff : mySortKey.compareTo(other.mySortKey);
+    }
 
-	public int compareTo(Language other) {
-		final int diff = myOrder.compareTo(other.myOrder);
-		return diff != 0 ? diff : mySortKey.compareTo(other.mySortKey);
-	}
+    @Override
+    public boolean equals(Object lang) {
+        if (this == lang) {
+            return true;
+        }
+        if (!(lang instanceof Language)) {
+            return false;
+        }
+        return Code.equals(((Language) lang).Code);
+    }
 
-	@Override
-	public boolean equals(Object lang) {
-		if (this == lang) {
-			return true;
-		}
-		if (!(lang instanceof Language)) {
-			return false;
-		}
-		return Code.equals(((Language)lang).Code);
-	}
+    @Override
+    public int hashCode() {
+        return Code.hashCode();
+    }
 
-	@Override
-	public int hashCode() {
-		return Code.hashCode();
-	}
-
-	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
-	private static String normalize(String s) {
-		return Normalizer.normalize(s, Normalizer.Form.NFKD);
-	}
+    private static enum Order {
+        Before,
+        Normal,
+        After
+    }
 }

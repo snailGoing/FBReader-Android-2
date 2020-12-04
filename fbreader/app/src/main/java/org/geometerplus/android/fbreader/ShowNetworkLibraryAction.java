@@ -21,23 +21,22 @@ package org.geometerplus.android.fbreader;
 
 import android.content.Intent;
 
-import org.geometerplus.fbreader.fbreader.FBReaderApp;
-
 import org.geometerplus.android.fbreader.network.NetworkLibraryPrimaryActivity;
 import org.geometerplus.android.util.OrientationUtil;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 class ShowNetworkLibraryAction extends FBAndroidAction {
-	ShowNetworkLibraryAction(FBReader baseActivity, FBReaderApp fbreader) {
-		super(baseActivity, fbreader);
-	}
+    ShowNetworkLibraryAction(FBReader baseActivity, FBReaderApp fbreader) {
+        super(baseActivity, fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		OrientationUtil.startActivity(
-			BaseActivity, new Intent(
-				BaseActivity.getApplicationContext(),
-				NetworkLibraryPrimaryActivity.class
-			)
-		);
-	}
+    @Override
+    protected void run(Object... params) {
+        OrientationUtil.startActivity(
+                BaseActivity, new Intent(
+                        BaseActivity.getApplicationContext(),
+                        NetworkLibraryPrimaryActivity.class
+                )
+        );
+    }
 }

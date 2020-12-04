@@ -19,30 +19,31 @@
 
 package org.fbreader.common.options;
 
-import org.geometerplus.zlibrary.core.options.*;
+import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
+import org.geometerplus.zlibrary.core.options.ZLEnumOption;
 
 public class SyncOptions {
-	public static final String DOMAIN = "books.fbreader.org";
-	public static final String BASE_URL = "https://" + DOMAIN + "/";
-	public static final String OPDS_URL = "https://" + DOMAIN + "/opds";
-	public static final String REALM = "FBReader book network";
+    public static final String DOMAIN = "books.fbreader.org";
+    public static final String BASE_URL = "https://" + DOMAIN + "/";
+    public static final String OPDS_URL = "https://" + DOMAIN + "/opds";
+    public static final String REALM = "FBReader book network";
 
-	public final ZLBooleanOption Enabled =
-		new ZLBooleanOption("Sync", "Enabled", false);
+    public final ZLBooleanOption Enabled =
+            new ZLBooleanOption("Sync", "Enabled", false);
+    public final ZLEnumOption<Condition> UploadAllBooks =
+            new ZLEnumOption<Condition>("Sync", "UploadAllBooks", Condition.viaWifi);
+    public final ZLEnumOption<Condition> Positions =
+            new ZLEnumOption<Condition>("Sync", "Positions", Condition.always);
+    public final ZLBooleanOption ChangeCurrentBook =
+            new ZLBooleanOption("Sync", "ChangeCurrentBook", true);
+    public final ZLEnumOption<Condition> Bookmarks =
+            new ZLEnumOption<Condition>("Sync", "Bookmarks", Condition.always);
+    public final ZLEnumOption<Condition> CustomShelves =
+            new ZLEnumOption<Condition>("Sync", "CustomShelves", Condition.always);
+    public final ZLEnumOption<Condition> Metainfo =
+            new ZLEnumOption<Condition>("Sync", "Metainfo", Condition.always);
 
-	public static enum Condition {
-		never, viaWifi, always
-	}
-	public final ZLEnumOption<Condition> UploadAllBooks =
-		new ZLEnumOption<Condition>("Sync", "UploadAllBooks", Condition.viaWifi);
-	public final ZLEnumOption<Condition> Positions =
-		new ZLEnumOption<Condition>("Sync", "Positions", Condition.always);
-	public final ZLBooleanOption ChangeCurrentBook =
-		new ZLBooleanOption("Sync", "ChangeCurrentBook", true);
-	public final ZLEnumOption<Condition> Bookmarks =
-		new ZLEnumOption<Condition>("Sync", "Bookmarks", Condition.always);
-	public final ZLEnumOption<Condition> CustomShelves =
-		new ZLEnumOption<Condition>("Sync", "CustomShelves", Condition.always);
-	public final ZLEnumOption<Condition> Metainfo =
-		new ZLEnumOption<Condition>("Sync", "Metainfo", Condition.always);
+    public static enum Condition {
+        never, viaWifi, always
+    }
 }

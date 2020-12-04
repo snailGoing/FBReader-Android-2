@@ -19,41 +19,44 @@
 
 package org.geometerplus.fbreader.fbreader;
 
-import org.geometerplus.zlibrary.text.view.*;
+import org.geometerplus.zlibrary.text.view.ZLTextControlElement;
+import org.geometerplus.zlibrary.text.view.ZLTextTraverser;
+import org.geometerplus.zlibrary.text.view.ZLTextView;
+import org.geometerplus.zlibrary.text.view.ZLTextWord;
 
 class WordCountTraverser extends ZLTextTraverser {
-	protected int myCount;
+    protected int myCount;
 
-	WordCountTraverser(ZLTextView view) {
-		super(view);
-	}
+    WordCountTraverser(ZLTextView view) {
+        super(view);
+    }
 
-	@Override
-	protected void processWord(ZLTextWord word) {
-		++myCount;
-	}
+    @Override
+    protected void processWord(ZLTextWord word) {
+        ++myCount;
+    }
 
-	@Override
-	protected void processControlElement(ZLTextControlElement control) {
-		// does nothing
-	}
+    @Override
+    protected void processControlElement(ZLTextControlElement control) {
+        // does nothing
+    }
 
-	@Override
-	protected void processSpace() {
-		// does nothing
-	}
+    @Override
+    protected void processSpace() {
+        // does nothing
+    }
 
-	@Override
-	protected void processNbSpace() {
-		// does nothing
-	}
+    @Override
+    protected void processNbSpace() {
+        // does nothing
+    }
 
-	@Override
-	protected void processEndOfParagraph() {
-		// does nothing
-	}
+    @Override
+    protected void processEndOfParagraph() {
+        // does nothing
+    }
 
-	public int getCount() {
-		return myCount;
-	}
+    public int getCount() {
+        return myCount;
+    }
 }

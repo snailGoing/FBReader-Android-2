@@ -19,69 +19,67 @@
 
 package org.geometerplus.fbreader.library;
 
-import java.io.File;
-import java.util.List;
-
 import org.fbreader.util.Pair;
-
+import org.geometerplus.fbreader.Paths;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.fbreader.Paths;
+import java.io.File;
+import java.util.List;
 
 public class FileFirstLevelTree extends FirstLevelTree {
-	FileFirstLevelTree(RootTree root) {
-		super(root, ROOT_FILE);
-	}
+    FileFirstLevelTree(RootTree root) {
+        super(root, ROOT_FILE);
+    }
 
-	@Override
-	public Pair<String,String> getTreeTitle() {
-		return new Pair(getName(), null);
-	}
+    @Override
+    public Pair<String, String> getTreeTitle() {
+        return new Pair(getName(), null);
+    }
 
-	@Override
-	public Status getOpeningStatus() {
-		return Status.ALWAYS_RELOAD_BEFORE_OPENING;
-	}
+    @Override
+    public Status getOpeningStatus() {
+        return Status.ALWAYS_RELOAD_BEFORE_OPENING;
+    }
 
-	@Override
-	public void waitForOpening() {
-		clear();
-		for (String dir : Paths.BookPathOption.getValue()) {
-			addChild(dir, resource().getResource("fileTreeLibrary").getValue(), dir);
-		}
-		addChild("/", "fileTreeRoot");
-		final List<String> cards = Paths.allCardDirectories();
-		if (cards.size() == 1) {
-			addChild(cards.get(0), "fileTreeCard");
-		} else {
-			final ZLResource res = resource().getResource("fileTreeCard");
-			final String title = res.getResource("withIndex").getValue();
-			final String summary = res.getResource("summary").getValue();
-			int index = 0;
-			for (String dir : cards) {
-				addChild(dir, title.replaceAll("%s", String.valueOf(++index)), summary);
-			}
-		}
-	}
+    @Override
+    public void waitForOpening() {
+        clear();
+        for (String dir : Paths.BookPathOption.getValue()) {
+            addChild(dir, resource().getResource("fileTreeLibrary").getValue(), dir);
+        }
+        addChild("/", "fileTreeRoot");
+        final List<String> cards = Paths.allCardDirectories();
+        if (cards.size() == 1) {
+            addChild(cards.get(0), "fileTreeCard");
+        } else {
+            final ZLResource res = resource().getResource("fileTreeCard");
+            final String title = res.getResource("withIndex").getValue();
+            final String summary = res.getResource("summary").getValue();
+            int index = 0;
+            for (String dir : cards) {
+                addChild(dir, title.replaceAll("%s", String.valueOf(++index)), summary);
+            }
+        }
+    }
 
-	private void addChild(String path, String title, String summary) {
-		final File dirFile = new File(path);
-		if (!dirFile.exists() && !dirFile.mkdirs()) {
-			return;
-		}
-		if (!dirFile.exists() || !dirFile.isDirectory()) {
-			return;
-		}
+    private void addChild(String path, String title, String summary) {
+        final File dirFile = new File(path);
+        if (!dirFile.exists() && !dirFile.mkdirs()) {
+            return;
+        }
+        if (!dirFile.exists() || !dirFile.isDirectory()) {
+            return;
+        }
 
-		final ZLFile zlFile = ZLFile.createFileByPath(path);
-		if (zlFile != null) {
-			new FileTree(this, zlFile, title, summary);
-		}
-	}
+        final ZLFile zlFile = ZLFile.createFileByPath(path);
+        if (zlFile != null) {
+            new FileTree(this, zlFile, title, summary);
+        }
+    }
 
-	private void addChild(String path, String resourceKey) {
-		final ZLResource resource = resource().getResource(resourceKey);
-		addChild(path, resource.getValue(), resource.getResource("summary").getValue());
-	}
+    private void addChild(String path, String resourceKey) {
+        final ZLResource resource = resource().getResource(resourceKey);
+        addChild(path, resource.getValue(), resource.getResource("summary").getValue());
+    }
 }

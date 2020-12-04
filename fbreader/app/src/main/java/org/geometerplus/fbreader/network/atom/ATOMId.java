@@ -22,39 +22,39 @@ package org.geometerplus.fbreader.network.atom;
 import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 public class ATOMId extends ATOMCommonAttributes {
-	public String Uri;
+    public String Uri;
 
-	public ATOMId() {
-		this(new ZLStringMap());
-	}
+    public ATOMId() {
+        this(new ZLStringMap());
+    }
 
-	protected ATOMId(ZLStringMap attributes) {
-		super(attributes);
-	}
+    protected ATOMId(ZLStringMap attributes) {
+        super(attributes);
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (!(o instanceof ATOMId)) {
-			return false;
-		}
-		ATOMId id = (ATOMId) o;
-		return Uri.equals(id.Uri);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ATOMId)) {
+            return false;
+        }
+        ATOMId id = (ATOMId) o;
+        return Uri.equals(id.Uri);
+    }
 
-	@Override
-	public int hashCode() {
-		return Uri.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return Uri.hashCode();
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder buf = new StringBuilder("[");
-		buf.append(super.toString());
-		buf.append(",\nUri=").append(Uri);
-		buf.append("]");
-		return buf.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder("[");
+        buf.append(super.toString());
+        buf.append(",\nUri=").append(Uri);
+        buf.append("]");
+        return buf.toString();
+    }
 }

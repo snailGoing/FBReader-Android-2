@@ -19,50 +19,53 @@
 
 package org.geometerplus.fbreader.network.rss;
 
-import java.util.HashSet;
-
-import org.geometerplus.zlibrary.core.network.*;
-import org.geometerplus.zlibrary.core.util.MimeType;
-
-import org.geometerplus.fbreader.network.*;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.NetworkOperationData;
+import org.geometerplus.fbreader.network.NetworkURLCatalogItem;
 import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
 import org.geometerplus.fbreader.network.urlInfo.UrlInfoCollection;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
+
+import java.util.HashSet;
 
 public class RSSCatalogItem extends NetworkURLCatalogItem {
-	static class State extends NetworkOperationData {
-		public String LastLoadedId;
-		public final HashSet<String> LoadedIds = new HashSet<String>();
+    private State myLoadingState;
 
-		public State(RSSNetworkLink link, NetworkItemsLoader loader) {
-			super(link, loader);
-		}
-	}
-	private State myLoadingState;
+    protected RSSCatalogItem(INetworkLink link, CharSequence title,
+                             CharSequence summary, UrlInfoCollection<?> urls,
+                             Accessibility accessibility, int flags) {
+        super(link, title, summary, urls, accessibility, flags);
+    }
 
-	protected RSSCatalogItem(INetworkLink link, CharSequence title,
-			CharSequence summary, UrlInfoCollection<?> urls,
-			Accessibility accessibility, int flags) {
-		super(link, title, summary, urls, accessibility, flags);
-	}
+    @Override
+    public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        final RSSNetworkLink rssLink = (RSSNetworkLink) Link;
+        myLoadingState = rssLink.createOperationData(loader);
 
-	@Override
-	public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		final RSSNetworkLink rssLink = (RSSNetworkLink)Link;
-		myLoadingState = rssLink.createOperationData(loader);
+        doLoadChildren(rssLink.createNetworkData(getCatalogUrl(), myLoadingState), onSuccess, onError);
+    }
 
-		doLoadChildren(rssLink.createNetworkData(getCatalogUrl(), myLoadingState), onSuccess, onError);
-	}
+    private void doLoadChildren(ZLNetworkRequest networkRequest, Runnable onSuccess, final ZLNetworkContext.OnError onError) {
+        super.doLoadChildren(
+                myLoadingState, networkRequest, onSuccess, new ZLNetworkContext.OnError() {
+                    public void run(ZLNetworkException e) {
+                        myLoadingState = null;
+                        if (onError != null) {
+                            onError.run(e);
+                        }
+                    }
+                }
+        );
+    }
 
-	private void doLoadChildren(ZLNetworkRequest networkRequest, Runnable onSuccess, final ZLNetworkContext.OnError onError) {
-		super.doLoadChildren(
-			myLoadingState, networkRequest, onSuccess, new ZLNetworkContext.OnError() {
-				public void run(ZLNetworkException e) {
-					myLoadingState = null;
-					if (onError != null) {
-						onError.run(e);
-					}
-				}
-			}
-		);
-	}
+    static class State extends NetworkOperationData {
+        public final HashSet<String> LoadedIds = new HashSet<String>();
+        public String LastLoadedId;
+
+        public State(RSSNetworkLink link, NetworkItemsLoader loader) {
+            super(link, loader);
+        }
+    }
 }

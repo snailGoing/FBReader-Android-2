@@ -22,9 +22,9 @@ package org.geometerplus.fbreader.network;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 
 public class AlreadyPurchasedException extends ZLNetworkException {
-	public static final String ERROR_PURCHASE_ALREADY_PURCHASED = "purchaseAlreadyPurchased";
+    public static final String ERROR_PURCHASE_ALREADY_PURCHASED = "purchaseAlreadyPurchased";
 
-	public AlreadyPurchasedException() {
-		super(errorMessage(ERROR_PURCHASE_ALREADY_PURCHASED));
-	}
+    public AlreadyPurchasedException() {
+        super(errorMessage(ERROR_PURCHASE_ALREADY_PURCHASED));
+    }
 }

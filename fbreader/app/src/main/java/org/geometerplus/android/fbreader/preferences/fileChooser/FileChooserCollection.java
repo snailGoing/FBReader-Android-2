@@ -19,47 +19,47 @@
 
 package org.geometerplus.android.fbreader.preferences.fileChooser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.content.Intent;
 
-import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.options.ZLStringListOption;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FileChooserCollection {
-	private final Context myContext;
-	private final int myBaseRequestCode;
-	private final List<FileChooserPreference> myPreferences = new ArrayList<FileChooserPreference>();
+    private final Context myContext;
+    private final int myBaseRequestCode;
+    private final List<FileChooserPreference> myPreferences = new ArrayList<FileChooserPreference>();
 
-	public FileChooserCollection(Context context, int baseRequestCode) {
-		myContext = context;
-		myBaseRequestCode = baseRequestCode;
-	}
+    public FileChooserCollection(Context context, int baseRequestCode) {
+        myContext = context;
+        myBaseRequestCode = baseRequestCode;
+    }
 
-	public FileChooserPreference createPreference(ZLResource rootResource, String resourceKey, ZLStringListOption option, Runnable onValueSetAction) {
-		final FileChooserPreference preference = new FileChooserMultiPreference(
-			myContext, rootResource, resourceKey, option, myBaseRequestCode + myPreferences.size(), onValueSetAction
-		);
-		myPreferences.add(preference);
-		return preference;
-	}
+    public FileChooserPreference createPreference(ZLResource rootResource, String resourceKey, ZLStringListOption option, Runnable onValueSetAction) {
+        final FileChooserPreference preference = new FileChooserMultiPreference(
+                myContext, rootResource, resourceKey, option, myBaseRequestCode + myPreferences.size(), onValueSetAction
+        );
+        myPreferences.add(preference);
+        return preference;
+    }
 
-	public FileChooserPreference createPreference(ZLResource rootResource, String resourceKey, ZLStringOption option, Runnable onValueSetAction) {
-		final FileChooserPreference preference = new FileChooserSinglePreference(
-			myContext, rootResource, resourceKey, option, myBaseRequestCode + myPreferences.size(), onValueSetAction
-		);
-		myPreferences.add(preference);
-		return preference;
-	}
+    public FileChooserPreference createPreference(ZLResource rootResource, String resourceKey, ZLStringOption option, Runnable onValueSetAction) {
+        final FileChooserPreference preference = new FileChooserSinglePreference(
+                myContext, rootResource, resourceKey, option, myBaseRequestCode + myPreferences.size(), onValueSetAction
+        );
+        myPreferences.add(preference);
+        return preference;
+    }
 
-	public void update(int requestCode, Intent data) {
-		try {
-			myPreferences.get(requestCode - myBaseRequestCode).setValueFromIntent(data);
-		} catch (Exception e) {
-			// ignore
-		}
-	}
+    public void update(int requestCode, Intent data) {
+        try {
+            myPreferences.get(requestCode - myBaseRequestCode).setValueFromIntent(data);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
 }

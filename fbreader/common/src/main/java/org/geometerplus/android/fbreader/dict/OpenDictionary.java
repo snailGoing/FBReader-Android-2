@@ -19,8 +19,6 @@
 
 package org.geometerplus.android.fbreader.dict;
 
-import java.util.*;
-
 import android.content.Context;
 
 import com.paragon.dictionary.fbreader.OpenDictionaryFlyout;
@@ -29,36 +27,41 @@ import com.paragon.open.dictionary.api.OpenDictionaryAPI;
 
 import org.geometerplus.android.fbreader.FBReaderMainActivity;
 
+import java.util.Comparator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 final class OpenDictionary extends DictionaryUtil.PackageInfo {
-	static void collect(Context context, Map<DictionaryUtil.PackageInfo,Integer> dictMap) {
-		final SortedSet<Dictionary> dictionariesTreeSet =
-			new TreeSet<Dictionary>(new Comparator<Dictionary>() {
-				@Override
-				public int compare(Dictionary lhs, Dictionary rhs) {
-					return lhs.toString().compareTo(rhs.toString());
-				}
-			}
-		);
-		dictionariesTreeSet.addAll(
-			new OpenDictionaryAPI(context).getDictionaries()
-		);
+    final OpenDictionaryFlyout Flyout;
 
-		for (Dictionary dict : dictionariesTreeSet) {
-			dictMap.put(new OpenDictionary(dict), DictionaryUtil.FLAG_SHOW_AS_DICTIONARY);
-		}
-	}
+    OpenDictionary(Dictionary dictionary) {
+        super(dictionary.getUID(), dictionary.getName());
+        put("package", dictionary.getApplicationPackageName());
+        put("class", ".Start");
+        Flyout = new OpenDictionaryFlyout(dictionary);
+    }
 
-	final OpenDictionaryFlyout Flyout;
+    static void collect(Context context, Map<DictionaryUtil.PackageInfo, Integer> dictMap) {
+        final SortedSet<Dictionary> dictionariesTreeSet =
+                new TreeSet<Dictionary>(new Comparator<Dictionary>() {
+                    @Override
+                    public int compare(Dictionary lhs, Dictionary rhs) {
+                        return lhs.toString().compareTo(rhs.toString());
+                    }
+                }
+                );
+        dictionariesTreeSet.addAll(
+                new OpenDictionaryAPI(context).getDictionaries()
+        );
 
-	OpenDictionary(Dictionary dictionary) {
-		super(dictionary.getUID(), dictionary.getName());
-		put("package", dictionary.getApplicationPackageName());
-		put("class", ".Start");
-		Flyout = new OpenDictionaryFlyout(dictionary);
-	}
+        for (Dictionary dict : dictionariesTreeSet) {
+            dictMap.put(new OpenDictionary(dict), DictionaryUtil.FLAG_SHOW_AS_DICTIONARY);
+        }
+    }
 
-	@Override
-	void open(String text, Runnable outliner, FBReaderMainActivity fbreader, DictionaryUtil.PopupFrameMetric frameMetrics) {
-		Flyout.showTranslation(fbreader, text, frameMetrics);
-	}
+    @Override
+    void open(String text, Runnable outliner, FBReaderMainActivity fbreader, DictionaryUtil.PopupFrameMetric frameMetrics) {
+        Flyout.showTranslation(fbreader, text, frameMetrics);
+    }
 }

@@ -24,17 +24,17 @@ import java.net.URI;
 import java.util.Map;
 
 public class QuietNetworkContext extends ZLNetworkContext {
-	@Override
-	public void authenticate(URI uri, String realm, Map<String,String> params) throws ZLNetworkAuthenticationException {
-		throw new ZLNetworkAuthenticationException();
-	}
+    @Override
+    public void authenticate(URI uri, String realm, Map<String, String> params) throws ZLNetworkAuthenticationException {
+        throw new ZLNetworkAuthenticationException();
+    }
 
-	public final boolean downloadToFileQuietly(String url, final File outFile) {
-		try {
-			downloadToFile(url, outFile);
-			return true;
-		} catch (ZLNetworkException e) {
-			return false;
-		}
-	}
+    public final boolean downloadToFileQuietly(String url, final File outFile) {
+        try {
+            downloadToFile(url, outFile);
+            return true;
+        } catch (ZLNetworkException e) {
+            return false;
+        }
+    }
 }

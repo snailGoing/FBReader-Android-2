@@ -26,16 +26,16 @@ import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.tree.NetworkBookTree;
 
 abstract class BookAction extends Action {
-	protected BookAction(Activity activity, int code, String resourceKey) {
-		super(activity, code, resourceKey, -1);
-	}
+    protected BookAction(Activity activity, int code, String resourceKey) {
+        super(activity, code, resourceKey, -1);
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		return tree instanceof NetworkBookTree;
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        return tree instanceof NetworkBookTree;
+    }
 
-	protected NetworkBookItem getBook(NetworkTree tree) {
-		return ((NetworkBookTree)tree).Book;
-	}
+    protected NetworkBookItem getBook(NetworkTree tree) {
+        return ((NetworkBookTree) tree).Book;
+    }
 }

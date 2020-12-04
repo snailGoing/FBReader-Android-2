@@ -19,101 +19,100 @@
 
 package org.geometerplus.fbreader.formats.fb2;
 
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.geometerplus.zlibrary.core.encodings.EncodingCollection;
-import org.geometerplus.zlibrary.core.encodings.AutoEncodingCollection;
-import org.geometerplus.zlibrary.core.filesystem.ZLFile;
-import org.geometerplus.zlibrary.core.util.SystemInfo;
-
 import org.geometerplus.fbreader.book.AbstractBook;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.formats.BookReadingException;
 import org.geometerplus.fbreader.formats.NativeFormatPlugin;
+import org.geometerplus.zlibrary.core.encodings.AutoEncodingCollection;
+import org.geometerplus.zlibrary.core.encodings.EncodingCollection;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.util.SystemInfo;
+
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FB2NativePlugin extends NativeFormatPlugin {
-	public FB2NativePlugin(SystemInfo systemInfo) {
-		super(systemInfo, "fb2");
-	}
+    public FB2NativePlugin(SystemInfo systemInfo) {
+        super(systemInfo, "fb2");
+    }
 
-	@Override
-	public void readModel(BookModel model) throws BookReadingException {
-		super.readModel(model);
-		model.setLabelResolver(new BookModel.LabelResolver() {
-			public List<String> getCandidates(String id) {
-				final List<String> candidates = new ArrayList<String>();
-				try {
-					final String c = URLDecoder.decode(id, "utf-8");
-					if (c != null && !c.equals(id)) {
-						candidates.add(c);
-					}
-				} catch (Exception e) {
-					// ignore
-				}
-				try {
-					final String c = URLDecoder.decode(id, "windows-1251");
-					if (c != null && !c.equals(id)) {
-						candidates.add(c);
-					}
-				} catch (Exception e) {
-					// ignore
-				}
-				return candidates;
-			}
-		});
-	}
+    private static ZLFile getRealFB2File(ZLFile file) {
+        final String name = file.getShortName().toLowerCase();
+        if (name.endsWith(".fb2.zip") && file.isArchive()) {
+            final List<ZLFile> children = file.children();
+            if (children == null) {
+                return null;
+            }
+            ZLFile candidate = null;
+            for (ZLFile item : children) {
+                if ("fb2".equals(item.getExtension())) {
+                    if (candidate == null) {
+                        candidate = item;
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            return candidate;
+        } else {
+            return file;
+        }
+    }
 
-	@Override
-	public ZLFile realBookFile(ZLFile file) throws BookReadingException {
-		final ZLFile realFile = getRealFB2File(file);
-		if (realFile == null) {
-			throw new BookReadingException("incorrectFb2ZipFile", file);
-		}
-		return realFile;
-	}
+    @Override
+    public void readModel(BookModel model) throws BookReadingException {
+        super.readModel(model);
+        model.setLabelResolver(new BookModel.LabelResolver() {
+            public List<String> getCandidates(String id) {
+                final List<String> candidates = new ArrayList<String>();
+                try {
+                    final String c = URLDecoder.decode(id, "utf-8");
+                    if (c != null && !c.equals(id)) {
+                        candidates.add(c);
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+                try {
+                    final String c = URLDecoder.decode(id, "windows-1251");
+                    if (c != null && !c.equals(id)) {
+                        candidates.add(c);
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
+                return candidates;
+            }
+        });
+    }
 
-	private static ZLFile getRealFB2File(ZLFile file) {
-		final String name = file.getShortName().toLowerCase();
-		if (name.endsWith(".fb2.zip") && file.isArchive()) {
-			final List<ZLFile> children = file.children();
-			if (children == null) {
-				return null;
-			}
-			ZLFile candidate = null;
-			for (ZLFile item : children) {
-				if ("fb2".equals(item.getExtension())) {
-					if (candidate == null) {
-						candidate = item;
-					} else {
-						return null;
-					}
-				}
-			}
-			return candidate;
-		} else {
-			return file;
-		}
-	}
+    @Override
+    public ZLFile realBookFile(ZLFile file) throws BookReadingException {
+        final ZLFile realFile = getRealFB2File(file);
+        if (realFile == null) {
+            throw new BookReadingException("incorrectFb2ZipFile", file);
+        }
+        return realFile;
+    }
 
-	@Override
-	public EncodingCollection supportedEncodings() {
-		return new AutoEncodingCollection();
-	}
+    @Override
+    public EncodingCollection supportedEncodings() {
+        return new AutoEncodingCollection();
+    }
 
-	@Override
-	public void detectLanguageAndEncoding(AbstractBook book) {
-		book.setEncoding("auto");
-	}
+    @Override
+    public void detectLanguageAndEncoding(AbstractBook book) {
+        book.setEncoding("auto");
+    }
 
-	@Override
-	public String readAnnotation(ZLFile file) {
-		return new FB2AnnotationReader().readAnnotation(file);
-	}
+    @Override
+    public String readAnnotation(ZLFile file) {
+        return new FB2AnnotationReader().readAnnotation(file);
+    }
 
-	@Override
-	public int priority() {
-		return 0;
-	}
+    @Override
+    public int priority() {
+        return 0;
+    }
 }

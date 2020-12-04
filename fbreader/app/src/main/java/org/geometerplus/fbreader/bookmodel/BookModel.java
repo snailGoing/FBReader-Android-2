@@ -19,163 +19,166 @@
 
 package org.geometerplus.fbreader.bookmodel;
 
-import java.util.*;
-
-import org.geometerplus.zlibrary.core.fonts.*;
-import org.geometerplus.zlibrary.core.image.ZLImage;
-import org.geometerplus.zlibrary.text.model.*;
-
 import org.geometerplus.fbreader.book.Book;
-import org.geometerplus.fbreader.book.BookUtil;
-import org.geometerplus.fbreader.formats.*;
+import org.geometerplus.fbreader.formats.BookReadingException;
+import org.geometerplus.fbreader.formats.BuiltinFormatPlugin;
+import org.geometerplus.fbreader.formats.FormatPlugin;
+import org.geometerplus.zlibrary.core.fonts.FileInfo;
+import org.geometerplus.zlibrary.core.fonts.FontEntry;
+import org.geometerplus.zlibrary.core.fonts.FontManager;
+import org.geometerplus.zlibrary.core.image.ZLImage;
+import org.geometerplus.zlibrary.text.model.CachedCharStorage;
+import org.geometerplus.zlibrary.text.model.ZLTextModel;
+import org.geometerplus.zlibrary.text.model.ZLTextPlainModel;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public final class BookModel {
-	public static BookModel createModel(Book book, FormatPlugin plugin) throws BookReadingException {
-		if (plugin instanceof BuiltinFormatPlugin) {
-			final BookModel model = new BookModel(book);
-			((BuiltinFormatPlugin)plugin).readModel(model);
-			return model;
-		}
+    public final Book Book;
+    public final TOCTree TOCTree = new TOCTree();
+    public final FontManager FontManager = new FontManager();
+    protected final HashMap<String, ZLImage> myImageMap = new HashMap<String, ZLImage>();
+    protected final HashMap<String, ZLTextModel> myFootnotes = new HashMap<String, ZLTextModel>();
+    protected CachedCharStorage myInternalHyperlinks;
+    protected ZLTextModel myBookTextModel;
+    private LabelResolver myResolver;
+    private TOCTree myCurrentTree = TOCTree;
 
-		throw new BookReadingException(
-			"unknownPluginType", null, new String[] { String.valueOf(plugin) }
-		);
-	}
+    protected BookModel(Book book) {
+        Book = book;
+    }
 
-	public final Book Book;
-	public final TOCTree TOCTree = new TOCTree();
-	public final FontManager FontManager = new FontManager();
+    public static BookModel createModel(Book book, FormatPlugin plugin) throws BookReadingException {
+        if (plugin instanceof BuiltinFormatPlugin) {
+            final BookModel model = new BookModel(book);
+            ((BuiltinFormatPlugin) plugin).readModel(model);
+            return model;
+        }
 
-	protected CachedCharStorage myInternalHyperlinks;
-	protected final HashMap<String,ZLImage> myImageMap = new HashMap<String,ZLImage>();
-	protected ZLTextModel myBookTextModel;
-	protected final HashMap<String,ZLTextModel> myFootnotes = new HashMap<String,ZLTextModel>();
+        throw new BookReadingException(
+                "unknownPluginType", null, new String[]{String.valueOf(plugin)}
+        );
+    }
 
-	public static final class Label {
-		public final String ModelId;
-		public final int ParagraphIndex;
+    public void setLabelResolver(LabelResolver resolver) {
+        myResolver = resolver;
+    }
 
-		public Label(String modelId, int paragraphIndex) {
-			ModelId = modelId;
-			ParagraphIndex = paragraphIndex;
-		}
-	}
+    public Label getLabel(String id) {
+        Label label = getLabelInternal(id);
+        if (label == null && myResolver != null) {
+            for (String candidate : myResolver.getCandidates(id)) {
+                label = getLabelInternal(candidate);
+                if (label != null) {
+                    break;
+                }
+            }
+        }
+        return label;
+    }
 
-	protected BookModel(Book book) {
-		Book = book;
-	}
+    public void registerFontFamilyList(String[] families) {
+        FontManager.index(Arrays.asList(families));
+    }
 
-	public interface LabelResolver {
-		List<String> getCandidates(String id);
-	}
+    public void registerFontEntry(String family, FontEntry entry) {
+        FontManager.Entries.put(family, entry);
+    }
 
-	private LabelResolver myResolver;
+    public void registerFontEntry(String family, FileInfo normal, FileInfo bold, FileInfo italic, FileInfo boldItalic) {
+        registerFontEntry(family, new FontEntry(family, normal, bold, italic, boldItalic));
+    }
 
-	public void setLabelResolver(LabelResolver resolver) {
-		myResolver = resolver;
-	}
+    public ZLTextModel createTextModel(
+            String id, String language, int paragraphsNumber,
+            int[] entryIndices, int[] entryOffsets,
+            int[] paragraphLenghts, int[] textSizes, byte[] paragraphKinds,
+            String directoryName, String fileExtension, int blocksNumber
+    ) {
+        return new ZLTextPlainModel(
+                id, language, paragraphsNumber,
+                entryIndices, entryOffsets,
+                paragraphLenghts, textSizes, paragraphKinds,
+                directoryName, fileExtension, blocksNumber, myImageMap, FontManager
+        );
+    }
 
-	public Label getLabel(String id) {
-		Label label = getLabelInternal(id);
-		if (label == null && myResolver != null) {
-			for (String candidate : myResolver.getCandidates(id)) {
-				label = getLabelInternal(candidate);
-				if (label != null) {
-					break;
-				}
-			}
-		}
-		return label;
-	}
+    public void setBookTextModel(ZLTextModel model) {
+        myBookTextModel = model;
+    }
 
-	public void registerFontFamilyList(String[] families) {
-		FontManager.index(Arrays.asList(families));
-	}
+    public void setFootnoteModel(ZLTextModel model) {
+        myFootnotes.put(model.getId(), model);
+    }
 
-	public void registerFontEntry(String family, FontEntry entry) {
-		FontManager.Entries.put(family, entry);
-	}
+    public ZLTextModel getTextModel() {
+        return myBookTextModel;
+    }
 
-	public void registerFontEntry(String family, FileInfo normal, FileInfo bold, FileInfo italic, FileInfo boldItalic) {
-		registerFontEntry(family, new FontEntry(family, normal, bold, italic, boldItalic));
-	}
+    public ZLTextModel getFootnoteModel(String id) {
+        return myFootnotes.get(id);
+    }
 
-	public ZLTextModel createTextModel(
-		String id, String language, int paragraphsNumber,
-		int[] entryIndices, int[] entryOffsets,
-		int[] paragraphLenghts, int[] textSizes, byte[] paragraphKinds,
-		String directoryName, String fileExtension, int blocksNumber
-	) {
-		return new ZLTextPlainModel(
-			id, language, paragraphsNumber,
-			entryIndices, entryOffsets,
-			paragraphLenghts, textSizes, paragraphKinds,
-			directoryName, fileExtension, blocksNumber, myImageMap, FontManager
-		);
-	}
+    public void addImage(String id, ZLImage image) {
+        myImageMap.put(id, image);
+    }
 
-	public void setBookTextModel(ZLTextModel model) {
-		myBookTextModel = model;
-	}
+    public void initInternalHyperlinks(String directoryName, String fileExtension, int blocksNumber) {
+        myInternalHyperlinks = new CachedCharStorage(directoryName, fileExtension, blocksNumber);
+    }
 
-	public void setFootnoteModel(ZLTextModel model) {
-		myFootnotes.put(model.getId(), model);
-	}
+    public void addTOCItem(String text, int reference) {
+        myCurrentTree = new TOCTree(myCurrentTree);
+        myCurrentTree.setText(text);
+        myCurrentTree.setReference(myBookTextModel, reference);
+    }
 
-	public ZLTextModel getTextModel() {
-		return myBookTextModel;
-	}
+    public void leaveTOCItem() {
+        myCurrentTree = myCurrentTree.Parent;
+        if (myCurrentTree == null) {
+            myCurrentTree = TOCTree;
+        }
+    }
 
-	public ZLTextModel getFootnoteModel(String id) {
-		return myFootnotes.get(id);
-	}
+    private Label getLabelInternal(String id) {
+        final int len = id.length();
+        final int size = myInternalHyperlinks.size();
 
-	public void addImage(String id, ZLImage image) {
-		myImageMap.put(id, image);
-	}
+        for (int i = 0; i < size; ++i) {
+            final char[] block = myInternalHyperlinks.block(i);
+            for (int offset = 0; offset < block.length; ) {
+                final int labelLength = (int) block[offset++];
+                if (labelLength == 0) {
+                    break;
+                }
+                final int idLength = (int) block[offset + labelLength];
+                if (labelLength != len || !id.equals(new String(block, offset, labelLength))) {
+                    offset += labelLength + idLength + 3;
+                    continue;
+                }
+                offset += labelLength + 1;
+                final String modelId = (idLength > 0) ? new String(block, offset, idLength) : null;
+                offset += idLength;
+                final int paragraphNumber = (int) block[offset] + (((int) block[offset + 1]) << 16);
+                return new Label(modelId, paragraphNumber);
+            }
+        }
+        return null;
+    }
 
-	public void initInternalHyperlinks(String directoryName, String fileExtension, int blocksNumber) {
-		myInternalHyperlinks = new CachedCharStorage(directoryName, fileExtension, blocksNumber);
-	}
+    public interface LabelResolver {
+        List<String> getCandidates(String id);
+    }
 
-	private TOCTree myCurrentTree = TOCTree;
+    public static final class Label {
+        public final String ModelId;
+        public final int ParagraphIndex;
 
-	public void addTOCItem(String text, int reference) {
-		myCurrentTree = new TOCTree(myCurrentTree);
-		myCurrentTree.setText(text);
-		myCurrentTree.setReference(myBookTextModel, reference);
-	}
-
-	public void leaveTOCItem() {
-		myCurrentTree = myCurrentTree.Parent;
-		if (myCurrentTree == null) {
-			myCurrentTree = TOCTree;
-		}
-	}
-
-	private Label getLabelInternal(String id) {
-		final int len = id.length();
-		final int size = myInternalHyperlinks.size();
-
-		for (int i = 0; i < size; ++i) {
-			final char[] block = myInternalHyperlinks.block(i);
-			for (int offset = 0; offset < block.length; ) {
-				final int labelLength = (int)block[offset++];
-				if (labelLength == 0) {
-					break;
-				}
-				final int idLength = (int)block[offset + labelLength];
-				if (labelLength != len || !id.equals(new String(block, offset, labelLength))) {
-					offset += labelLength + idLength + 3;
-					continue;
-				}
-				offset += labelLength + 1;
-				final String modelId = (idLength > 0) ? new String(block, offset, idLength) : null;
-				offset += idLength;
-				final int paragraphNumber = (int)block[offset] + (((int)block[offset + 1]) << 16);
-				return new Label(modelId, paragraphNumber);
-			}
-		}
-		return null;
-	}
+        public Label(String modelId, int paragraphIndex) {
+            ModelId = modelId;
+            ParagraphIndex = paragraphIndex;
+        }
+    }
 }

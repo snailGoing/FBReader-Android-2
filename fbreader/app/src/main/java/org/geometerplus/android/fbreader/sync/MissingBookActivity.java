@@ -23,37 +23,36 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-
 import org.geometerplus.android.fbreader.network.BookDownloaderService;
 import org.geometerplus.android.fbreader.util.SimpleDialogActivity;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 public class MissingBookActivity extends SimpleDialogActivity {
-	public static String errorTitle() {
-		return ZLResource.resource("errorMessage").getResource("bookIsMissingTitle").getValue();
-	}
+    public static String errorTitle() {
+        return ZLResource.resource("errorMessage").getResource("bookIsMissingTitle").getValue();
+    }
 
-	public static String errorMessage(String title) {
-		return ZLResource.resource("errorMessage").getResource("bookIsMissing").getValue()
-			.replace("%s", title);
-	}
+    public static String errorMessage(String title) {
+        return ZLResource.resource("errorMessage").getResource("bookIsMissing").getValue()
+                .replace("%s", title);
+    }
 
-	@Override
-	protected void onCreate(Bundle bundle) {
-		super.onCreate(bundle);
+    @Override
+    protected void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
 
-		final Intent intent = getIntent();
-		final String title = intent.getStringExtra(BookDownloaderService.Key.BOOK_TITLE);
-		setTitle(errorTitle());
-		textView().setText(errorMessage(title));
-		intent.setClass(this, BookDownloaderService.class);
+        final Intent intent = getIntent();
+        final String title = intent.getStringExtra(BookDownloaderService.Key.BOOK_TITLE);
+        setTitle(errorTitle());
+        textView().setText(errorMessage(title));
+        intent.setClass(this, BookDownloaderService.class);
 
-		okButton().setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				startService(intent);
-				finish();
-			}
-		});
-		setButtonTexts("download", null);
-	}
+        okButton().setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startService(intent);
+                finish();
+            }
+        });
+        setButtonTexts("download", null);
+    }
 }

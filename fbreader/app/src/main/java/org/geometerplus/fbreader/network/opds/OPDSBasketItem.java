@@ -19,55 +19,52 @@
 
 package org.geometerplus.fbreader.network.opds;
 
-import java.util.List;
-
-import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-import org.geometerplus.zlibrary.core.util.MimeType;
-import org.geometerplus.zlibrary.core.util.MiscUtil;
-
 import org.geometerplus.fbreader.network.BasketItem;
 import org.geometerplus.fbreader.network.NetworkLibrary;
-import org.geometerplus.fbreader.network.urlInfo.*;
 import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.util.MiscUtil;
+
+import java.util.List;
 
 class OPDSBasketItem extends BasketItem {
-	OPDSBasketItem(NetworkLibrary library, OPDSNetworkLink link) {
-		super(library, link);
-	}
+    OPDSBasketItem(NetworkLibrary library, OPDSNetworkLink link) {
+        super(library, link);
+    }
 
-	@Override
-	public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		final List<String> ids = bookIds();
-		if (ids.isEmpty()) {
-			if (onSuccess != null) {
-				onSuccess.run();
-			}
-			return;
-		}
+    @Override
+    public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        final List<String> ids = bookIds();
+        if (ids.isEmpty()) {
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+            return;
+        }
 
-		if (isFullyLoaded()) {
-			for (String id : ids) {
-				loader.onNewItem(getBook(id));
-			}
-			loader.Tree.confirmAllItems();
-			if (onSuccess != null) {
-				onSuccess.run();
-			}
-			return;
-		}
+        if (isFullyLoaded()) {
+            for (String id : ids) {
+                loader.onNewItem(getBook(id));
+            }
+            loader.Tree.confirmAllItems();
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+            return;
+        }
 
-		final OPDSNetworkLink opdsLink = (OPDSNetworkLink)Link;
-		String url = opdsLink.getUrl(UrlInfo.Type.ListBooks);
-		if (url == null) {
-			if (onSuccess != null) {
-				onSuccess.run();
-			}
-			return;
-		}
-		url = url.replace("{ids}", MiscUtil.join(ids, ","));
+        final OPDSNetworkLink opdsLink = (OPDSNetworkLink) Link;
+        String url = opdsLink.getUrl(UrlInfo.Type.ListBooks);
+        if (url == null) {
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+            return;
+        }
+        url = url.replace("{ids}", MiscUtil.join(ids, ","));
 
-		final OPDSCatalogItem.State state = opdsLink.createOperationData(loader);
-		doLoadChildren(state, opdsLink.createNetworkData(url, state), onSuccess, onError);
-	}
+        final OPDSCatalogItem.State state = opdsLink.createOperationData(loader);
+        doLoadChildren(state, opdsLink.createNetworkData(url, state), onSuccess, onError);
+    }
 }

@@ -19,88 +19,90 @@
 
 package org.geometerplus.android.fbreader.network;
 
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.fbreader.util.android.ViewUtil;
-
-import org.geometerplus.zlibrary.ui.android.R;
-
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.fbreader.network.tree.*;
-
+import org.geometerplus.android.fbreader.covers.CoverManager;
+import org.geometerplus.android.fbreader.network.action.NetworkBookActions;
 import org.geometerplus.android.fbreader.tree.TreeActivity;
 import org.geometerplus.android.fbreader.tree.TreeAdapter;
-import org.geometerplus.android.fbreader.covers.CoverManager;
-
-import org.geometerplus.android.fbreader.network.action.NetworkBookActions;
+import org.geometerplus.fbreader.network.NetworkTree;
+import org.geometerplus.fbreader.network.tree.AddCustomCatalogItemTree;
+import org.geometerplus.fbreader.network.tree.BasketCatalogTree;
+import org.geometerplus.fbreader.network.tree.ManageCatalogsItemTree;
+import org.geometerplus.fbreader.network.tree.NetworkBookTree;
+import org.geometerplus.fbreader.network.tree.RecentCatalogListTree;
+import org.geometerplus.fbreader.network.tree.SearchCatalogTree;
+import org.geometerplus.zlibrary.ui.android.R;
 
 class NetworkLibraryAdapter extends TreeAdapter {
-	NetworkLibraryAdapter(NetworkLibraryActivity activity) {
-		super(activity);
-	}
+    private CoverManager myCoverManager;
 
-	private CoverManager myCoverManager;
+    NetworkLibraryAdapter(NetworkLibraryActivity activity) {
+        super(activity);
+    }
 
-	public View getView(int position, View view, final ViewGroup parent) {
-		final NetworkTree tree = (NetworkTree)getItem(position);
-		if (tree == null) {
-			throw new IllegalArgumentException("tree == null");
-		}
-		if (view == null) {
-			view = LayoutInflater.from(parent.getContext()).inflate(R.layout.library_tree_item, parent, false);
-			if (myCoverManager == null) {
-				view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-				final int coverHeight = view.getMeasuredHeight();
-				final TreeActivity activity = getActivity();
-				myCoverManager = new CoverManager(activity, activity.ImageSynchronizer, coverHeight * 15 / 32, coverHeight);
-				view.requestLayout();
-			}
-		}
+    public View getView(int position, View view, final ViewGroup parent) {
+        final NetworkTree tree = (NetworkTree) getItem(position);
+        if (tree == null) {
+            throw new IllegalArgumentException("tree == null");
+        }
+        if (view == null) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.library_tree_item, parent, false);
+            if (myCoverManager == null) {
+                view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                final int coverHeight = view.getMeasuredHeight();
+                final TreeActivity activity = getActivity();
+                myCoverManager = new CoverManager(activity, activity.ImageSynchronizer, coverHeight * 15 / 32, coverHeight);
+                view.requestLayout();
+            }
+        }
 
-		ViewUtil.setSubviewText(view, R.id.library_tree_item_name, tree.getName());
-		ViewUtil.setSubviewText(view, R.id.library_tree_item_childrenlist, tree.getSummary());
-		setupCover(ViewUtil.findImageView(view, R.id.library_tree_item_icon), tree);
+        ViewUtil.setSubviewText(view, R.id.library_tree_item_name, tree.getName());
+        ViewUtil.setSubviewText(view, R.id.library_tree_item_childrenlist, tree.getSummary());
+        setupCover(ViewUtil.findImageView(view, R.id.library_tree_item_icon), tree);
 
-		final ImageView statusView = ViewUtil.findImageView(view, R.id.library_tree_item_status);
-		final int status = (tree instanceof NetworkBookTree)
-			? NetworkBookActions.getBookStatus(
-				((NetworkBookTree)tree).Book,
-				((NetworkLibraryActivity)getActivity()).BookCollection,
-				((NetworkLibraryActivity)getActivity()).Connection
-			  )
-			: 0;
-		if (status != 0) {
-			statusView.setVisibility(View.VISIBLE);
-			statusView.setImageResource(status);
-		} else {
-			statusView.setVisibility(View.GONE);
-		}
-		statusView.requestLayout();
+        final ImageView statusView = ViewUtil.findImageView(view, R.id.library_tree_item_status);
+        final int status = (tree instanceof NetworkBookTree)
+                ? NetworkBookActions.getBookStatus(
+                ((NetworkBookTree) tree).Book,
+                ((NetworkLibraryActivity) getActivity()).BookCollection,
+                ((NetworkLibraryActivity) getActivity()).Connection
+        )
+                : 0;
+        if (status != 0) {
+            statusView.setVisibility(View.VISIBLE);
+            statusView.setImageResource(status);
+        } else {
+            statusView.setVisibility(View.GONE);
+        }
+        statusView.requestLayout();
 
-		return view;
-	}
+        return view;
+    }
 
-	private void setupCover(final ImageView coverView, NetworkTree tree) {
-		if (myCoverManager.trySetCoverImage(coverView, tree)) {
-			return;
-		}
+    private void setupCover(final ImageView coverView, NetworkTree tree) {
+        if (myCoverManager.trySetCoverImage(coverView, tree)) {
+            return;
+        }
 
-		if (tree instanceof NetworkBookTree) {
-			coverView.setImageResource(R.drawable.ic_list_library_book);
-		} else if (tree instanceof SearchCatalogTree) {
-			coverView.setImageResource(R.drawable.ic_list_library_search);
-		} else if (tree instanceof RecentCatalogListTree) {
-			coverView.setImageResource(R.drawable.ic_list_library_recent);
-		} else if (tree instanceof BasketCatalogTree) {
-			coverView.setImageResource(R.drawable.ic_list_library_basket);
-		} else if (tree instanceof AddCustomCatalogItemTree) {
-			coverView.setImageResource(R.drawable.ic_list_plus);
-		} else if (tree instanceof ManageCatalogsItemTree) {
-			coverView.setImageResource(R.drawable.ic_menu_filter);
-		} else {
-			coverView.setImageResource(R.drawable.ic_list_library_books);
-		}
-	}
+        if (tree instanceof NetworkBookTree) {
+            coverView.setImageResource(R.drawable.ic_list_library_book);
+        } else if (tree instanceof SearchCatalogTree) {
+            coverView.setImageResource(R.drawable.ic_list_library_search);
+        } else if (tree instanceof RecentCatalogListTree) {
+            coverView.setImageResource(R.drawable.ic_list_library_recent);
+        } else if (tree instanceof BasketCatalogTree) {
+            coverView.setImageResource(R.drawable.ic_list_library_basket);
+        } else if (tree instanceof AddCustomCatalogItemTree) {
+            coverView.setImageResource(R.drawable.ic_list_plus);
+        } else if (tree instanceof ManageCatalogsItemTree) {
+            coverView.setImageResource(R.drawable.ic_menu_filter);
+        } else {
+            coverView.setImageResource(R.drawable.ic_list_library_books);
+        }
+    }
 }

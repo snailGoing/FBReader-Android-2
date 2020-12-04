@@ -23,54 +23,54 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public abstract class MenuNode implements Cloneable, Serializable {
-	public static final long serialVersionUID = 42L;
+    public static final long serialVersionUID = 42L;
 
-	public final String Code;
-	public final Integer IconId;
-	public String OptionalTitle;
+    public final String Code;
+    public final Integer IconId;
+    public String OptionalTitle;
 
-	private MenuNode(String code, Integer iconId) {
-		Code = code;
-		IconId = iconId;
-	}
+    private MenuNode(String code, Integer iconId) {
+        Code = code;
+        IconId = iconId;
+    }
 
-	public abstract MenuNode clone();
+    public abstract MenuNode clone();
 
-	public static final class Item extends MenuNode {
-		public static final long serialVersionUID = 43L;
+    public static final class Item extends MenuNode {
+        public static final long serialVersionUID = 43L;
 
-		public Item(String code, Integer iconId) {
-			super(code, iconId);
-		}
+        public Item(String code, Integer iconId) {
+            super(code, iconId);
+        }
 
-		public Item(String code) {
-			this(code, null);
-		}
+        public Item(String code) {
+            this(code, null);
+        }
 
-		public Item clone() {
-			return new Item(Code, IconId);
-		}
-	}
+        public Item clone() {
+            return new Item(Code, IconId);
+        }
+    }
 
-	public static class Submenu extends MenuNode {
-		public static final long serialVersionUID = 44L;
+    public static class Submenu extends MenuNode {
+        public static final long serialVersionUID = 44L;
 
-		public final ArrayList<MenuNode> Children = new ArrayList<MenuNode>();
+        public final ArrayList<MenuNode> Children = new ArrayList<MenuNode>();
 
-		public Submenu(String code, Integer iconId) {
-			super(code, iconId);
-		}
+        public Submenu(String code, Integer iconId) {
+            super(code, iconId);
+        }
 
-		public Submenu(String code) {
-			this(code, null);
-		}
+        public Submenu(String code) {
+            this(code, null);
+        }
 
-		public Submenu clone() {
-			final Submenu copy = new Submenu(Code, IconId);
-			for (MenuNode node : Children) {
-				copy.Children.add(node.clone());
-			}
-			return copy;
-		}
-	}
+        public Submenu clone() {
+            final Submenu copy = new Submenu(Code, IconId);
+            for (MenuNode node : Children) {
+                copy.Children.add(node.clone());
+            }
+            return copy;
+        }
+    }
 }

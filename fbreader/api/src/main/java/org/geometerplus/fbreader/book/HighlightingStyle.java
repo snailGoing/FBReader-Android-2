@@ -22,43 +22,43 @@ package org.geometerplus.fbreader.book;
 import org.geometerplus.zlibrary.core.util.ZLColor;
 
 public class HighlightingStyle {
-	public final int Id;
-	public final long LastUpdateTimestamp;
+    public final int Id;
+    public final long LastUpdateTimestamp;
 
-	private String myName;
-	private ZLColor myBackgroundColor;
-	private ZLColor myForegroundColor;
+    private String myName;
+    private ZLColor myBackgroundColor;
+    private ZLColor myForegroundColor;
 
-	HighlightingStyle(int id, long timestamp, String name, ZLColor bgColor, ZLColor fgColor) {
-		Id = id;
-		LastUpdateTimestamp = timestamp;
+    HighlightingStyle(int id, long timestamp, String name, ZLColor bgColor, ZLColor fgColor) {
+        Id = id;
+        LastUpdateTimestamp = timestamp;
 
-		myName = name;
-		myBackgroundColor = bgColor;
-		myForegroundColor = fgColor;
-	}
+        myName = name;
+        myBackgroundColor = bgColor;
+        myForegroundColor = fgColor;
+    }
 
-	public String getNameOrNull() {
-		return "".equals(myName) ? null : myName;
-	}
+    public String getNameOrNull() {
+        return "".equals(myName) ? null : myName;
+    }
 
-	void setName(String name) {
-		myName = name;
-	}
+    void setName(String name) {
+        myName = name;
+    }
 
-	public ZLColor getBackgroundColor() {
-		return myBackgroundColor;
-	}
+    public ZLColor getBackgroundColor() {
+        return myBackgroundColor;
+    }
 
-	public void setBackgroundColor(ZLColor bgColor) {
-		myBackgroundColor = bgColor;
-	}
+    public void setBackgroundColor(ZLColor bgColor) {
+        myBackgroundColor = bgColor;
+    }
 
-	public ZLColor getForegroundColor() {
-		return myForegroundColor;
-	}
+    public ZLColor getForegroundColor() {
+        return myForegroundColor;
+    }
 
-	public void setForegroundColor(ZLColor fgColor) {
-		myForegroundColor = fgColor;
-	}
+    public void setForegroundColor(ZLColor fgColor) {
+        myForegroundColor = fgColor;
+    }
 }

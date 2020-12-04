@@ -19,91 +19,90 @@
 
 package org.geometerplus.fbreader.formats.oeb;
 
-import java.util.Collections;
-import java.util.List;
-
-import org.geometerplus.zlibrary.core.encodings.EncodingCollection;
-import org.geometerplus.zlibrary.core.encodings.AutoEncodingCollection;
-import org.geometerplus.zlibrary.core.filesystem.ZLFile;
-import org.geometerplus.zlibrary.core.util.SystemInfo;
-
 import org.geometerplus.fbreader.book.AbstractBook;
 import org.geometerplus.fbreader.book.BookUtil;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.formats.BookReadingException;
 import org.geometerplus.fbreader.formats.NativeFormatPlugin;
+import org.geometerplus.zlibrary.core.encodings.AutoEncodingCollection;
+import org.geometerplus.zlibrary.core.encodings.EncodingCollection;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.util.SystemInfo;
+
+import java.util.Collections;
+import java.util.List;
 
 public class OEBNativePlugin extends NativeFormatPlugin {
-	public OEBNativePlugin(SystemInfo systemInfo) {
-		super(systemInfo, "ePub");
-	}
+    public OEBNativePlugin(SystemInfo systemInfo) {
+        super(systemInfo, "ePub");
+    }
 
-	@Override
-	public void readModel(BookModel model) throws BookReadingException {
-		final ZLFile file = BookUtil.fileByBook(model.Book);
-		file.setCached(true);
-		try {
-			super.readModel(model);
-			model.setLabelResolver(new BookModel.LabelResolver() {
-				public List<String> getCandidates(String id) {
-					final int index = id.indexOf("#");
-					return index > 0
-						? Collections.<String>singletonList(id.substring(0, index))
-						: Collections.<String>emptyList();
-				}
-			});
-		} finally {
-			file.setCached(false);
-		}
-	}
+    @Override
+    public void readModel(BookModel model) throws BookReadingException {
+        final ZLFile file = BookUtil.fileByBook(model.Book);
+        file.setCached(true);
+        try {
+            super.readModel(model);
+            model.setLabelResolver(new BookModel.LabelResolver() {
+                public List<String> getCandidates(String id) {
+                    final int index = id.indexOf("#");
+                    return index > 0
+                            ? Collections.<String>singletonList(id.substring(0, index))
+                            : Collections.<String>emptyList();
+                }
+            });
+        } finally {
+            file.setCached(false);
+        }
+    }
 
-	@Override
-	public EncodingCollection supportedEncodings() {
-		return new AutoEncodingCollection();
-	}
+    @Override
+    public EncodingCollection supportedEncodings() {
+        return new AutoEncodingCollection();
+    }
 
-	@Override
-	public void detectLanguageAndEncoding(AbstractBook book) {
-		book.setEncoding("auto");
-	}
+    @Override
+    public void detectLanguageAndEncoding(AbstractBook book) {
+        book.setEncoding("auto");
+    }
 
-	@Override
-	public String readAnnotation(ZLFile file) {
-		file.setCached(true);
-		try {
-			return new OEBAnnotationReader().readAnnotation(getOpfFile(file));
-		} catch (BookReadingException e) {
-			return null;
-		} finally {
-			file.setCached(false);
-		}
-	}
+    @Override
+    public String readAnnotation(ZLFile file) {
+        file.setCached(true);
+        try {
+            return new OEBAnnotationReader().readAnnotation(getOpfFile(file));
+        } catch (BookReadingException e) {
+            return null;
+        } finally {
+            file.setCached(false);
+        }
+    }
 
-	private ZLFile getOpfFile(ZLFile oebFile) throws BookReadingException {
-		if ("opf".equals(oebFile.getExtension())) {
-			return oebFile;
-		}
+    private ZLFile getOpfFile(ZLFile oebFile) throws BookReadingException {
+        if ("opf".equals(oebFile.getExtension())) {
+            return oebFile;
+        }
 
-		final ZLFile containerInfoFile = ZLFile.createFile(oebFile, "META-INF/container.xml");
-		if (containerInfoFile.exists()) {
-			final ContainerFileReader reader = new ContainerFileReader();
-			reader.readQuietly(containerInfoFile);
-			final String opfPath = reader.getRootPath();
-			if (opfPath != null) {
-				return ZLFile.createFile(oebFile, opfPath);
-			}
-		}
+        final ZLFile containerInfoFile = ZLFile.createFile(oebFile, "META-INF/container.xml");
+        if (containerInfoFile.exists()) {
+            final ContainerFileReader reader = new ContainerFileReader();
+            reader.readQuietly(containerInfoFile);
+            final String opfPath = reader.getRootPath();
+            if (opfPath != null) {
+                return ZLFile.createFile(oebFile, opfPath);
+            }
+        }
 
-		for (ZLFile child : oebFile.children()) {
-			if (child.getExtension().equals("opf")) {
-				return child;
-			}
-		}
-		throw new BookReadingException("opfFileNotFound", oebFile);
-	}
+        for (ZLFile child : oebFile.children()) {
+            if (child.getExtension().equals("opf")) {
+                return child;
+            }
+        }
+        throw new BookReadingException("opfFileNotFound", oebFile);
+    }
 
-	@Override
-	public int priority() {
-		return 0;
-	}
+    @Override
+    public int priority() {
+        return 0;
+    }
 }

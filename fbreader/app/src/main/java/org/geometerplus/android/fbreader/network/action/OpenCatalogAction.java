@@ -19,92 +19,90 @@
 
 package org.geometerplus.android.fbreader.network.action;
 
-import java.util.Map;
-
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 
+import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
+import org.geometerplus.android.fbreader.network.NetworkLibrarySecondaryActivity;
+import org.geometerplus.android.util.OrientationUtil;
+import org.geometerplus.fbreader.network.NetworkTree;
+import org.geometerplus.fbreader.network.tree.NetworkAuthorTree;
+import org.geometerplus.fbreader.network.tree.NetworkCatalogTree;
+import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
+import org.geometerplus.fbreader.network.tree.NetworkSeriesTree;
 import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.fbreader.network.tree.*;
-
-import org.geometerplus.android.fbreader.network.*;
-import org.geometerplus.android.util.OrientationUtil;
-import org.geometerplus.android.util.PackageUtil;
-
 public class OpenCatalogAction extends Action {
-	private final ZLNetworkContext myNetworkContext;
+    private final ZLNetworkContext myNetworkContext;
 
-	public OpenCatalogAction(Activity activity, ZLNetworkContext nc) {
-		super(activity, ActionCode.OPEN_CATALOG, "openCatalog", -1);
-		myNetworkContext = nc;
-	}
+    public OpenCatalogAction(Activity activity, ZLNetworkContext nc) {
+        super(activity, ActionCode.OPEN_CATALOG, "openCatalog", -1);
+        myNetworkContext = nc;
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (tree instanceof NetworkAuthorTree || tree instanceof NetworkSeriesTree) {
-			return true;
-		} else if (tree instanceof NetworkCatalogTree) {
-			return ((NetworkCatalogTree)tree).canBeOpened();
-		} else {
-			return false;
-		}
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (tree instanceof NetworkAuthorTree || tree instanceof NetworkSeriesTree) {
+            return true;
+        } else if (tree instanceof NetworkCatalogTree) {
+            return ((NetworkCatalogTree) tree).canBeOpened();
+        } else {
+            return false;
+        }
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		if (tree instanceof NetworkCatalogTree) {
-			doExpandCatalog((NetworkCatalogTree)tree);
-		} else {
-			doOpenTree(tree);
-		}
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        if (tree instanceof NetworkCatalogTree) {
+            doExpandCatalog((NetworkCatalogTree) tree);
+        } else {
+            doOpenTree(tree);
+        }
+    }
 
-	private void doOpenTree(NetworkTree tree) {
-		if (myActivity instanceof NetworkLibraryActivity) {
-			((NetworkLibraryActivity)myActivity).openTree(tree);
-		} else {
-			OrientationUtil.startActivity(
-				myActivity,
-				new Intent(myActivity.getApplicationContext(), NetworkLibrarySecondaryActivity.class)
-					.putExtra(NetworkLibraryActivity.TREE_KEY_KEY, tree.getUniqueKey())
-			);
-		}
-	}
+    private void doOpenTree(NetworkTree tree) {
+        if (myActivity instanceof NetworkLibraryActivity) {
+            ((NetworkLibraryActivity) myActivity).openTree(tree);
+        } else {
+            OrientationUtil.startActivity(
+                    myActivity,
+                    new Intent(myActivity.getApplicationContext(), NetworkLibrarySecondaryActivity.class)
+                            .putExtra(NetworkLibraryActivity.TREE_KEY_KEY, tree.getUniqueKey())
+            );
+        }
+    }
 
-	private void doExpandCatalog(final NetworkCatalogTree tree) {
-		final NetworkItemsLoader loader = myLibrary.getStoredLoader(tree);
-		if (loader != null && loader.canResumeLoading()) {
-			doOpenTree(tree);
-		} else if (loader != null) {
-			loader.setPostRunnable(new Runnable() {
-				public void run() {
-					doLoadCatalog(tree);
-				}
-			});
-		} else {
-			doLoadCatalog(tree);
-		}
-	}
+    private void doExpandCatalog(final NetworkCatalogTree tree) {
+        final NetworkItemsLoader loader = myLibrary.getStoredLoader(tree);
+        if (loader != null && loader.canResumeLoading()) {
+            doOpenTree(tree);
+        } else if (loader != null) {
+            loader.setPostRunnable(new Runnable() {
+                public void run() {
+                    doLoadCatalog(tree);
+                }
+            });
+        } else {
+            doLoadCatalog(tree);
+        }
+    }
 
-	private void doLoadCatalog(final NetworkCatalogTree tree) {
-		boolean resumeNotLoad = false;
-		if (tree.hasChildren()) {
-			if (tree.isContentValid()) {
-				if (tree.Item.supportsResumeLoading()) {
-					resumeNotLoad = true;
-				} else {
-					doOpenTree(tree);
-					return;
-				}
-			} else {
-				tree.clearCatalog();
-			}
-		}
+    private void doLoadCatalog(final NetworkCatalogTree tree) {
+        boolean resumeNotLoad = false;
+        if (tree.hasChildren()) {
+            if (tree.isContentValid()) {
+                if (tree.Item.supportsResumeLoading()) {
+                    resumeNotLoad = true;
+                } else {
+                    doOpenTree(tree);
+                    return;
+                }
+            } else {
+                tree.clearCatalog();
+            }
+        }
 
-		tree.startItemsLoader(myNetworkContext, true, resumeNotLoad);
-		doOpenTree(tree);
-	}
+        tree.startItemsLoader(myNetworkContext, true, resumeNotLoad);
+        doOpenTree(tree);
+    }
 }

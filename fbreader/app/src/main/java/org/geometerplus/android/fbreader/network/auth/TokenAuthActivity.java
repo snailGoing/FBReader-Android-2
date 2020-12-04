@@ -19,10 +19,6 @@
 
 package org.geometerplus.android.fbreader.network.auth;
 
-import java.security.MessageDigest;
-import java.util.Formatter;
-import java.util.Map;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,79 +26,80 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.core.network.JsonRequest;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.ui.android.network.SQLiteCookieDatabase;
 
-import org.geometerplus.zlibrary.ui.android.BuildConfig;
-import org.geometerplus.android.fbreader.network.auth.ActivityNetworkContext;
+import java.security.MessageDigest;
+import java.util.Formatter;
+import java.util.Map;
 
 public class TokenAuthActivity extends Activity {
-	private final ActivityNetworkContext NetworkContext = new ActivityNetworkContext(this);
+    private final ActivityNetworkContext NetworkContext = new ActivityNetworkContext(this);
 
-	@Override
-	protected void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
+    @Override
+    protected void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
 
-		SQLiteCookieDatabase.init(this);
+        SQLiteCookieDatabase.init(this);
 
-		final Intent intent = getIntent();
-		final Uri data = intent != null ? intent.getData() : null;
-		final String host = data != null ? data.getHost() : null;
-		String token = data != null ? data.getPath() : null;
-		if (host == null || token == null || "".equals(token)) {
-			finish();
-			return;
-		}
-		token = token.substring(1);
+        final Intent intent = getIntent();
+        final Uri data = intent != null ? intent.getData() : null;
+        final String host = data != null ? data.getHost() : null;
+        String token = data != null ? data.getPath() : null;
+        if (host == null || token == null || "".equals(token)) {
+            finish();
+            return;
+        }
+        token = token.substring(1);
 
-		final JsonRequest request;
-		try {
-			final SharedPreferences prefs = getSharedPreferences("fbreader.auth", 0);
-			request = new JsonRequest(prefs.getString("claim-token-url", null)) {
-				@Override
-				public void processResponse(Object response) {
-					if (response instanceof Map) {
-						AndroidNetworkContext.setAccountName(host, (Map)response);
-					}
-				}
-			};
-			if (!host.equals(request.host())) {
-				System.err.println("AUTH ISSUE: " + host + " != " + request.host());
-				finish();
-				return;
-			}
-			final MessageDigest hash = MessageDigest.getInstance("SHA-1");
-			final String salt = prefs.getString("salt", null);
-			hash.update(salt.getBytes("utf-8"));
-			hash.update(BuildConfig.FBNETWORK_SECRET.getBytes("utf-8"));
-			hash.update(token.getBytes("utf-8"));
-			final Formatter f = new Formatter();
-			for (byte b : hash.digest()) {
-				f.format("%02x", b & 0xFF);
-			}
-			request.addPostParameter("token", f.toString());
-		} catch (Throwable t) {
-			t.printStackTrace();
-			finish();
-			return;
-		}
+        final JsonRequest request;
+        try {
+            final SharedPreferences prefs = getSharedPreferences("fbreader.auth", 0);
+            request = new JsonRequest(prefs.getString("claim-token-url", null)) {
+                @Override
+                public void processResponse(Object response) {
+                    if (response instanceof Map) {
+                        AndroidNetworkContext.setAccountName(host, (Map) response);
+                    }
+                }
+            };
+            if (!host.equals(request.host())) {
+                System.err.println("AUTH ISSUE: " + host + " != " + request.host());
+                finish();
+                return;
+            }
+            final MessageDigest hash = MessageDigest.getInstance("SHA-1");
+            final String salt = prefs.getString("salt", null);
+            hash.update(salt.getBytes("utf-8"));
+            //hash.update(BuildConfig.FBNETWORK_SECRET.getBytes("utf-8"));
+            hash.update(token.getBytes("utf-8"));
+            final Formatter f = new Formatter();
+            for (byte b : hash.digest()) {
+                f.format("%02x", b & 0xFF);
+            }
+            request.addPostParameter("token", f.toString());
+        } catch (Throwable t) {
+            t.printStackTrace();
+            finish();
+            return;
+        }
 
-		new AsyncTask<Void,Void,Void>() {
-			@Override
-			protected Void doInBackground(Void ... params) {
-				try {
-					NetworkContext.perform(request);
-				} catch (ZLNetworkException e) {
-					e.printStackTrace();
-				}
-				return null;
-			}
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    NetworkContext.perform(request);
+                } catch (ZLNetworkException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
 
-			@Override
-			protected void onPostExecute(Void result) {
-				finish();
-			}
-		}.execute();
-	}
+            @Override
+            protected void onPostExecute(Void result) {
+                finish();
+            }
+        }.execute();
+    }
 }

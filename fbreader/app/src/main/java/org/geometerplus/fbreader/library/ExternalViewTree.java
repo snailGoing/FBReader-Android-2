@@ -22,25 +22,25 @@ package org.geometerplus.fbreader.library;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 public class ExternalViewTree extends LibraryTree {
-	private final ZLResource myResource;
+    private final ZLResource myResource;
 
-	ExternalViewTree(RootTree parent) {
-		super(parent);
-		myResource = resource().getResource(ROOT_EXTERNAL_VIEW);
-	}
+    ExternalViewTree(RootTree parent) {
+        super(parent);
+        myResource = resource().getResource(ROOT_EXTERNAL_VIEW);
+    }
 
-	@Override
-	public String getName() {
-		return myResource.getValue();
-	}
+    @Override
+    public String getName() {
+        return myResource.getValue();
+    }
 
-	@Override
-	protected String getStringId() {
-		return ROOT_EXTERNAL_VIEW;
-	}
+    @Override
+    protected String getStringId() {
+        return ROOT_EXTERNAL_VIEW;
+    }
 
-	@Override
-	public String getSummary() {
-		return myResource.getResource("summary").getValue();
-	}
+    @Override
+    public String getSummary() {
+        return myResource.getResource("summary").getValue();
+    }
 }

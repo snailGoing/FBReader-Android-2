@@ -19,39 +19,38 @@
 
 package org.geometerplus.android.fbreader.preferences;
 
-import java.util.List;
-
 import android.content.Context;
 
+import org.geometerplus.android.fbreader.dict.DictionaryUtil;
 import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.android.fbreader.dict.DictionaryUtil;
+import java.util.List;
 
 class DictionaryPreference extends ZLStringListPreference {
-	private final ZLStringOption myOption;
+    private final ZLStringOption myOption;
 
-	DictionaryPreference(Context context, ZLResource resource, ZLStringOption dictionaryOption, List<DictionaryUtil.PackageInfo> infos) {
-		super(context, resource);
+    DictionaryPreference(Context context, ZLResource resource, ZLStringOption dictionaryOption, List<DictionaryUtil.PackageInfo> infos) {
+        super(context, resource);
 
-		myOption = dictionaryOption;
+        myOption = dictionaryOption;
 
-		final String[] values = new String[infos.size()];
-		final String[] texts = new String[infos.size()];
-		int index = 0;
-		for (DictionaryUtil.PackageInfo i : infos) {
-			values[index] = i.getId();
-			texts[index] = i.getTitle();
-			++index;
-		}
-		setLists(values, texts);
+        final String[] values = new String[infos.size()];
+        final String[] texts = new String[infos.size()];
+        int index = 0;
+        for (DictionaryUtil.PackageInfo i : infos) {
+            values[index] = i.getId();
+            texts[index] = i.getTitle();
+            ++index;
+        }
+        setLists(values, texts);
 
-		setInitialValue(myOption.getValue());
-	}
+        setInitialValue(myOption.getValue());
+    }
 
-	@Override
-	protected void onDialogClosed(boolean result) {
-		super.onDialogClosed(result);
-		myOption.setValue(getValue());
-	}
+    @Override
+    protected void onDialogClosed(boolean result) {
+        super.onDialogClosed(result);
+        myOption.setValue(getValue());
+    }
 }

@@ -19,75 +19,76 @@
 
 package org.geometerplus.fbreader.network.tree;
 
+import org.geometerplus.fbreader.network.NetworkItem;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.SearchItem;
 import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 
-import org.geometerplus.fbreader.network.*;
-
 class Searcher extends NetworkItemsLoader {
-	private final String myPattern;
-	private volatile boolean myItemFound;
+    private final String myPattern;
+    private volatile boolean myItemFound;
 
-	Searcher(ZLNetworkContext nc, SearchCatalogTree tree, String pattern) {
-		super(nc, tree);
-		myPattern = pattern;
-	}
+    Searcher(ZLNetworkContext nc, SearchCatalogTree tree, String pattern) {
+        super(nc, tree);
+        myPattern = pattern;
+    }
 
-	@Override
-	public void doBefore() {
-		Tree.Library.NetworkSearchPatternOption.setValue(myPattern);
-	}
+    @Override
+    public void doBefore() {
+        Tree.Library.NetworkSearchPatternOption.setValue(myPattern);
+    }
 
-	@Override
-	public void interrupt() {
-		// Searcher is not interruptable at this moment
-	}
+    @Override
+    public void interrupt() {
+        // Searcher is not interruptable at this moment
+    }
 
-	@Override
-	public void load(Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		try {
-			final SearchItem item = (SearchItem)Tree.Item;
-			if (myPattern.equals(item.getPattern())) {
-				if (Tree.hasChildren()) {
-					myItemFound = true;
-					Tree.Library.fireModelChangedEvent(
-						NetworkLibrary.ChangeListener.Code.Found, Tree
-					);
-				} else {
-					Tree.Library.fireModelChangedEvent(
-						NetworkLibrary.ChangeListener.Code.NotFound
-					);
-				}
-			} else {
-				item.runSearch(NetworkContext, this, myPattern);
-			}
-			if (onSuccess != null) {
-				onSuccess.run();
-			}
-		} catch (ZLNetworkException e) {
-			if (onError != null) {
-				onError.run(e);
-			}
-		}
-	}
+    @Override
+    public void load(Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        try {
+            final SearchItem item = (SearchItem) Tree.Item;
+            if (myPattern.equals(item.getPattern())) {
+                if (Tree.hasChildren()) {
+                    myItemFound = true;
+                    Tree.Library.fireModelChangedEvent(
+                            NetworkLibrary.ChangeListener.Code.Found, Tree
+                    );
+                } else {
+                    Tree.Library.fireModelChangedEvent(
+                            NetworkLibrary.ChangeListener.Code.NotFound
+                    );
+                }
+            } else {
+                item.runSearch(NetworkContext, this, myPattern);
+            }
+            if (onSuccess != null) {
+                onSuccess.run();
+            }
+        } catch (ZLNetworkException e) {
+            if (onError != null) {
+                onError.run(e);
+            }
+        }
+    }
 
-	@Override
-	public synchronized void onNewItem(final NetworkItem item) {
-		if (!myItemFound) {
-			((SearchCatalogTree)Tree).setPattern(myPattern);
-			Tree.clearCatalog();
-			Tree.Library.fireModelChangedEvent(
-				NetworkLibrary.ChangeListener.Code.Found, Tree
-			);
-			myItemFound = true;
-		}
-		super.onNewItem(item);
-	}
+    @Override
+    public synchronized void onNewItem(final NetworkItem item) {
+        if (!myItemFound) {
+            ((SearchCatalogTree) Tree).setPattern(myPattern);
+            Tree.clearCatalog();
+            Tree.Library.fireModelChangedEvent(
+                    NetworkLibrary.ChangeListener.Code.Found, Tree
+            );
+            myItemFound = true;
+        }
+        super.onNewItem(item);
+    }
 
-	@Override
-	protected void onFinish(ZLNetworkException exception, boolean interrupted) {
-		if (!interrupted && !myItemFound) {
-			Tree.Library.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.NotFound);
-		}
-	}
+    @Override
+    protected void onFinish(ZLNetworkException exception, boolean interrupted) {
+        if (!interrupted && !myItemFound) {
+            Tree.Library.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.NotFound);
+        }
+    }
 }

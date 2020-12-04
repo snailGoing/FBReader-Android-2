@@ -19,94 +19,99 @@
 
 package org.geometerplus.fbreader.fbreader.options;
 
-import java.io.Serializable;
-import java.util.*;
-
+import org.geometerplus.fbreader.book.Book;
+import org.geometerplus.fbreader.book.Bookmark;
+import org.geometerplus.fbreader.book.BookmarkQuery;
+import org.geometerplus.fbreader.book.IBookCollection;
+import org.geometerplus.fbreader.book.SerializerUtil;
 import org.geometerplus.zlibrary.core.options.Config;
 import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.fbreader.book.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class CancelMenuHelper {
-	private final static String GROUP_NAME = "CancelMenu";
+    private final static String GROUP_NAME = "CancelMenu";
 
-	public final ZLBooleanOption ShowLibraryItemOption =
-		new ZLBooleanOption(GROUP_NAME, "library", true);
-	public final ZLBooleanOption ShowNetworkLibraryItemOption =
-		new ZLBooleanOption(GROUP_NAME, "networkLibrary", true);
-	public final ZLBooleanOption ShowPreviousBookItemOption =
-		new ZLBooleanOption(GROUP_NAME, "previousBook", false);
-	public final ZLBooleanOption ShowPositionItemsOption =
-		new ZLBooleanOption(GROUP_NAME, "positions", true);
+    public final ZLBooleanOption ShowLibraryItemOption =
+            new ZLBooleanOption(GROUP_NAME, "library", true);
+    public final ZLBooleanOption ShowNetworkLibraryItemOption =
+            new ZLBooleanOption(GROUP_NAME, "networkLibrary", true);
+    public final ZLBooleanOption ShowPreviousBookItemOption =
+            new ZLBooleanOption(GROUP_NAME, "previousBook", false);
+    public final ZLBooleanOption ShowPositionItemsOption =
+            new ZLBooleanOption(GROUP_NAME, "positions", true);
 
-	public CancelMenuHelper() {
-		Config.Instance().requestAllValuesForGroup(GROUP_NAME);
-	}
+    public CancelMenuHelper() {
+        Config.Instance().requestAllValuesForGroup(GROUP_NAME);
+    }
 
-	public static enum ActionType {
-		library,
-		networkLibrary,
-		previousBook,
-		returnTo,
-		close
-	}
+    public List<ActionDescription> getActionsList(IBookCollection<Book> collection) {
+        final List<ActionDescription> list = new ArrayList<ActionDescription>();
 
-	public static class ActionDescription implements Serializable {
-		public final ActionType Type;
-		public final String Title;
-		public final String Summary;
+        if (ShowLibraryItemOption.getValue()) {
+            list.add(new ActionDescription(ActionType.library, null));
+        }
+        if (ShowNetworkLibraryItemOption.getValue()) {
+            list.add(new ActionDescription(ActionType.networkLibrary, null));
+        }
+        if (ShowPreviousBookItemOption.getValue()) {
+            final Book previousBook = collection.getRecentBook(1);
+            if (previousBook != null) {
+                list.add(new ActionDescription(ActionType.previousBook, previousBook.getTitle()));
+            }
+        }
+        if (ShowPositionItemsOption.getValue()) {
+            final Book currentBook = collection.getRecentBook(0);
+            if (currentBook != null) {
+                final List<Bookmark> bookmarks = collection.bookmarks(
+                        new BookmarkQuery(currentBook, false, 3)
+                );
+                Collections.sort(bookmarks, new Bookmark.ByTimeComparator());
+                for (Bookmark b : bookmarks) {
+                    list.add(new BookmarkDescription(b));
+                }
+            }
+        }
+        list.add(new ActionDescription(ActionType.close, null));
 
-		ActionDescription(ActionType type, String summary) {
-			final ZLResource resource = ZLResource.resource("cancelMenu");
-			Type = type;
-			Title = resource.getResource(type.toString()).getValue();
-			Summary = summary;
-		}
-	}
+        return list;
+    }
 
-	public static class BookmarkDescription extends ActionDescription {
-		private final String mySerializedBookmark;
+    public static enum ActionType {
+        library,
+        networkLibrary,
+        previousBook,
+        returnTo,
+        close
+    }
 
-		BookmarkDescription(Bookmark b) {
-			super(ActionType.returnTo, b.getText());
-			mySerializedBookmark = SerializerUtil.serialize(b);
-		}
+    public static class ActionDescription implements Serializable {
+        public final ActionType Type;
+        public final String Title;
+        public final String Summary;
 
-		public Bookmark getBookmark() {
-			return SerializerUtil.deserializeBookmark(mySerializedBookmark);
-		}
-	}
+        ActionDescription(ActionType type, String summary) {
+            final ZLResource resource = ZLResource.resource("cancelMenu");
+            Type = type;
+            Title = resource.getResource(type.toString()).getValue();
+            Summary = summary;
+        }
+    }
 
-	public List<ActionDescription> getActionsList(IBookCollection<Book> collection) {
-		final List<ActionDescription> list = new ArrayList<ActionDescription>();
+    public static class BookmarkDescription extends ActionDescription {
+        private final String mySerializedBookmark;
 
-		if (ShowLibraryItemOption.getValue()) {
-			list.add(new ActionDescription(ActionType.library, null));
-		}
-		if (ShowNetworkLibraryItemOption.getValue()) {
-			list.add(new ActionDescription(ActionType.networkLibrary, null));
-		}
-		if (ShowPreviousBookItemOption.getValue()) {
-			final Book previousBook = collection.getRecentBook(1);
-			if (previousBook != null) {
-				list.add(new ActionDescription(ActionType.previousBook, previousBook.getTitle()));
-			}
-		}
-		if (ShowPositionItemsOption.getValue()) {
-			final Book currentBook = collection.getRecentBook(0);
-			if (currentBook != null) {
-				final List<Bookmark> bookmarks = collection.bookmarks(
-					new BookmarkQuery(currentBook, false, 3)
-				);
-				Collections.sort(bookmarks, new Bookmark.ByTimeComparator());
-				for (Bookmark b : bookmarks) {
-					list.add(new BookmarkDescription(b));
-				}
-			}
-		}
-		list.add(new ActionDescription(ActionType.close, null));
+        BookmarkDescription(Bookmark b) {
+            super(ActionType.returnTo, b.getText());
+            mySerializedBookmark = SerializerUtil.serialize(b);
+        }
 
-		return list;
-	}
+        public Bookmark getBookmark() {
+            return SerializerUtil.deserializeBookmark(mySerializedBookmark);
+        }
+    }
 }

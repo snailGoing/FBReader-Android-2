@@ -21,7 +21,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.view.*;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 
 @SuppressLint("NewApi")
 @SuppressWarnings("javadoc")
@@ -42,14 +46,6 @@ public class SwipeDismissListener implements View.OnTouchListener {
     private boolean isSwiping;
     private VelocityTracker mVelocityTracker;
     private float mTranslationX;
-
-
-    @SuppressWarnings("UnusedParameters")
-    public interface OnDismissCallback {
-
-        void onDismiss(View view);
-
-    }
 
 
     public SwipeDismissListener(View view, OnDismissCallback callback) {
@@ -234,6 +230,13 @@ public class SwipeDismissListener implements View.OnTouchListener {
         });
 
         animator.start();
+
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    public interface OnDismissCallback {
+
+        void onDismiss(View view);
 
     }
 

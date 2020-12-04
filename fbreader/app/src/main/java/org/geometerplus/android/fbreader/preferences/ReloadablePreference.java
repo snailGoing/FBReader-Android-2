@@ -20,5 +20,5 @@
 package org.geometerplus.android.fbreader.preferences;
 
 public interface ReloadablePreference {
-	public void reload();
+    public void reload();
 }

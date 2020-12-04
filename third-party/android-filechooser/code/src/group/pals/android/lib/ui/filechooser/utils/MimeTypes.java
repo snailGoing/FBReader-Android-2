@@ -9,10 +9,9 @@ package group.pals.android.lib.ui.filechooser.utils;
 
 /**
  * Mime types for files.
- * 
+ *
  * @author Hai Bison
  * @since v4.5 beta
- * 
  */
 public class MimeTypes {
 

@@ -20,17 +20,23 @@
 package org.geometerplus.zlibrary.core.view;
 
 public interface ZLViewWidget {
-	void reset();
-	void repaint();
+    void reset();
 
-	void startManualScrolling(int x, int y, ZLView.Direction direction);
-	void scrollManuallyTo(int x, int y);
-	void startAnimatedScrolling(ZLView.PageIndex pageIndex, int x, int y, ZLView.Direction direction, int speed);
-	void startAnimatedScrolling(ZLView.PageIndex pageIndex, ZLView.Direction direction, int speed);
-	void startAnimatedScrolling(int x, int y, int speed);
+    void repaint();
 
-	void setScreenBrightness(int percent);
-	int getScreenBrightness();
+    void startManualScrolling(int x, int y, ZLView.Direction direction);
 
-	int getBatteryLevel();
+    void scrollManuallyTo(int x, int y);
+
+    void startAnimatedScrolling(ZLView.PageIndex pageIndex, int x, int y, ZLView.Direction direction, int speed);
+
+    void startAnimatedScrolling(ZLView.PageIndex pageIndex, ZLView.Direction direction, int speed);
+
+    void startAnimatedScrolling(int x, int y, int speed);
+
+    int getScreenBrightness();
+
+    void setScreenBrightness(int percent);
+
+    int getBatteryLevel();
 }

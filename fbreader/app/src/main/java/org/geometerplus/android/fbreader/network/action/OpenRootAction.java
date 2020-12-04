@@ -21,37 +21,35 @@ package org.geometerplus.android.fbreader.network.action;
 
 import android.app.Activity;
 
-import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
 import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.tree.RootTree;
 
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
-
 public class OpenRootAction extends Action {
-	public OpenRootAction(Activity activity) {
-		super(activity, ActionCode.OPEN_ROOT, "openRoot", -1);
-	}
+    public OpenRootAction(Activity activity) {
+        super(activity, ActionCode.OPEN_ROOT, "openRoot", -1);
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (!(myActivity instanceof NetworkLibraryActivity)) {
-			return false;
-		}
-		if (tree instanceof RootTree) {
-			return false;
-		}
-		for (; tree != null; tree = (NetworkTree)tree.Parent) {
-			if (tree instanceof RootTree) {
-				return tree == myLibrary.getRootTree();
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (!(myActivity instanceof NetworkLibraryActivity)) {
+            return false;
+        }
+        if (tree instanceof RootTree) {
+            return false;
+        }
+        for (; tree != null; tree = (NetworkTree) tree.Parent) {
+            if (tree instanceof RootTree) {
+                return tree == myLibrary.getRootTree();
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		final NetworkLibraryActivity activity = (NetworkLibraryActivity)myActivity;
-		activity.openTree(myLibrary.getRootTree());
-		activity.clearHistory();
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        final NetworkLibraryActivity activity = (NetworkLibraryActivity) myActivity;
+        activity.openTree(myLibrary.getRootTree());
+        activity.clearHistory();
+    }
 }

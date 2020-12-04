@@ -19,118 +19,127 @@
 
 package org.geometerplus.android.fbreader.network.auth;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+
+import org.geometerplus.zlibrary.core.network.JsonRequest;
+import org.geometerplus.zlibrary.core.network.ZLNetworkAuthenticationException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
+
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
-
-import android.content.Context;
-import android.net.*;
-
-import org.geometerplus.zlibrary.core.network.*;
-import org.geometerplus.zlibrary.ui.android.BuildConfig;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 public abstract class AndroidNetworkContext extends ZLNetworkContext {
-	private volatile ConnectivityManager myConnectivityManager;
+    private volatile ConnectivityManager myConnectivityManager;
 
-	protected void throwIfError(Map<String,String> response) throws ZLNetworkAuthenticationException {
-		final String error = response.get("error");
-		if (error != null) {
-			throw new ZLNetworkAuthenticationException(error);
-		}
-	}
+    public static void setAccountName(String host, Map map) {
+        final Object user = map.get("user");
+        final Object realm = map.get("realm");
+        if (host != null && user instanceof String && realm instanceof String) {
+            setAccountName(host, (String) realm, (String) user);
+        }
+    }
 
-	@Override
-	public void authenticate(URI uri, String realm, Map<String,String> params) throws ZLNetworkAuthenticationException {
-		final Map<String,String> result = _authenticate(uri, realm, params);
-		throwIfError(result);
-		setAccountName(uri.getHost(), result);
-	}
+    protected void throwIfError(Map<String, String> response) throws ZLNetworkAuthenticationException {
+        final String error = response.get("error");
+        if (error != null) {
+            throw new ZLNetworkAuthenticationException(error);
+        }
+    }
 
-	private Map<String,String> _authenticate(URI uri, String realm, Map<String,String> params) throws ZLNetworkAuthenticationException {
-		if (!"https".equalsIgnoreCase(uri.getScheme())) {
-			throw new ZLNetworkAuthenticationException("Connection is not secure");
-		}
+    @Override
+    public void authenticate(URI uri, String realm, Map<String, String> params) throws ZLNetworkAuthenticationException {
+        final Map<String, String> result = _authenticate(uri, realm, params);
+        throwIfError(result);
+        setAccountName(uri.getHost(), result);
+    }
 
-		final Uri authUri;
-		try {
-			final String salt = new BigInteger(100, new Random()).toString(32);
-			getContext().getSharedPreferences("fbreader.auth", 0).edit()
-				.putString("salt", salt)
-				.putString("claim-token-url", url(uri, params, "auth-url-web-claim-token"))
-				.commit();
-			String authUrl = url(uri, params, "auth-url-web-token");
-			authUrl = authUrl.replace("@key@", BuildConfig.FBNETWORK_KEY);
-			authUrl = authUrl.replace("@salt@", salt);
-			authUri = Uri.parse(authUrl);
-		} catch (Throwable t) {
-			throw new ZLNetworkAuthenticationException("No data for web authentication");
-		}
-		return authenticateWeb(realm, authUri);
-	}
+    private Map<String, String> _authenticate(URI uri, String realm, Map<String, String> params) throws ZLNetworkAuthenticationException {
+        if (!"https".equalsIgnoreCase(uri.getScheme())) {
+            throw new ZLNetworkAuthenticationException("Connection is not secure");
+        }
 
-	protected abstract Context getContext();
-	protected abstract Map<String,String> authenticateWeb(String realm, Uri uri) throws ZLNetworkAuthenticationException;
+        final Uri authUri;
+        try {
+            final String salt = new BigInteger(100, new Random()).toString(32);
+            getContext().getSharedPreferences("fbreader.auth", 0).edit()
+                    .putString("salt", salt)
+                    .putString("claim-token-url", url(uri, params, "auth-url-web-claim-token"))
+                    .commit();
+            String authUrl = url(uri, params, "auth-url-web-token");
+            //authUrl = authUrl.replace("@key@", BuildConfig.FBNETWORK_KEY);
+            authUrl = authUrl.replace("@salt@", salt);
+            authUri = Uri.parse(authUrl);
+        } catch (Throwable t) {
+            throw new ZLNetworkAuthenticationException("No data for web authentication");
+        }
+        return authenticateWeb(realm, authUri);
+    }
 
-	protected Map<String,String> errorMap(String message) {
-		return Collections.singletonMap("error", message);
-	}
+    protected abstract Context getContext();
 
-	protected Map<String,String> errorMap(Throwable exception) {
-		final String message = exception.getMessage();
-		return errorMap(message != null ? message : exception.getClass().getName());
-	}
+    protected abstract Map<String, String> authenticateWeb(String realm, Uri uri) throws ZLNetworkAuthenticationException;
 
-	protected Map<String,String> verify(final String verificationUrl) {
-		final Map<String,String> result = new HashMap<String,String>();
-		performQuietly(new JsonRequest(verificationUrl) {
-			public void processResponse(Object response) {
-				result.putAll((Map)response);
-			}
-		});
-		return result;
-	}
+    protected Map<String, String> errorMap(String message) {
+        return Collections.singletonMap("error", message);
+    }
 
-	protected String url(URI base, Map<String,String> params, String key) {
-		return url(base, params.get(key));
-	}
+    protected Map<String, String> errorMap(Throwable exception) {
+        final String message = exception.getMessage();
+        return errorMap(message != null ? message : exception.getClass().getName());
+    }
 
-	protected String url(URI base, String path) {
-		if (path == null) {
-			return null;
-		}
-		try {
-			final URI relative = new URI(path);
-			return relative.isAbsolute() ? null : base.resolve(relative).toString();
-		} catch (URISyntaxException e) {
-			return null;
-		}
-	}
+    protected Map<String, String> verify(final String verificationUrl) {
+        final Map<String, String> result = new HashMap<String, String>();
+        performQuietly(new JsonRequest(verificationUrl) {
+            public void processResponse(Object response) {
+                result.putAll((Map) response);
+            }
+        });
+        return result;
+    }
 
-	protected final NetworkInfo getActiveNetworkInfo() {
-		if (myConnectivityManager == null) {
-			myConnectivityManager =
-				(ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-		}
-		return myConnectivityManager != null ? myConnectivityManager.getActiveNetworkInfo() : null;
-	}
+    protected String url(URI base, Map<String, String> params, String key) {
+        return url(base, params.get(key));
+    }
 
-	@Override
-	protected void perform(ZLNetworkRequest request, int socketTimeout, int connectionTimeout) throws ZLNetworkException {
-		final NetworkInfo info = getActiveNetworkInfo();
-		if (info == null || !info.isConnected()) {
-			request.doAfter(false);
-			throw ZLNetworkException.forCode("networkNotAvailable");
-		}
+    protected String url(URI base, String path) {
+        if (path == null) {
+            return null;
+        }
+        try {
+            final URI relative = new URI(path);
+            return relative.isAbsolute() ? null : base.resolve(relative).toString();
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
 
-		super.perform(request, socketTimeout, connectionTimeout);
-	}
+    protected final NetworkInfo getActiveNetworkInfo() {
+        if (myConnectivityManager == null) {
+            myConnectivityManager =
+                    (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        }
+        return myConnectivityManager != null ? myConnectivityManager.getActiveNetworkInfo() : null;
+    }
 
-	public static void setAccountName(String host, Map map) {
-		final Object user = map.get("user");
-		final Object realm = map.get("realm");
-		if (host != null && user instanceof String && realm instanceof String) {
-			setAccountName(host, (String)realm, (String)user);
-		}
-	}
+    @Override
+    protected void perform(ZLNetworkRequest request, int socketTimeout, int connectionTimeout) throws ZLNetworkException {
+        final NetworkInfo info = getActiveNetworkInfo();
+        if (info == null || !info.isConnected()) {
+            request.doAfter(false);
+            throw ZLNetworkException.forCode("networkNotAvailable");
+        }
+
+        super.perform(request, socketTimeout, connectionTimeout);
+    }
 }

@@ -19,27 +19,26 @@
 
 package org.geometerplus.fbreader.network;
 
+import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
 import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
 
-import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
-
 public class NetworkOperationData {
-	public final INetworkLink Link;
-	public volatile NetworkItemsLoader Loader;
-	public volatile String ResumeURI;
+    public final INetworkLink Link;
+    public volatile NetworkItemsLoader Loader;
+    public volatile String ResumeURI;
 
-	public NetworkOperationData(INetworkLink link, NetworkItemsLoader loader) {
-		Link = link;
-		Loader = loader;
-	}
+    public NetworkOperationData(INetworkLink link, NetworkItemsLoader loader) {
+        Link = link;
+        Loader = loader;
+    }
 
-	protected void clear() {
-		ResumeURI = null;
-	}
+    protected void clear() {
+        ResumeURI = null;
+    }
 
-	public final ZLNetworkRequest resume() {
-		final ZLNetworkRequest request = Link.resume(this);
-		clear();
-		return request;
-	}
+    public final ZLNetworkRequest resume() {
+        final ZLNetworkRequest request = Link.resume(this);
+        clear();
+        return request;
+    }
 }

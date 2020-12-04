@@ -19,95 +19,99 @@
 
 package org.geometerplus.fbreader;
 
-import java.io.*;
-import java.util.*;
-
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.os.Environment;
 
 import org.fbreader.util.IOUtil;
-
-import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.options.ZLStringListOption;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.util.SystemInfo;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
 public abstract class Paths {
-	public static ZLStringListOption BookPathOption =
-		pathOption("BooksDirectory", defaultBookDirectory());
+    public static ZLStringListOption BookPathOption =
+            pathOption("BooksDirectory", defaultBookDirectory());
 
-	public static ZLStringListOption FontPathOption =
-		pathOption("FontPathOption", cardDirectory() + "/Fonts");
+    public static ZLStringListOption FontPathOption =
+            pathOption("FontPathOption", cardDirectory() + "/Fonts");
 
-	public static ZLStringListOption WallpaperPathOption =
-		pathOption("WallpapersDirectory", cardDirectory() + "/Wallpapers");
+    public static ZLStringListOption WallpaperPathOption =
+            pathOption("WallpapersDirectory", cardDirectory() + "/Wallpapers");
 
-	private static ZLStringOption ourTempDirectoryOption =
-		new ZLStringOption("Files", "TemporaryDirectory", "");
+    private static ZLStringOption ourTempDirectoryOption =
+            new ZLStringOption("Files", "TemporaryDirectory", "");
 
-	public static ZLStringOption TempDirectoryOption(Context context) {
-		if ("".equals(ourTempDirectoryOption.getValue())) {
-			ourTempDirectoryOption.setValue(internalTempDirectoryValue(context));
-		}
-		return ourTempDirectoryOption;
-	}
+    public static ZLStringOption TempDirectoryOption(Context context) {
+        if ("".equals(ourTempDirectoryOption.getValue())) {
+            ourTempDirectoryOption.setValue(internalTempDirectoryValue(context));
+        }
+        return ourTempDirectoryOption;
+    }
 
-	private static String internalTempDirectoryValue(Context context) {
-		String value = null;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-			value = getExternalCacheDirPath(context);
-		}
-		return value != null ? value : (mainBookDirectory() + "/.FBReader");
-	}
+    private static String internalTempDirectoryValue(Context context) {
+        String value = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            value = getExternalCacheDirPath(context);
+        }
+        return value != null ? value : (mainBookDirectory() + "/.FBReader");
+    }
 
-	@TargetApi(Build.VERSION_CODES.FROYO)
-	private static String getExternalCacheDirPath(Context context) {
-		final File d = context != null ? context.getExternalCacheDir() : null;
-		if (d != null) {
-			d.mkdirs();
-			if (d.exists() && d.isDirectory()) {
-				return d.getPath();
-			}
-		}
-		return null;
-	}
+    @TargetApi(Build.VERSION_CODES.FROYO)
+    private static String getExternalCacheDirPath(Context context) {
+        final File d = context != null ? context.getExternalCacheDir() : null;
+        if (d != null) {
+            d.mkdirs();
+            if (d.exists() && d.isDirectory()) {
+                return d.getPath();
+            }
+        }
+        return null;
+    }
 
-	public static ZLStringOption DownloadsDirectoryOption() {
-		return new ZLStringOption("Files", "DownloadsDirectory", mainBookDirectory());
-	}
+    public static ZLStringOption DownloadsDirectoryOption() {
+        return new ZLStringOption("Files", "DownloadsDirectory", mainBookDirectory());
+    }
 
-	private static void addDirToList(List<String> list, String candidate) {
-		if (candidate == null || !candidate.startsWith("/")) {
-			return;
-		}
-		for (int count = 0; count < 5; ++count) {
-			while (candidate.endsWith("/")) {
-				candidate = candidate.substring(0, candidate.length() - 1);
-			}
-			final File f = new File(candidate);
-			try {
-				final String canonical = f.getCanonicalPath();
-				if (canonical.equals(candidate)) {
-					break;
-				}
-				candidate = canonical;
-			} catch (Throwable t) {
-				return;
-			}
-		}
-		while (candidate.endsWith("/")) {
-			candidate = candidate.substring(0, candidate.length() - 1);
-		}
-		if (!"".equals(candidate) && !list.contains(candidate) && new File(candidate).canRead()) {
-			list.add(candidate);
-		}
-	}
+    private static void addDirToList(List<String> list, String candidate) {
+        if (candidate == null || !candidate.startsWith("/")) {
+            return;
+        }
+        for (int count = 0; count < 5; ++count) {
+            while (candidate.endsWith("/")) {
+                candidate = candidate.substring(0, candidate.length() - 1);
+            }
+            final File f = new File(candidate);
+            try {
+                final String canonical = f.getCanonicalPath();
+                if (canonical.equals(candidate)) {
+                    break;
+                }
+                candidate = canonical;
+            } catch (Throwable t) {
+                return;
+            }
+        }
+        while (candidate.endsWith("/")) {
+            candidate = candidate.substring(0, candidate.length() - 1);
+        }
+        if (!"".equals(candidate) && !list.contains(candidate) && new File(candidate).canRead()) {
+            list.add(candidate);
+        }
+    }
 
-	public static List<String> allCardDirectories() {
-		final List<String> dirs = new LinkedList<String>();
-		dirs.add(cardDirectory());
-		addDirToList(dirs, System.getenv("SECONDARY_STORAGE"));
+    public static List<String> allCardDirectories() {
+        final List<String> dirs = new LinkedList<String>();
+        dirs.add(cardDirectory());
+        addDirToList(dirs, System.getenv("SECONDARY_STORAGE"));
 		/*
 		BufferedReader reader = null;
 		try {
@@ -128,93 +132,93 @@ public abstract class Paths {
 			IOUtil.closeQuietly(reader);
 		}
 		*/
-		return dirs;
-	}
+        return dirs;
+    }
 
-	public static String cardDirectory() {
-		if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-			return Environment.getExternalStorageDirectory().getPath();
-		}
+    public static String cardDirectory() {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            return Environment.getExternalStorageDirectory().getPath();
+        }
 
-		final List<String> dirNames = new LinkedList<String>();
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader("/proc/self/mounts"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				final String[] parts = line.split("\\s+");
-				if (parts.length >= 4 &&
-					parts[2].toLowerCase().indexOf("fat") >= 0 &&
-					parts[3].indexOf("rw") >= 0) {
-					final File fsDir = new File(parts[1]);
-					if (fsDir.isDirectory() && fsDir.canWrite()) {
-						dirNames.add(fsDir.getPath());
-					}
-				}
-			}
-		} catch (Throwable e) {
-		} finally {
-			IOUtil.closeQuietly(reader);
-		}
+        final List<String> dirNames = new LinkedList<String>();
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader("/proc/self/mounts"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                final String[] parts = line.split("\\s+");
+                if (parts.length >= 4 &&
+                        parts[2].toLowerCase().indexOf("fat") >= 0 &&
+                        parts[3].indexOf("rw") >= 0) {
+                    final File fsDir = new File(parts[1]);
+                    if (fsDir.isDirectory() && fsDir.canWrite()) {
+                        dirNames.add(fsDir.getPath());
+                    }
+                }
+            }
+        } catch (Throwable e) {
+        } finally {
+            IOUtil.closeQuietly(reader);
+        }
 
-		for (String dir : dirNames) {
-			if (dir.toLowerCase().indexOf("media") > 0) {
-				return dir;
-			}
-		}
-		if (dirNames.size() > 0) {
-			return dirNames.get(0);
-		}
+        for (String dir : dirNames) {
+            if (dir.toLowerCase().indexOf("media") > 0) {
+                return dir;
+            }
+        }
+        if (dirNames.size() > 0) {
+            return dirNames.get(0);
+        }
 
-		return Environment.getExternalStorageDirectory().getPath();
-	}
+        return Environment.getExternalStorageDirectory().getPath();
+    }
 
-	private static String defaultBookDirectory() {
-		return cardDirectory() + "/Books";
-	}
+    private static String defaultBookDirectory() {
+        return cardDirectory() + "/Books";
+    }
 
-	private static ZLStringListOption pathOption(String key, String defaultDirectory) {
-		final ZLStringListOption option = new ZLStringListOption(
-			"Files", key, Collections.<String>emptyList(), "\n"
-		);
-		if (option.getValue().isEmpty()) {
-			option.setValue(Collections.singletonList(defaultDirectory));
-		}
-		return option;
-	}
+    private static ZLStringListOption pathOption(String key, String defaultDirectory) {
+        final ZLStringListOption option = new ZLStringListOption(
+                "Files", key, Collections.<String>emptyList(), "\n"
+        );
+        if (option.getValue().isEmpty()) {
+            option.setValue(Collections.singletonList(defaultDirectory));
+        }
+        return option;
+    }
 
-	public static List<String> bookPath() {
-		final List<String> path = new ArrayList<String>(BookPathOption.getValue());
-		final String downloadsDirectory = DownloadsDirectoryOption().getValue();
-		if (!"".equals(downloadsDirectory) && !path.contains(downloadsDirectory)) {
-			path.add(downloadsDirectory);
-		}
-		return path;
-	}
+    public static List<String> bookPath() {
+        final List<String> path = new ArrayList<String>(BookPathOption.getValue());
+        final String downloadsDirectory = DownloadsDirectoryOption().getValue();
+        if (!"".equals(downloadsDirectory) && !path.contains(downloadsDirectory)) {
+            path.add(downloadsDirectory);
+        }
+        return path;
+    }
 
-	public static String mainBookDirectory() {
-		final List<String> bookPath = BookPathOption.getValue();
-		return bookPath.isEmpty() ? defaultBookDirectory() : bookPath.get(0);
-	}
+    public static String mainBookDirectory() {
+        final List<String> bookPath = BookPathOption.getValue();
+        return bookPath.isEmpty() ? defaultBookDirectory() : bookPath.get(0);
+    }
 
-	public static SystemInfo systemInfo(Context context) {
-		final Context appContext = context.getApplicationContext();
-		return new SystemInfo() {
-			public String tempDirectory() {
-				final String value = ourTempDirectoryOption.getValue();
-				if (!"".equals(value)) {
-					return value;
-				}
-				return internalTempDirectoryValue(appContext);
-			}
+    public static SystemInfo systemInfo(Context context) {
+        final Context appContext = context.getApplicationContext();
+        return new SystemInfo() {
+            public String tempDirectory() {
+                final String value = ourTempDirectoryOption.getValue();
+                if (!"".equals(value)) {
+                    return value;
+                }
+                return internalTempDirectoryValue(appContext);
+            }
 
-			public String networkCacheDirectory() {
-				return tempDirectory() + "/cache";
-			}
-		};
-	}
+            public String networkCacheDirectory() {
+                return tempDirectory() + "/cache";
+            }
+        };
+    }
 
-	public static String systemShareDirectory() {
-		return "/system/usr/share/FBReader";
-	}
+    public static String systemShareDirectory() {
+        return "/system/usr/share/FBReader";
+    }
 }

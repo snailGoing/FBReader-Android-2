@@ -19,58 +19,57 @@
 
 package org.geometerplus.android.fbreader.preferences.fileChooser;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
+import org.geometerplus.android.util.FileChooserUtil;
 import org.geometerplus.zlibrary.core.options.ZLStringListOption;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.util.MiscUtil;
 
-import org.geometerplus.android.util.FileChooserUtil;
+import java.util.List;
 
 class FileChooserMultiPreference extends FileChooserPreference {
-	private final ZLStringListOption myOption;
+    private final ZLStringListOption myOption;
 
-	FileChooserMultiPreference(Context context, ZLResource rootResource, String resourceKey, ZLStringListOption option, int requestCode, Runnable onValueSetAction) {
-		super(context, rootResource, resourceKey, false, requestCode, onValueSetAction);
+    FileChooserMultiPreference(Context context, ZLResource rootResource, String resourceKey, ZLStringListOption option, int requestCode, Runnable onValueSetAction) {
+        super(context, rootResource, resourceKey, false, requestCode, onValueSetAction);
 
-		myOption = option;
+        myOption = option;
 
-		setSummary(getStringValue());
-	}
+        setSummary(getStringValue());
+    }
 
-	@Override
-	protected void onClick() {
-		FileChooserUtil.runFolderListDialog(
-			(Activity)getContext(),
-			myRequestCode,
-			myResource.getValue(),
-			myResource.getResource("chooserTitle").getValue(),
-			myOption.getValue(),
-			myChooseWritableDirectoriesOnly
-		);
-	}
+    @Override
+    protected void onClick() {
+        FileChooserUtil.runFolderListDialog(
+                (Activity) getContext(),
+                myRequestCode,
+                myResource.getValue(),
+                myResource.getResource("chooserTitle").getValue(),
+                myOption.getValue(),
+                myChooseWritableDirectoriesOnly
+        );
+    }
 
-	@Override
-	protected String getStringValue() {
-		return MiscUtil.join(myOption.getValue(), ", ");
-	}
+    @Override
+    protected String getStringValue() {
+        return MiscUtil.join(myOption.getValue(), ", ");
+    }
 
-	@Override
-	protected void setValueFromIntent(Intent data) {
-		final List<String> value = FileChooserUtil.pathListFromData(data);
-		if (value.isEmpty()) {
-			return;
-		}
+    @Override
+    protected void setValueFromIntent(Intent data) {
+        final List<String> value = FileChooserUtil.pathListFromData(data);
+        if (value.isEmpty()) {
+            return;
+        }
 
-		myOption.setValue(value);
-		setSummary(getStringValue());
+        myOption.setValue(value);
+        setSummary(getStringValue());
 
-		if (myOnValueSetAction != null) {
-			myOnValueSetAction.run();
-		}
-	}
+        if (myOnValueSetAction != null) {
+            myOnValueSetAction.run();
+        }
+    }
 }

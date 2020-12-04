@@ -21,29 +21,28 @@ package org.geometerplus.android.fbreader.network.action;
 
 import android.app.Activity;
 
-import org.geometerplus.fbreader.network.NetworkTree;
-import org.geometerplus.fbreader.network.tree.NetworkCatalogRootTree;
-import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
-
 import org.geometerplus.android.fbreader.network.Util;
+import org.geometerplus.fbreader.network.NetworkTree;
+import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
+import org.geometerplus.fbreader.network.tree.NetworkCatalogRootTree;
 
 public class SignInAction extends Action {
-	public SignInAction(Activity activity) {
-		super(activity, ActionCode.SIGNIN, "signIn", -1);
-	}
+    public SignInAction(Activity activity) {
+        super(activity, ActionCode.SIGNIN, "signIn", -1);
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		if (!(tree instanceof NetworkCatalogRootTree)) {
-			return false;
-		}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        if (!(tree instanceof NetworkCatalogRootTree)) {
+            return false;
+        }
 
-		final NetworkAuthenticationManager mgr = tree.getLink().authenticationManager();
-		return mgr != null && !mgr.mayBeAuthorised(false);
-	}
+        final NetworkAuthenticationManager mgr = tree.getLink().authenticationManager();
+        return mgr != null && !mgr.mayBeAuthorised(false);
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		Util.runAuthenticationDialog(myActivity, tree.getLink(), null);
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        Util.runAuthenticationDialog(myActivity, tree.getLink(), null);
+    }
 }

@@ -17,11 +17,9 @@ public class Utils {
 
     /**
      * Checks if the app has <b>all</b> {@code permissions} granted.
-     * 
-     * @param context
-     *            {@link Context}
-     * @param permissions
-     *            list of permission names.
+     *
+     * @param context     {@link Context}
+     * @param permissions list of permission names.
      * @return {@code true} if the app has all {@code permissions} asked.
      */
     public static boolean hasPermissions(Context context, String... permissions) {

@@ -7,22 +7,21 @@
 
 package group.pals.android.lib.ui.filechooser.utils;
 
-import group.pals.android.lib.ui.filechooser.R;
-import group.pals.android.lib.ui.filechooser.io.IFile;
-import group.pals.android.lib.ui.filechooser.io.localfile.ParentFile;
-import group.pals.android.lib.ui.filechooser.services.IFileProvider;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import group.pals.android.lib.ui.filechooser.R;
+import group.pals.android.lib.ui.filechooser.io.IFile;
+import group.pals.android.lib.ui.filechooser.io.localfile.ParentFile;
+import group.pals.android.lib.ui.filechooser.services.IFileProvider;
+
 /**
  * Utilities for files.
- * 
+ *
  * @author Hai Bison
  * @since v4.3 beta
- * 
  */
 public class FileUtils {
 
@@ -41,14 +40,14 @@ public class FileUtils {
     }
 
     private static boolean accessDenied(IFile f) {
-		if (f.isFile()) {
-			return !f.canRead();
-		}
+        if (f.isFile()) {
+            return !f.canRead();
+        }
 
         if (!(f instanceof File)) {
             return false;
         }
-        final File file = (File)f;
+        final File file = (File) f;
         if (android.os.Build.VERSION.SDK_INT >= 9) {
             return !file.canExecute() || !file.canRead();
         } else {
@@ -58,9 +57,8 @@ public class FileUtils {
 
     /**
      * Gets resource icon ID of an {@link IFile}.
-     * 
-     * @param file
-     *            {@link IFile}
+     *
+     * @param file {@link IFile}
      * @return the resource icon ID
      */
     public static int getResIcon(IFile file, final IFileProvider.FilterMode filterMode) {
@@ -75,7 +73,7 @@ public class FileUtils {
             return R.drawable.afc_item_file;
         } else if (file.isDirectory()) {
             if (filterMode == IFileProvider.FilterMode.DirectoriesOnly) {
-                if (file instanceof File && !((File)file).canWrite()) {
+                if (file instanceof File && !((File) file).canWrite()) {
                     if (file instanceof ParentFile) {
                         return R.drawable.afc_item_folder;
                     } else if (accessDenied(file)) {
@@ -97,15 +95,15 @@ public class FileUtils {
     public static boolean isAccessible(IFile file, final String regexp) {
         if (file == null || !file.exists()) {
             return false;
-		}
+        }
 
-		if (accessDenied(file)) {
-			return false;
-		}
+        if (accessDenied(file)) {
+            return false;
+        }
         if (file.isFile()) {
-			return regexp == null || file.getName().matches(regexp);
+            return regexp == null || file.getName().matches(regexp);
         } else if (file.isDirectory()) {
-			return true;
+            return true;
         }
 
         return false;
@@ -115,11 +113,10 @@ public class FileUtils {
      * Checks whether the filename given is valid or not.<br>
      * See <a href="http://en.wikipedia.org/wiki/Filename">wiki</a> for more
      * information.
-     * 
-     * @param name
-     *            name of the file
+     *
+     * @param name name of the file
      * @return {@code true} if the {@code name} is valid, and vice versa (if it
-     *         contains invalid characters or it is {@code null}/ empty)
+     * contains invalid characters or it is {@code null}/ empty)
      */
     public static boolean isFilenameValid(String name) {
         return name != null && name.trim().matches("[^\\\\/?%*:|\"<>]+");
@@ -127,18 +124,15 @@ public class FileUtils {
 
     /**
      * Deletes a file or directory.
-     * 
-     * @param file
-     *            {@link IFile}
-     * @param fileProvider
-     *            {@link IFileProvider}
-     * @param recursive
-     *            if {@code true} and {@code file} is a directory, browses the
-     *            directory and deletes all of its sub files
+     *
+     * @param file         {@link IFile}
+     * @param fileProvider {@link IFileProvider}
+     * @param recursive    if {@code true} and {@code file} is a directory, browses the
+     *                     directory and deletes all of its sub files
      * @return the thread which is deleting files
      */
     public static Thread createDeleteFileThread(final IFile file, final IFileProvider fileProvider,
-            final boolean recursive) {
+                                                final boolean recursive) {
         return new Thread() {
 
             @Override

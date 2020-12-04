@@ -21,20 +21,22 @@ package org.geometerplus.android.fbreader.crash;
 
 import android.os.Bundle;
 
+import org.geometerplus.android.fbreader.util.SimpleDialogActivity;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.android.fbreader.util.SimpleDialogActivity;
-
+/**
+ * 崩溃弹窗
+ */
 public class MissingNativeLibraryActivity extends SimpleDialogActivity {
-	@Override
-	protected void onCreate(Bundle bundle) {
-		super.onCreate(bundle);
+    @Override
+    protected void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
 
-		final ZLResource resource = ZLResource.resource("crash").getResource("missingNativeLibrary");
+        final ZLResource resource = ZLResource.resource("crash").getResource("missingNativeLibrary");
 
-		setTitle(resource.getResource("title").getValue());
-		textView().setText(resource.getResource("text").getValue());
-		okButton().setOnClickListener(finishListener());
-		setButtonTexts("ok", null);
-	}
+        setTitle(resource.getResource("title").getValue());
+        textView().setText(resource.getResource("text").getValue());
+        okButton().setOnClickListener(finishListener());
+        setButtonTexts("ok", null);
+    }
 }

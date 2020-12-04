@@ -22,18 +22,18 @@ package org.geometerplus.fbreader.network.atom;
 import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 public class ATOMIcon extends ATOMCommonAttributes {
-	public String Uri;
+    public String Uri;
 
-	protected ATOMIcon(ZLStringMap attributes) {
-		super(attributes);
-	}
+    protected ATOMIcon(ZLStringMap attributes) {
+        super(attributes);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder buf = new StringBuilder("[");
-		buf.append(super.toString());
-		buf.append(",\nUri=").append(Uri);
-		buf.append("]");
-		return buf.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder("[");
+        buf.append(super.toString());
+        buf.append(",\nUri=").append(Uri);
+        buf.append("]");
+        return buf.toString();
+    }
 }

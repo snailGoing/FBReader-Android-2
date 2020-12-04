@@ -19,51 +19,51 @@
 
 package org.geometerplus.android.fbreader.network.auth;
 
-import java.net.URI;
-import java.util.Map;
-
-import android.app.*;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 
 import org.geometerplus.zlibrary.core.resources.ZLResource;
-
 import org.geometerplus.zlibrary.ui.android.R;
 
+import java.util.Map;
+
 public class ServiceNetworkContext extends AndroidNetworkContext {
-	private final Service myService;
+    private final Service myService;
 
-	public ServiceNetworkContext(Service service) {
-		myService = service;
-	}
+    public ServiceNetworkContext(Service service) {
+        myService = service;
+    }
 
-	public Context getContext() {
-		return myService;
-	}
+    @Override
+    public Context getContext() {
+        return myService;
+    }
 
-	@Override
-	protected Map<String,String> authenticateWeb(String realm, Uri uri) {
-		final NotificationManager notificationManager =
-			(NotificationManager)myService.getSystemService(Context.NOTIFICATION_SERVICE);
-		final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-		final PendingIntent pendingIntent = PendingIntent.getActivity(myService, 0, intent, 0);
-		final String text =
-			ZLResource.resource("dialog")
-				.getResource("backgroundAuthentication")
-				.getResource("message")
-				.getValue();
-		final Notification notification = new NotificationCompat.Builder(myService)
-			.setSmallIcon(R.drawable.fbreader)
-			.setTicker(text)
-			.setContentTitle(realm)
-			.setContentText(text)
-			.setContentIntent(pendingIntent)
-			.setAutoCancel(true)
-			.build();
-		notificationManager.notify(0, notification);
-		return errorMap("Notification sent");
-	}
+    @Override
+    protected Map<String, String> authenticateWeb(String realm, Uri uri) {
+        final NotificationManager notificationManager =
+                (NotificationManager) myService.getSystemService(Context.NOTIFICATION_SERVICE);
+        final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        final PendingIntent pendingIntent = PendingIntent.getActivity(myService, 0, intent, 0);
+        final String text =
+                ZLResource.resource("dialog")
+                        .getResource("backgroundAuthentication")
+                        .getResource("message")
+                        .getValue();
+        final Notification notification = new Notification.Builder(myService)
+                .setSmallIcon(R.drawable.fbreader)
+                .setTicker(text)
+                .setContentTitle(realm)
+                .setContentText(text)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .build();
+        notificationManager.notify(0, notification);
+        return errorMap("Notification sent");
+    }
 }

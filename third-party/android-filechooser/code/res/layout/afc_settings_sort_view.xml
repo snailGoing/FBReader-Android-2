@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
     Copyright (c) 2012 Hai Bison
 
     See the file LICENSE at the root directory of this project for copying
@@ -8,17 +7,17 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content">
 
     <TableLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:layout_gravity="center" >
+        android:layout_gravity="center">
 
         <TableRow
             android:layout_marginLeft="@dimen/afc_10dp"
-            android:layout_marginRight="@dimen/afc_10dp" >
+            android:layout_marginRight="@dimen/afc_10dp">
 
             <TextView
                 android:id="@+id/afc_settings_sort_view_textview_sort_by_name"
@@ -46,7 +45,7 @@
 
         <TableRow
             android:layout_marginLeft="@dimen/afc_10dp"
-            android:layout_marginRight="@dimen/afc_10dp" >
+            android:layout_marginRight="@dimen/afc_10dp">
 
             <TextView
                 android:id="@+id/afc_settings_sort_view_textview_sort_by_size"
@@ -74,7 +73,7 @@
 
         <TableRow
             android:layout_marginLeft="@dimen/afc_10dp"
-            android:layout_marginRight="@dimen/afc_10dp" >
+            android:layout_marginRight="@dimen/afc_10dp">
 
             <TextView
                 android:id="@+id/afc_settings_sort_view_textview_sort_by_date"

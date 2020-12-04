@@ -19,171 +19,174 @@
 
 package org.geometerplus.fbreader.util;
 
-import java.util.*;
-
-import org.geometerplus.zlibrary.text.view.*;
 import org.geometerplus.fbreader.bookmodel.FBTextKind;
+import org.geometerplus.zlibrary.text.view.ZLTextControlElement;
+import org.geometerplus.zlibrary.text.view.ZLTextElement;
+import org.geometerplus.zlibrary.text.view.ZLTextFixedPosition;
+import org.geometerplus.zlibrary.text.view.ZLTextPosition;
+import org.geometerplus.zlibrary.text.view.ZLTextView;
+import org.geometerplus.zlibrary.text.view.ZLTextWord;
+import org.geometerplus.zlibrary.text.view.ZLTextWordCursor;
 
 public final class AutoTextSnippet implements TextSnippet {
-	public static String textFromView(ZLTextView view, int maxChars) {
-		final ZLTextWordCursor cursor = view.getStartCursor();
-		if (cursor == null || cursor.isNull()) {
-			return "";
-		}
-		return new AutoTextSnippet(cursor, maxChars).getText();
-	}
+    public final boolean IsEndOfText;
+    private final ZLTextPosition myStart;
+    private final ZLTextPosition myEnd;
+    private final String myText;
 
-	private final ZLTextPosition myStart;
-	private final ZLTextPosition myEnd;
-	private final String myText;
+    public AutoTextSnippet(ZLTextWordCursor start, int maxChars) {
+        final ZLTextWordCursor cursor = new ZLTextWordCursor(start);
 
-	public final boolean IsEndOfText;
+        final Buffer buffer = new Buffer(cursor);
+        final Buffer sentenceBuffer = new Buffer(cursor);
+        final Buffer phraseBuffer = new Buffer(cursor);
 
-	public AutoTextSnippet(ZLTextWordCursor start, int maxChars) {
-		final ZLTextWordCursor cursor = new ZLTextWordCursor(start);
+        int wordCounter = 0;
+        int sentenceCounter = 0;
+        int storedWordCounter = 0;
+        boolean lineIsNonEmpty = false;
+        boolean appendLineBreak = false;
+        mainLoop:
+        while (buffer.Builder.length() + sentenceBuffer.Builder.length() + phraseBuffer.Builder.length() < maxChars && sentenceCounter < maxChars / 20) {
+            while (cursor.isEndOfParagraph()) {
+                if (!cursor.nextParagraph()) {
+                    break mainLoop;
+                }
+                if (!buffer.isEmpty() && cursor.getParagraphCursor().isLikeEndOfSection()) {
+                    break mainLoop;
+                }
+                if (!phraseBuffer.isEmpty()) {
+                    sentenceBuffer.append(phraseBuffer);
+                }
+                if (!sentenceBuffer.isEmpty()) {
+                    if (appendLineBreak) {
+                        buffer.append("\n");
+                    }
+                    buffer.append(sentenceBuffer);
+                    ++sentenceCounter;
+                    storedWordCounter = wordCounter;
+                }
+                lineIsNonEmpty = false;
+                if (!buffer.isEmpty()) {
+                    appendLineBreak = true;
+                }
+            }
+            final ZLTextElement element = cursor.getElement();
+            if (element == ZLTextElement.HSpace) {
+                if (lineIsNonEmpty) {
+                    phraseBuffer.append(" ");
+                }
+            } else if (element == ZLTextElement.NBSpace) {
+                if (lineIsNonEmpty) {
+                    phraseBuffer.append("\240");
+                }
+            } else if (element instanceof ZLTextWord) {
+                final ZLTextWord word = (ZLTextWord) element;
+                phraseBuffer.Builder.append(word.Data, word.Offset, word.Length);
+                phraseBuffer.Cursor.setCursor(cursor);
+                phraseBuffer.Cursor.setCharIndex(word.Length);
+                ++wordCounter;
+                lineIsNonEmpty = true;
+                switch (word.Data[word.Offset + word.Length - 1]) {
+                    case ',':
+                    case ':':
+                    case ';':
+                    case ')':
+                        sentenceBuffer.append(phraseBuffer);
+                        break;
+                    case '.':
+                    case '!':
+                    case '?':
+                        ++sentenceCounter;
+                        if (appendLineBreak) {
+                            buffer.append("\n");
+                            appendLineBreak = false;
+                        }
+                        sentenceBuffer.append(phraseBuffer);
+                        buffer.append(sentenceBuffer);
+                        storedWordCounter = wordCounter;
+                        break;
+                }
+            } else if (element instanceof ZLTextControlElement) {
+                final ZLTextControlElement control = (ZLTextControlElement) element;
+                if (control.IsStart) {
+                    switch (control.Kind) {
+                        case FBTextKind.H1:
+                        case FBTextKind.H2:
+                            if (!buffer.isEmpty()) {
+                                break mainLoop;
+                            }
+                            break;
+                    }
+                }
+            }
+            cursor.nextWord();
+        }
 
-		final Buffer buffer = new Buffer(cursor);
-		final Buffer sentenceBuffer = new Buffer(cursor);
-		final Buffer phraseBuffer = new Buffer(cursor);
+        IsEndOfText =
+                cursor.isEndOfText() || cursor.getParagraphCursor().isLikeEndOfSection();
 
-		int wordCounter = 0;
-		int sentenceCounter = 0;
-		int storedWordCounter = 0;
-		boolean lineIsNonEmpty = false;
-		boolean appendLineBreak = false;
-mainLoop:
-		while (buffer.Builder.length() + sentenceBuffer.Builder.length() + phraseBuffer.Builder.length() < maxChars && sentenceCounter < maxChars / 20) {
-			while (cursor.isEndOfParagraph()) {
-				if (!cursor.nextParagraph()) {
-					break mainLoop;
-				}
-				if (!buffer.isEmpty() && cursor.getParagraphCursor().isLikeEndOfSection()) {
-					break mainLoop;
-				}
-				if (!phraseBuffer.isEmpty()) {
-					sentenceBuffer.append(phraseBuffer);
-				}
-				if (!sentenceBuffer.isEmpty()) {
-					if (appendLineBreak) {
-						buffer.append("\n");
-					}
-					buffer.append(sentenceBuffer);
-					++sentenceCounter;
-					storedWordCounter = wordCounter;
-				}
-				lineIsNonEmpty = false;
-				if (!buffer.isEmpty()) {
-					appendLineBreak = true;
-				}
-			}
-			final ZLTextElement element = cursor.getElement();
-			if (element == ZLTextElement.HSpace) {
-				if (lineIsNonEmpty) {
-					phraseBuffer.append(" ");
-				}
-			} else if (element == ZLTextElement.NBSpace) {
-				if (lineIsNonEmpty) {
-					phraseBuffer.append("\240");
-				}
-			} else if (element instanceof ZLTextWord) {
-				final ZLTextWord word = (ZLTextWord)element;
-				phraseBuffer.Builder.append(word.Data, word.Offset, word.Length);
-				phraseBuffer.Cursor.setCursor(cursor);
-				phraseBuffer.Cursor.setCharIndex(word.Length);
-				++wordCounter;
-				lineIsNonEmpty = true;
-				switch (word.Data[word.Offset + word.Length - 1]) {
-					case ',':
-					case ':':
-					case ';':
-					case ')':
-						sentenceBuffer.append(phraseBuffer);
-						break;
-					case '.':
-					case '!':
-					case '?':
-						++sentenceCounter;
-						if (appendLineBreak) {
-							buffer.append("\n");
-							appendLineBreak = false;
-						}
-						sentenceBuffer.append(phraseBuffer);
-						buffer.append(sentenceBuffer);
-						storedWordCounter = wordCounter;
-						break;
-				}
-			} else if (element instanceof ZLTextControlElement) {
-				final ZLTextControlElement control = (ZLTextControlElement)element;
-				if (control.IsStart) {
-					switch (control.Kind) {
-						case FBTextKind.H1:
-						case FBTextKind.H2:
-							if (!buffer.isEmpty()) {
-								break mainLoop;
-							}
-							break;
-					}
-				}
-			}
-			cursor.nextWord();
-		}
+        if (IsEndOfText) {
+            sentenceBuffer.append(phraseBuffer);
+            if (appendLineBreak) {
+                buffer.append("\n");
+            }
+            buffer.append(sentenceBuffer);
+        } else if (storedWordCounter < 4 || sentenceCounter < maxChars / 30) {
+            if (sentenceBuffer.isEmpty()) {
+                sentenceBuffer.append(phraseBuffer);
+            }
+            if (appendLineBreak) {
+                buffer.append("\n");
+            }
+            buffer.append(sentenceBuffer);
+        }
 
-		IsEndOfText =
-			cursor.isEndOfText() || cursor.getParagraphCursor().isLikeEndOfSection();
+        myStart = new ZLTextFixedPosition(start);
+        myEnd = buffer.Cursor;
+        myText = buffer.Builder.toString();
+    }
 
-		if (IsEndOfText) {
-			sentenceBuffer.append(phraseBuffer);
-			if (appendLineBreak) {
-				buffer.append("\n");
-			}
-			buffer.append(sentenceBuffer);
-		} else if (storedWordCounter < 4 || sentenceCounter < maxChars / 30) {
-			if (sentenceBuffer.isEmpty()) {
-				sentenceBuffer.append(phraseBuffer);
-			}
-			if (appendLineBreak) {
-				buffer.append("\n");
-			}
-			buffer.append(sentenceBuffer);
-		}
+    public static String textFromView(ZLTextView view, int maxChars) {
+        final ZLTextWordCursor cursor = view.getStartCursor();
+        if (cursor == null || cursor.isNull()) {
+            return "";
+        }
+        return new AutoTextSnippet(cursor, maxChars).getText();
+    }
 
-		myStart = new ZLTextFixedPosition(start);
-		myEnd = buffer.Cursor;
-		myText = buffer.Builder.toString();
-	}
+    public ZLTextPosition getStart() {
+        return myStart;
+    }
 
-	private static class Buffer {
-		final StringBuilder Builder = new StringBuilder();
-		final ZLTextWordCursor Cursor;
+    public ZLTextPosition getEnd() {
+        return myEnd;
+    }
 
-		Buffer(ZLTextWordCursor cursor) {
-			Cursor = new ZLTextWordCursor(cursor);
-		}
+    public String getText() {
+        return myText;
+    }
 
-		boolean isEmpty() {
-			return Builder.length() == 0;
-		}
+    private static class Buffer {
+        final StringBuilder Builder = new StringBuilder();
+        final ZLTextWordCursor Cursor;
 
-		void append(Buffer buffer) {
-			Builder.append(buffer.Builder);
-			Cursor.setCursor(buffer.Cursor);
-			buffer.Builder.delete(0, buffer.Builder.length());
-		}
+        Buffer(ZLTextWordCursor cursor) {
+            Cursor = new ZLTextWordCursor(cursor);
+        }
 
-		void append(CharSequence data) {
-			Builder.append(data);
-		}
-	}
+        boolean isEmpty() {
+            return Builder.length() == 0;
+        }
 
-	public ZLTextPosition getStart() {
-		return myStart;
-	}
+        void append(Buffer buffer) {
+            Builder.append(buffer.Builder);
+            Cursor.setCursor(buffer.Cursor);
+            buffer.Builder.delete(0, buffer.Builder.length());
+        }
 
-	public ZLTextPosition getEnd() {
-		return myEnd;
-	}
-
-	public String getText() {
-		return myText;
-	}
+        void append(CharSequence data) {
+            Builder.append(data);
+        }
+    }
 }

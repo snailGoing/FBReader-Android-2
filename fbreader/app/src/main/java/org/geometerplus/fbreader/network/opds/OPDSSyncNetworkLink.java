@@ -20,69 +20,68 @@
 package org.geometerplus.fbreader.network.opds;
 
 import org.fbreader.common.options.SyncOptions;
-
-import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
-import org.geometerplus.zlibrary.core.network.QuietNetworkContext;
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-import org.geometerplus.zlibrary.core.util.MimeType;
-
 import org.geometerplus.fbreader.network.ISyncNetworkLink;
 import org.geometerplus.fbreader.network.NetworkLibrary;
 import org.geometerplus.fbreader.network.sync.SyncUtil;
-import org.geometerplus.fbreader.network.urlInfo.*;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfoCollection;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfoWithDate;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
+import org.geometerplus.zlibrary.core.util.MimeType;
 
 public class OPDSSyncNetworkLink extends OPDSNetworkLink implements ISyncNetworkLink {
-	private static UrlInfoCollection<UrlInfoWithDate> initialUrlInfos() {
-		final UrlInfoCollection<UrlInfoWithDate> infos = new UrlInfoCollection<UrlInfoWithDate>();
-		infos.addInfo(new UrlInfoWithDate(
-			UrlInfo.Type.Catalog,
-			SyncOptions.OPDS_URL,
-			MimeType.OPDS
-		));
-		infos.addInfo(new UrlInfoWithDate(
-			UrlInfo.Type.Search,
-			SyncOptions.BASE_URL + "opds/search/%s",
-			MimeType.OPDS
-		));
-		infos.addInfo(new UrlInfoWithDate(
-			UrlInfo.Type.Image,
-			SyncOptions.BASE_URL + "static/images/logo-120x120.png",
-			MimeType.IMAGE_PNG
-		));
-		infos.addInfo(new UrlInfoWithDate(
-			UrlInfo.Type.SearchIcon,
-			SyncOptions.BASE_URL + "static/images/folders-light/search.png",
-			MimeType.IMAGE_PNG
-		));
-		return infos;
-	}
+    public OPDSSyncNetworkLink(NetworkLibrary library) {
+        this(library, -1, resource().getValue(), initialUrlInfos());
+    }
 
-	private static ZLResource resource() {
-		return NetworkLibrary.resource().getResource("sync");
-	}
+    private OPDSSyncNetworkLink(NetworkLibrary library, int id, String title, UrlInfoCollection<UrlInfoWithDate> infos) {
+        super(library, id, title, null, null, infos);
+    }
 
-	public OPDSSyncNetworkLink(NetworkLibrary library) {
-		this(library, -1, resource().getValue(), initialUrlInfos());
-	}
+    private static UrlInfoCollection<UrlInfoWithDate> initialUrlInfos() {
+        final UrlInfoCollection<UrlInfoWithDate> infos = new UrlInfoCollection<UrlInfoWithDate>();
+        infos.addInfo(new UrlInfoWithDate(
+                UrlInfo.Type.Catalog,
+                SyncOptions.OPDS_URL,
+                MimeType.OPDS
+        ));
+        infos.addInfo(new UrlInfoWithDate(
+                UrlInfo.Type.Search,
+                SyncOptions.BASE_URL + "opds/search/%s",
+                MimeType.OPDS
+        ));
+        infos.addInfo(new UrlInfoWithDate(
+                UrlInfo.Type.Image,
+                SyncOptions.BASE_URL + "static/images/logo-120x120.png",
+                MimeType.IMAGE_PNG
+        ));
+        infos.addInfo(new UrlInfoWithDate(
+                UrlInfo.Type.SearchIcon,
+                SyncOptions.BASE_URL + "static/images/folders-light/search.png",
+                MimeType.IMAGE_PNG
+        ));
+        return infos;
+    }
 
-	private OPDSSyncNetworkLink(NetworkLibrary library, int id, String title, UrlInfoCollection<UrlInfoWithDate> infos) {
-		super(library, id, title, null, null, infos);
-	}
+    private static ZLResource resource() {
+        return NetworkLibrary.resource().getResource("sync");
+    }
 
-	public String getSummary() {
-		final String account = SyncUtil.getAccountName();
-		return account != null ? account : resource().getResource("summary").getValue();
-	}
+    public String getSummary() {
+        final String account = SyncUtil.getAccountName();
+        return account != null ? account : resource().getResource("summary").getValue();
+    }
 
-	public Type getType() {
-		return Type.Sync;
-	}
+    public Type getType() {
+        return Type.Sync;
+    }
 
-	public boolean isLoggedIn() {
-		return SyncUtil.getAccountName() != null;
-	}
+    public boolean isLoggedIn() {
+        return SyncUtil.getAccountName() != null;
+    }
 
-	public void logout(ZLNetworkContext context) {
-		SyncUtil.logout(context);
-	}
+    public void logout(ZLNetworkContext context) {
+        SyncUtil.logout(context);
+    }
 }

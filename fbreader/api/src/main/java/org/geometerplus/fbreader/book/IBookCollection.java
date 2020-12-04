@@ -19,98 +19,134 @@
 
 package org.geometerplus.fbreader.book;
 
-import java.util.List;
-
 import org.geometerplus.zlibrary.text.view.ZLTextPositionWithTimestamp;
 
+import java.util.List;
+
 public interface IBookCollection<B extends AbstractBook> extends AbstractSerializer.BookCreator<B> {
-	public enum Status {
-		NotStarted(false),
-		Started(false),
-		Succeeded(true),
-		Failed(true);
+    public void addListener(Listener<B> listener);
 
-		public final Boolean IsComplete;
+    public void removeListener(Listener<B> listener);
 
-		Status(boolean complete) {
-			IsComplete = complete;
-		}
-	}
+    Status status();
 
-	public interface Listener<B> {
-		void onBookEvent(BookEvent event, B book);
-		void onBuildEvent(Status status);
-	}
+    int size();
 
-	public void addListener(Listener<B> listener);
-	public void removeListener(Listener<B> listener);
+    List<B> books(BookQuery query);
 
-	Status status();
+    boolean hasBooks(Filter filter);
 
-	int size();
+    List<String> titles(BookQuery query);
 
-	List<B> books(BookQuery query);
-	boolean hasBooks(Filter filter);
-	List<String> titles(BookQuery query);
+    List<B> recentlyOpenedBooks(int count);
 
-	List<B> recentlyOpenedBooks(int count);
-	List<B> recentlyAddedBooks(int count);
-	B getRecentBook(int index);
-	void addToRecentlyOpened(B book);
-	void removeFromRecentlyOpened(B book);
+    List<B> recentlyAddedBooks(int count);
 
-	B getBookByFile(String path);
-	B getBookById(long id);
-	B getBookByUid(UID uid);
-	B getBookByHash(String hash);
+    B getRecentBook(int index);
 
-	List<String> labels();
-	void deleteBookLabelByUuid(String uuid);
-	List<String> deletedBookLabelUids(int limit, int page);
-	void purgeBookLabels(List<String> uids);
-	List<Author> authors();
-	boolean hasSeries();
-	List<String> series();
-	List<Tag> tags();
-	List<String> firstTitleLetters();
+    void addToRecentlyOpened(B book);
 
-	boolean saveBook(B book);
-	boolean canRemoveBook(B book, boolean deleteFromDisk);
-	void removeBook(B book, boolean deleteFromDisk);
+    void removeFromRecentlyOpened(B book);
 
-	String getHash(B book, boolean force);
-	void setHash(B book, String hash);
-	boolean sameBook(B book0, B book1);
+    B getBookByFile(String path);
 
-	ZLTextPositionWithTimestamp getStoredPosition(long bookId);
-	void storePosition(long bookId, ZLTextPositionWithTimestamp position);
+    B getBookById(long id);
 
-	boolean isHyperlinkVisited(B book, String linkId);
-	void markHyperlinkAsVisited(B book, String linkId);
+    B getBookByUid(UID uid);
 
-	String getCoverUrl(B book);
-	String getDescription(B book);
+    B getBookByHash(String hash);
 
-	List<Bookmark> bookmarks(BookmarkQuery query);
-	void saveBookmark(Bookmark bookmark);
-	void deleteBookmark(Bookmark bookmark);
-	List<String> deletedBookmarkUids();
-	void purgeBookmarks(List<String> uids);
+    List<String> labels();
 
-	HighlightingStyle getHighlightingStyle(int styleId);
-	List<HighlightingStyle> highlightingStyles();
-	void saveHighlightingStyle(HighlightingStyle style);
-	int getDefaultHighlightingStyleId();
-	void setDefaultHighlightingStyleId(int styleId);
+    void deleteBookLabelByUuid(String uuid);
 
-	class FormatDescriptor {
-		public String Id;
-		public String Name;
-		public boolean IsActive;
-	}
-	List<FormatDescriptor> formats();
-	// returns true iff active format set is changed
-	boolean setActiveFormats(List<String> formatIds);
+    List<String> deletedBookLabelUids(int limit, int page);
 
-	void rescan(String path);
+    void purgeBookLabels(List<String> uids);
+
+    List<Author> authors();
+
+    boolean hasSeries();
+
+    List<String> series();
+
+    List<Tag> tags();
+
+    List<String> firstTitleLetters();
+
+    boolean saveBook(B book);
+
+    boolean canRemoveBook(B book, boolean deleteFromDisk);
+
+    void removeBook(B book, boolean deleteFromDisk);
+
+    String getHash(B book, boolean force);
+
+    void setHash(B book, String hash);
+
+    boolean sameBook(B book0, B book1);
+
+    ZLTextPositionWithTimestamp getStoredPosition(long bookId);
+
+    void storePosition(long bookId, ZLTextPositionWithTimestamp position);
+
+    boolean isHyperlinkVisited(B book, String linkId);
+
+    void markHyperlinkAsVisited(B book, String linkId);
+
+    String getCoverUrl(B book);
+
+    String getDescription(B book);
+
+    List<Bookmark> bookmarks(BookmarkQuery query);
+
+    void saveBookmark(Bookmark bookmark);
+
+    void deleteBookmark(Bookmark bookmark);
+
+    List<String> deletedBookmarkUids();
+
+    void purgeBookmarks(List<String> uids);
+
+    HighlightingStyle getHighlightingStyle(int styleId);
+
+    List<HighlightingStyle> highlightingStyles();
+
+    void saveHighlightingStyle(HighlightingStyle style);
+
+    int getDefaultHighlightingStyleId();
+
+    void setDefaultHighlightingStyleId(int styleId);
+
+    List<FormatDescriptor> formats();
+
+    // returns true iff active format set is changed
+    boolean setActiveFormats(List<String> formatIds);
+
+    void rescan(String path);
+
+    public enum Status {
+        NotStarted(false),
+        Started(false),
+        Succeeded(true),
+        Failed(true);
+
+        public final Boolean IsComplete;
+
+        Status(boolean complete) {
+            IsComplete = complete;
+        }
+    }
+
+    public interface Listener<B> {
+        void onBookEvent(BookEvent event, B book);
+
+        void onBuildEvent(Status status);
+    }
+
+    class FormatDescriptor {
+        public String Id;
+        public String Name;
+        public boolean IsActive;
+    }
 }

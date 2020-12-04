@@ -19,39 +19,39 @@
 
 package org.geometerplus.zlibrary.core.filetypes;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
+import java.util.Arrays;
+import java.util.List;
+
 class FileTypeMobipocket extends FileTypePalm {
-	FileTypeMobipocket() {
-		super("mobi", "BOOKMOBI");
-	}
+    FileTypeMobipocket() {
+        super("mobi", "BOOKMOBI");
+    }
 
-	@Override
-	public boolean acceptsFile(ZLFile file) {
-		if (super.acceptsFile(file)) {
-			return true;
-		}
-		return
-			Arrays.asList("mobi", "azw", "azw3").contains(file.getExtension().toLowerCase())
-			&& "BOOKMOBI".equals(palmFileType(file));
-	}
+    @Override
+    public boolean acceptsFile(ZLFile file) {
+        if (super.acceptsFile(file)) {
+            return true;
+        }
+        return
+                Arrays.asList("mobi", "azw", "azw3").contains(file.getExtension().toLowerCase())
+                        && "BOOKMOBI".equals(palmFileType(file));
+    }
 
-	@Override
-	public List<MimeType> mimeTypes() {
-		return MimeType.TYPES_MOBIPOCKET;
-	}
+    @Override
+    public List<MimeType> mimeTypes() {
+        return MimeType.TYPES_MOBIPOCKET;
+    }
 
-	@Override
-	public MimeType mimeType(ZLFile file) {
-		return acceptsFile(file) ? MimeType.APP_MOBIPOCKET : MimeType.NULL;
-	}
+    @Override
+    public MimeType mimeType(ZLFile file) {
+        return acceptsFile(file) ? MimeType.APP_MOBIPOCKET : MimeType.NULL;
+    }
 
-	@Override
-	public String defaultExtension(MimeType mime) {
-		return "mobi";
-	}
+    @Override
+    public String defaultExtension(MimeType mime) {
+        return "mobi";
+    }
 }

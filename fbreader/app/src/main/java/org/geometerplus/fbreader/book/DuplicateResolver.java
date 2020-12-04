@@ -19,81 +19,85 @@
 
 package org.geometerplus.fbreader.book;
 
-import java.util.*;
-
 import org.fbreader.util.ComparisonUtil;
-
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.filesystem.ZLPhysicalFile;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 class DuplicateResolver {
-	private final Map<String,List<ZLFile>> myMap =
-		Collections.synchronizedMap(new HashMap<String,List<ZLFile>>());
+    private final Map<String, List<ZLFile>> myMap =
+            Collections.synchronizedMap(new HashMap<String, List<ZLFile>>());
 
-	void addFile(ZLFile file) {
-		final String key = file.getShortName();
-		List<ZLFile> list;
-		synchronized (myMap) {
-			list = myMap.get(key);
-			if (list == null) {
-				list = new LinkedList<ZLFile>();
-				myMap.put(key, list);
-			}
-		}
-		synchronized (list) {
-			if (!list.contains(file)) {
-				list.add(file);
-			}
-		}
-	}
+    void addFile(ZLFile file) {
+        final String key = file.getShortName();
+        List<ZLFile> list;
+        synchronized (myMap) {
+            list = myMap.get(key);
+            if (list == null) {
+                list = new LinkedList<ZLFile>();
+                myMap.put(key, list);
+            }
+        }
+        synchronized (list) {
+            if (!list.contains(file)) {
+                list.add(file);
+            }
+        }
+    }
 
-	void removeFile(ZLFile file) {
-		final List<ZLFile> list = myMap.get(file.getShortName());
-		if (list != null) {
-			synchronized (list) {
-				list.remove(file);
-			}
-		}
-	}
+    void removeFile(ZLFile file) {
+        final List<ZLFile> list = myMap.get(file.getShortName());
+        if (list != null) {
+            synchronized (list) {
+                list.remove(file);
+            }
+        }
+    }
 
-	private String entryName(ZLFile file) {
-		final String path = file.getPath();
-		final int index = path.indexOf(":");
-		return index == -1 ? null : path.substring(index + 1);
-	}
+    private String entryName(ZLFile file) {
+        final String path = file.getPath();
+        final int index = path.indexOf(":");
+        return index == -1 ? null : path.substring(index + 1);
+    }
 
-	ZLFile findDuplicate(ZLFile file) {
-		final ZLPhysicalFile pFile = file.getPhysicalFile();
-		if (pFile == null) {
-			return null;
-		}
-		final List<ZLFile> list = myMap.get(file.getShortName());
-		if (list == null || list.isEmpty()) {
-			return null;
-		}
-		final List<ZLFile> copy;
-		synchronized (list) {
-			copy = new ArrayList<ZLFile>(list);
-		}
+    ZLFile findDuplicate(ZLFile file) {
+        final ZLPhysicalFile pFile = file.getPhysicalFile();
+        if (pFile == null) {
+            return null;
+        }
+        final List<ZLFile> list = myMap.get(file.getShortName());
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        final List<ZLFile> copy;
+        synchronized (list) {
+            copy = new ArrayList<ZLFile>(list);
+        }
 
-		final String entryName = entryName(file);
-		final String shortName = pFile.getShortName();
-		final long size = pFile.size();
-		final long lastModified = pFile.javaFile().lastModified();
-		for (ZLFile candidate : copy) {
-			if (file.equals(candidate)) {
-				return candidate;
-			}
-			final ZLPhysicalFile pCandidate = candidate.getPhysicalFile();
-			if (pCandidate != null &&
-				ComparisonUtil.equal(entryName, entryName(candidate)) &&
-				shortName.equals(pCandidate.getShortName()) &&
-				size == pCandidate.size() &&
-				lastModified == pCandidate.javaFile().lastModified()
-			) {
-				return candidate;
-			}
-		}
-		return null;
-	}
+        final String entryName = entryName(file);
+        final String shortName = pFile.getShortName();
+        final long size = pFile.size();
+        final long lastModified = pFile.javaFile().lastModified();
+        for (ZLFile candidate : copy) {
+            if (file.equals(candidate)) {
+                return candidate;
+            }
+            final ZLPhysicalFile pCandidate = candidate.getPhysicalFile();
+            if (pCandidate != null &&
+                    ComparisonUtil.equal(entryName, entryName(candidate)) &&
+                    shortName.equals(pCandidate.getShortName()) &&
+                    size == pCandidate.size() &&
+                    lastModified == pCandidate.javaFile().lastModified()
+            ) {
+                return candidate;
+            }
+        }
+        return null;
+    }
 }

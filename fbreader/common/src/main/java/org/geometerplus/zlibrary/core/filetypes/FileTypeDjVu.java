@@ -19,34 +19,34 @@
 
 package org.geometerplus.zlibrary.core.filetypes;
 
-import java.util.List;
-
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
+import java.util.List;
+
 class FileTypeDjVu extends FileType {
-	FileTypeDjVu() {
-		super("DjVu");
-	}
+    FileTypeDjVu() {
+        super("DjVu");
+    }
 
-	@Override
-	public boolean acceptsFile(ZLFile file) {
-		final String extension = file.getExtension();
-		return "djvu".equalsIgnoreCase(extension) || "djv".equalsIgnoreCase(extension);
-	}
+    @Override
+    public boolean acceptsFile(ZLFile file) {
+        final String extension = file.getExtension();
+        return "djvu".equalsIgnoreCase(extension) || "djv".equalsIgnoreCase(extension);
+    }
 
-	@Override
-	public List<MimeType> mimeTypes() {
-		return MimeType.TYPES_DJVU;
-	}
+    @Override
+    public List<MimeType> mimeTypes() {
+        return MimeType.TYPES_DJVU;
+    }
 
-	@Override
-	public MimeType mimeType(ZLFile file) {
-		return acceptsFile(file) ? MimeType.IMAGE_VND_DJVU : MimeType.NULL;
-	}
+    @Override
+    public MimeType mimeType(ZLFile file) {
+        return acceptsFile(file) ? MimeType.IMAGE_VND_DJVU : MimeType.NULL;
+    }
 
-	@Override
-	public String defaultExtension(MimeType mime) {
-		return "djvu";
-	}
+    @Override
+    public String defaultExtension(MimeType mime) {
+        return "djvu";
+    }
 }

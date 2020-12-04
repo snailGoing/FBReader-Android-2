@@ -21,35 +21,34 @@ package org.geometerplus.android.fbreader;
 
 import android.content.Intent;
 
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.fbreader.FBView;
 import org.geometerplus.fbreader.util.TextSnippet;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 public class SelectionShareAction extends FBAndroidAction {
-	SelectionShareAction(FBReader baseActivity, FBReaderApp fbreader) {
-		super(baseActivity, fbreader);
-	}
+    SelectionShareAction(FBReader baseActivity, FBReaderApp fbreader) {
+        super(baseActivity, fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		final FBView fbview = Reader.getTextView();
-		final TextSnippet snippet = fbview.getSelectedSnippet();
-		if (snippet == null) {
-			return;
-		}
+    @Override
+    protected void run(Object... params) {
+        final FBView fbview = Reader.getTextView();
+        final TextSnippet snippet = fbview.getSelectedSnippet();
+        if (snippet == null) {
+            return;
+        }
 
-		final String text = snippet.getText();
-		final String title = Reader.getCurrentBook().getTitle();
-		fbview.clearSelection();
+        final String text = snippet.getText();
+        final String title = Reader.getCurrentBook().getTitle();
+        fbview.clearSelection();
 
-		final Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-		intent.setType("text/plain");
-		intent.putExtra(android.content.Intent.EXTRA_SUBJECT,
-			ZLResource.resource("selection").getResource("quoteFrom").getValue().replace("%s", title)
-		);
-		intent.putExtra(android.content.Intent.EXTRA_TEXT, text);
-		BaseActivity.startActivity(Intent.createChooser(intent, null));
-	}
+        final Intent intent = new Intent(android.content.Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(android.content.Intent.EXTRA_SUBJECT,
+                ZLResource.resource("selection").getResource("quoteFrom").getValue().replace("%s", title)
+        );
+        intent.putExtra(android.content.Intent.EXTRA_TEXT, text);
+        BaseActivity.startActivity(Intent.createChooser(intent, null));
+    }
 }

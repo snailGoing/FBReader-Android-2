@@ -19,42 +19,40 @@
 
 package org.geometerplus.fbreader.network;
 
-import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-
 import org.geometerplus.fbreader.network.tree.NetworkItemsLoader;
 import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
 import org.geometerplus.fbreader.network.urlInfo.UrlInfoCollection;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
 
 class RecentCatalogItem extends NetworkCatalogItem {
-	RecentCatalogItem(String title, String summary) {
-		super(
-			null,
-			title,
-			summary,
-			new UrlInfoCollection<UrlInfo>(),
-			Accessibility.ALWAYS,
-			FLAGS_DEFAULT
-		);
-	}
+    RecentCatalogItem(String title, String summary) {
+        super(
+                null,
+                title,
+                summary,
+                new UrlInfoCollection<UrlInfo>(),
+                Accessibility.ALWAYS,
+                FLAGS_DEFAULT
+        );
+    }
 
-	@Override
-	public String getStringId() {
-		// TODO: implement
-		return "@RecentCatalog#" + hashCode();
-	}
+    @Override
+    public String getStringId() {
+        // TODO: implement
+        return "@RecentCatalog#" + hashCode();
+    }
 
-	@Override
-	public boolean canBeOpened() {
-		// TODO: implement
-		return false;
-	}
+    @Override
+    public boolean canBeOpened() {
+        // TODO: implement
+        return false;
+    }
 
-	@Override
-	public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
-		// TODO: implement
-		if (onSuccess != null) {
-			onSuccess.run();
-		}
-	}
+    @Override
+    public void loadChildren(NetworkItemsLoader loader, Runnable onSuccess, ZLNetworkContext.OnError onError) {
+        // TODO: implement
+        if (onSuccess != null) {
+            onSuccess.run();
+        }
+    }
 }

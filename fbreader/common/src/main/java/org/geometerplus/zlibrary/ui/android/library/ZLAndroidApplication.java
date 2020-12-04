@@ -21,31 +21,30 @@ package org.geometerplus.zlibrary.ui.android.library;
 
 import android.app.Application;
 
+import org.geometerplus.android.fbreader.config.ConfigShadow;
 import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageManager;
 
-import org.geometerplus.android.fbreader.config.ConfigShadow;
-
 public abstract class ZLAndroidApplication extends Application {
-	private ZLAndroidLibrary myLibrary;
-	private ConfigShadow myConfig;
+    private ZLAndroidLibrary myLibrary;
+    private ConfigShadow myConfig;
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-		// this is a workaround for strange issue on some devices:
-		//    NoClassDefFoundError for android.os.AsyncTask
-		try {
-			Class.forName("android.os.AsyncTask");
-		} catch (Throwable t) {
-		}
+        // this is a workaround for strange issue on some devices:
+        //    NoClassDefFoundError for android.os.AsyncTask
+        try {
+            Class.forName("android.os.AsyncTask");
+        } catch (Throwable t) {
+        }
 
-		myConfig = new ConfigShadow(this);
-		new ZLAndroidImageManager();
-		myLibrary = new ZLAndroidLibrary(this);
-	}
+        myConfig = new ConfigShadow(this);
+        new ZLAndroidImageManager();
+        myLibrary = new ZLAndroidLibrary(this);
+    }
 
-	public final ZLAndroidLibrary library() {
-		return myLibrary;
-	}
+    public final ZLAndroidLibrary library() {
+        return myLibrary;
+    }
 }

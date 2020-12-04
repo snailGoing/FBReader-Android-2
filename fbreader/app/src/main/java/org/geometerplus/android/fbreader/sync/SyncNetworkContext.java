@@ -25,62 +25,57 @@ import android.net.NetworkInfo;
 
 import org.fbreader.common.options.SyncOptions;
 import org.fbreader.util.ComparisonUtil;
-
+import org.geometerplus.android.fbreader.network.auth.ServiceNetworkContext;
+import org.geometerplus.fbreader.network.sync.SyncUtil;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
 import org.geometerplus.zlibrary.core.options.ZLEnumOption;
 
-import org.geometerplus.fbreader.network.sync.SyncUtil;
-
-import org.geometerplus.android.fbreader.network.auth.ServiceNetworkContext;
-
 class SyncNetworkContext extends ServiceNetworkContext {
-	private final SyncOptions mySyncOptions;
-	private final ZLEnumOption<SyncOptions.Condition> myFeatureOption;
+    private final SyncOptions mySyncOptions;
+    private final ZLEnumOption<SyncOptions.Condition> myFeatureOption;
 
-	private volatile String myAccountName;
+    private volatile String myAccountName;
 
-	SyncNetworkContext(Service service, SyncOptions syncOptions, ZLEnumOption<SyncOptions.Condition> featureOption) {
-		super(service);
-		mySyncOptions = syncOptions;
-		myFeatureOption = featureOption;
-	}
+    SyncNetworkContext(Service service, SyncOptions syncOptions, ZLEnumOption<SyncOptions.Condition> featureOption) {
+        super(service);
+        mySyncOptions = syncOptions;
+        myFeatureOption = featureOption;
+    }
 
-	@Override
-	protected void perform(ZLNetworkRequest request, int socketTimeout, int connectionTimeout) throws ZLNetworkException {
-		if (!canPerformRequest()) {
-			throw new SynchronizationDisabledException();
-		}
-		final String accountName = SyncUtil.getAccountName();
-		if (!ComparisonUtil.equal(myAccountName, accountName)) {
-			reloadCookie();
-			myAccountName = accountName;
-		}
-		super.perform(request, socketTimeout, connectionTimeout);
-	}
+    @Override
+    protected void perform(ZLNetworkRequest request, int socketTimeout, int connectionTimeout) throws ZLNetworkException {
+        if (!canPerformRequest()) {
+            throw new SynchronizationDisabledException();
+        }
+        final String accountName = SyncUtil.getAccountName();
+        if (!ComparisonUtil.equal(myAccountName, accountName)) {
+            reloadCookie();
+            myAccountName = accountName;
+        }
+        super.perform(request, socketTimeout, connectionTimeout);
+    }
 
-	private boolean canPerformRequest() {
-		if (!mySyncOptions.Enabled.getValue()) {
-			return false;
-		}
+    private boolean canPerformRequest() {
+        if (!mySyncOptions.Enabled.getValue()) {
+            return false;
+        }
 
-		switch (myFeatureOption.getValue()) {
-			default:
-			case never:
-				return false;
-			case always:
-			{
-				final NetworkInfo info = getActiveNetworkInfo();
-				return info != null && info.isConnected();
-			}
-			case viaWifi:
-			{
-				final NetworkInfo info = getActiveNetworkInfo();
-				return
-					info != null &&
-					info.isConnected() &&
-					info.getType() == ConnectivityManager.TYPE_WIFI;
-			}
-		}
-	}
+        switch (myFeatureOption.getValue()) {
+            default:
+            case never:
+                return false;
+            case always: {
+                final NetworkInfo info = getActiveNetworkInfo();
+                return info != null && info.isConnected();
+            }
+            case viaWifi: {
+                final NetworkInfo info = getActiveNetworkInfo();
+                return
+                        info != null &&
+                                info.isConnected() &&
+                                info.getType() == ConnectivityManager.TYPE_WIFI;
+            }
+        }
+    }
 }

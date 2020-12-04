@@ -22,17 +22,17 @@ package org.geometerplus.fbreader.book;
 import org.geometerplus.zlibrary.core.tree.ZLTree;
 
 public final class FileInfo extends ZLTree<FileInfo> {
-	public final String Name;
-	public long Id;
-	public long FileSize = -1;
+    public final String Name;
+    public long Id;
+    public long FileSize = -1;
 
-	FileInfo(String name, FileInfo parent) {
-		this(name, parent, -1);
-	}
+    FileInfo(String name, FileInfo parent) {
+        this(name, parent, -1);
+    }
 
-	FileInfo(String name, FileInfo parent, long id) {
-		super(parent);
-		Name = name;
-		Id = id;
-	}
+    FileInfo(String name, FileInfo parent, long id) {
+        super(parent);
+        Name = name;
+        Id = id;
+    }
 }

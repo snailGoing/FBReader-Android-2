@@ -23,12 +23,12 @@ import org.geometerplus.zlibrary.core.money.Money;
 import org.geometerplus.zlibrary.core.util.MimeType;
 
 public class BookBuyUrlInfo extends BookUrlInfo {
-	private static final long serialVersionUID = 7877935250896069650L;
+    private static final long serialVersionUID = 7877935250896069650L;
 
-	public final Money Price;
+    public final Money Price;
 
-	public BookBuyUrlInfo(Type type, String url, MimeType mime, Money price) {
-		super(type, url, mime);
-		Price = price;
-	}
+    public BookBuyUrlInfo(Type type, String url, MimeType mime, Money price) {
+        super(type, url, mime);
+        Price = price;
+    }
 }

@@ -19,30 +19,29 @@
 
 package org.geometerplus.fbreader.network.authentication.litres;
 
-import org.geometerplus.zlibrary.core.xml.ZLStringMap;
+import org.geometerplus.fbreader.network.NetworkException;
 import org.geometerplus.zlibrary.core.network.ZLNetworkAuthenticationException;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-
-import org.geometerplus.fbreader.network.NetworkException;
+import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 class LitResOnetimeSidXMLReader extends LitResAuthenticationXMLReader {
-	private static final String TAG_AUTHORIZATION_FAILED = "catalit-authorization-failed";
-	private static final String TAG_GOT_SID = "catalit_get_onetime_sid";
+    private static final String TAG_AUTHORIZATION_FAILED = "catalit-authorization-failed";
+    private static final String TAG_GOT_SID = "catalit_get_onetime_sid";
 
-	public String Sid;
+    public String Sid;
 
-	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
-		if (TAG_GOT_SID.equalsIgnoreCase(tag)) {
-			Sid = attributes.getValue("otsid");
-			if (Sid == null) {
-				setException(ZLNetworkException.forCode(NetworkException.ERROR_SOMETHING_WRONG, LitResUtil.HOST_NAME));
-			}
-		} else if (TAG_AUTHORIZATION_FAILED.equalsIgnoreCase(tag)) {
-			setException(new ZLNetworkAuthenticationException());
-		} else {
-			setException(ZLNetworkException.forCode(NetworkException.ERROR_SOMETHING_WRONG, LitResUtil.HOST_NAME));
-		}
-		return true;
-	}
+    @Override
+    public boolean startElementHandler(String tag, ZLStringMap attributes) {
+        if (TAG_GOT_SID.equalsIgnoreCase(tag)) {
+            Sid = attributes.getValue("otsid");
+            if (Sid == null) {
+                setException(ZLNetworkException.forCode(NetworkException.ERROR_SOMETHING_WRONG, LitResUtil.HOST_NAME));
+            }
+        } else if (TAG_AUTHORIZATION_FAILED.equalsIgnoreCase(tag)) {
+            setException(new ZLNetworkAuthenticationException());
+        } else {
+            setException(ZLNetworkException.forCode(NetworkException.ERROR_SOMETHING_WRONG, LitResUtil.HOST_NAME));
+        }
+        return true;
+    }
 }

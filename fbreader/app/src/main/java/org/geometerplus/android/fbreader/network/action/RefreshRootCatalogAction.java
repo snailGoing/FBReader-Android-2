@@ -19,28 +19,23 @@
 
 package org.geometerplus.android.fbreader.network.action;
 
-import android.app.Activity;
-
+import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
 import org.geometerplus.fbreader.network.NetworkTree;
-import org.geometerplus.fbreader.network.NetworkLibrary;
-
 import org.geometerplus.zlibrary.ui.android.R;
 
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
-
 public class RefreshRootCatalogAction extends RootAction {
-	public RefreshRootCatalogAction(NetworkLibraryActivity activity) {
-		super(activity, ActionCode.REFRESH, "refreshCatalogsList", R.drawable.ic_menu_refresh);
-	}
+    public RefreshRootCatalogAction(NetworkLibraryActivity activity) {
+        super(activity, ActionCode.REFRESH, "refreshCatalogsList", R.drawable.ic_menu_refresh);
+    }
 
-	@Override
-	public boolean isEnabled(NetworkTree tree) {
-		return !myLibrary.isUpdateInProgress();
-	}
+    @Override
+    public boolean isEnabled(NetworkTree tree) {
+        return !myLibrary.isUpdateInProgress();
+    }
 
-	@Override
-	public void run(NetworkTree tree) {
-		myLibrary.runBackgroundUpdate(true);
-		((NetworkLibraryActivity)myActivity).requestCatalogPlugins();
-	}
+    @Override
+    public void run(NetworkTree tree) {
+        myLibrary.runBackgroundUpdate(true);
+        ((NetworkLibraryActivity) myActivity).requestCatalogPlugins();
+    }
 }

@@ -1,18 +1,17 @@
 /**
- *  Copyright 2014 John Persano
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *	you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *	Unless required by applicable law or agreed to in writing, software
- *	distributed under the License is distributed on an "AS IS" BASIS,
- *	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *	See the License for the specific language governing permissions and
- *	limitations under the License.
- *
+ * Copyright 2014 John Persano
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.github.johnpersano.supertoasts;
@@ -30,19 +29,7 @@ public class ManagerSuperToast extends Handler {
 
     @SuppressWarnings("UnusedDeclaration")
     private static final String TAG = "ManagerSuperToast";
-
-    /* Potential messages for the handler to send **/
-    private static final class Messages {
-
-        /* Hexadecimal numbers that represent acronyms for the operation **/
-        private static final int DISPLAY_SUPERTOAST = 0x445354;
-        private static final int ADD_SUPERTOAST = 0x415354;
-        private static final int REMOVE_SUPERTOAST = 0x525354;
-
-    }
-
     private static ManagerSuperToast mManagerSuperToast;
-
     private final Queue<SuperToast> mQueue;
 
     /* Private method to create a new list if the manager is being initialized */
@@ -184,7 +171,7 @@ public class ManagerSuperToast extends Handler {
         final WindowManager.LayoutParams params = superToast
                 .getWindowManagerParams();
 
-        if(windowManager != null) {
+        if (windowManager != null) {
 
             windowManager.addView(toastView, params);
 
@@ -212,7 +199,7 @@ public class ManagerSuperToast extends Handler {
             sendMessageDelayed(superToast,
                     Messages.DISPLAY_SUPERTOAST, 500);
 
-            if(superToast.getOnDismissListener() != null) {
+            if (superToast.getOnDismissListener() != null) {
 
                 superToast.getOnDismissListener().onDismiss(superToast.getView());
 
@@ -241,6 +228,16 @@ public class ManagerSuperToast extends Handler {
         }
 
         mQueue.clear();
+
+    }
+
+    /* Potential messages for the handler to send **/
+    private static final class Messages {
+
+        /* Hexadecimal numbers that represent acronyms for the operation **/
+        private static final int DISPLAY_SUPERTOAST = 0x445354;
+        private static final int ADD_SUPERTOAST = 0x415354;
+        private static final int REMOVE_SUPERTOAST = 0x525354;
 
     }
 

@@ -20,9 +20,9 @@
 package org.geometerplus.zlibrary.core.money;
 
 public class MoneyException extends RuntimeException {
-	private static final long serialVersionUID = 3936494538949724968L;
+    private static final long serialVersionUID = 3936494538949724968L;
 
-	public MoneyException(String message) {
-		super(message);
-	}
+    public MoneyException(String message) {
+        super(message);
+    }
 }

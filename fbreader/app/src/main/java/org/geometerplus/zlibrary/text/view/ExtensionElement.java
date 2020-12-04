@@ -22,8 +22,9 @@ package org.geometerplus.zlibrary.text.view;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
 
 public abstract class ExtensionElement extends ZLTextElement {
-	protected abstract int getWidth();
-	protected abstract int getHeight();
+    protected abstract int getWidth();
 
-	protected abstract void draw(ZLPaintContext context, ZLTextElementArea area);
+    protected abstract int getHeight();
+
+    protected abstract void draw(ZLPaintContext context, ZLTextElementArea area);
 }

@@ -19,35 +19,34 @@
 
 package org.geometerplus.android.fbreader;
 
-import android.content.Intent;
 import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.net.Uri;
 
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.fbreader.fbreader.FBReaderApp;
-
 class OpenWebHelpAction extends FBAndroidAction {
-	OpenWebHelpAction(FBReader baseActivity, FBReaderApp fbreader) {
-		super(baseActivity, fbreader);
-	}
+    OpenWebHelpAction(FBReader baseActivity, FBReaderApp fbreader) {
+        super(baseActivity, fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		final String url = ZLResource.resource("links").getResource("faqPage").getValue();
-		final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-		new Thread(new Runnable() {
-			public void run() {
-				BaseActivity.runOnUiThread(new Runnable() {
-					public void run() {
-						try {
-							BaseActivity.startActivity(intent);
-						} catch (ActivityNotFoundException e) {
-							e.printStackTrace();
-						}
-					}
-				});
-			}
-		}).start();
-	}
+    @Override
+    protected void run(Object... params) {
+        final String url = ZLResource.resource("links").getResource("faqPage").getValue();
+        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        new Thread(new Runnable() {
+            public void run() {
+                BaseActivity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        try {
+                            BaseActivity.startActivity(intent);
+                        } catch (ActivityNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }).start();
+    }
 }

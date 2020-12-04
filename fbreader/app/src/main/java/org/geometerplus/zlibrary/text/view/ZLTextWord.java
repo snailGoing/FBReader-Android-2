@@ -22,91 +22,91 @@ package org.geometerplus.zlibrary.text.view;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
 
 public final class ZLTextWord extends ZLTextElement {
-	public final char[] Data;
-	public final int Offset;
-	public final int Length;
-	private int myWidth = -1;
-	private Mark myMark;
-	private int myParagraphOffset;
+    public final char[] Data;
+    public final int Offset;
+    public final int Length;
+    private int myWidth = -1;
+    private Mark myMark;
+    private int myParagraphOffset;
 
-	class Mark {
-		public final int Start;
-		public final int Length;
-		private Mark myNext;
+    ZLTextWord(String word, int paragraphOffset) {
+        this(word.toCharArray(), 0, word.length(), paragraphOffset);
+    }
 
-		private Mark(int start, int length) {
-			Start = start;
-			Length = length;
-			myNext = null;
-		}
+    ZLTextWord(char[] data, int offset, int length, int paragraphOffset) {
+        Data = data;
+        Offset = offset;
+        Length = length;
+        myParagraphOffset = paragraphOffset;
+    }
 
-		public Mark getNext() {
-			return myNext;
-		}
+    public boolean isASpace() {
+        for (int i = Offset; i < Offset + Length; ++i) {
+            if (!Character.isWhitespace(Data[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-		private void setNext(Mark mark) {
-			myNext = mark;
-		}
-	}
+    public Mark getMark() {
+        return myMark;
+    }
 
-	ZLTextWord(String word, int paragraphOffset) {
-		this(word.toCharArray(), 0, word.length(), paragraphOffset);
-	}
+    public int getParagraphOffset() {
+        return myParagraphOffset;
+    }
 
-	ZLTextWord(char[] data, int offset, int length, int paragraphOffset) {
-		Data = data;
-		Offset = offset;
-		Length = length;
-		myParagraphOffset = paragraphOffset;
-	}
+    public void addMark(int start, int length) {
+        Mark existingMark = myMark;
+        Mark mark = new Mark(start, length);
+        if ((existingMark == null) || (existingMark.Start > start)) {
+            mark.setNext(existingMark);
+            myMark = mark;
+        } else {
+            while ((existingMark.getNext() != null) && (existingMark.getNext().Start < start)) {
+                existingMark = existingMark.getNext();
+            }
+            mark.setNext(existingMark.getNext());
+            existingMark.setNext(mark);
+        }
+    }
 
-	public boolean isASpace() {
-		for (int i = Offset; i < Offset + Length; ++i) {
-			if (!Character.isWhitespace(Data[i])) {
-				return false;
-			}
-		}
-		return true;
-	}
+    public int getWidth(ZLPaintContext context) {
+        int width = myWidth;
+        if (width <= 1) {
+            width = context.getStringWidth(Data, Offset, Length);
+            myWidth = width;
+        }
+        return width;
+    }
 
-	public Mark getMark() {
-		return myMark;
-	}
+    @Override
+    public String toString() {
+        return getString();
+    }
 
-	public int getParagraphOffset() {
-		return myParagraphOffset;
-	}
+    public String getString() {
+        return new String(Data, Offset, Length);
+    }
 
-	public void addMark(int start, int length) {
-		Mark existingMark = myMark;
-		Mark mark = new Mark(start, length);
-		if ((existingMark == null) || (existingMark.Start > start)) {
-			mark.setNext(existingMark);
-			myMark = mark;
-		} else {
-			while ((existingMark.getNext() != null) && (existingMark.getNext().Start < start)) {
-				existingMark = existingMark.getNext();
-			}
-			mark.setNext(existingMark.getNext());
-			existingMark.setNext(mark);
-		}
-	}
+    class Mark {
+        public final int Start;
+        public final int Length;
+        private Mark myNext;
 
-	public int getWidth(ZLPaintContext context) {
-		int width = myWidth;
-		if (width <= 1) {
-			width = context.getStringWidth(Data, Offset, Length);
-			myWidth = width;
-		}
-		return width;
-	}
+        private Mark(int start, int length) {
+            Start = start;
+            Length = length;
+            myNext = null;
+        }
 
-	@Override
-	public String toString() {
-		return getString();
-	}
+        public Mark getNext() {
+            return myNext;
+        }
 
-	public String getString() {
-		return new String(Data, Offset, Length);
-	}
+        private void setNext(Mark mark) {
+            myNext = mark;
+        }
+    }
 }

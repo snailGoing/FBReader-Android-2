@@ -7,17 +7,15 @@
 
 package group.pals.android.lib.ui.filechooser.utils.history;
 
-import java.util.ArrayList;
-
 import android.os.Parcelable;
+
+import java.util.ArrayList;
 
 /**
  * A history store of any object.
- * 
+ *
+ * @param <A> any type
  * @author Hai Bison
- * 
- * @param <A>
- *            any type
  * @since v2.0 alpha
  */
 public interface History<A> extends Parcelable {
@@ -25,76 +23,69 @@ public interface History<A> extends Parcelable {
     /**
      * Pushes {@code newItem} to the history. If the top item is same as this
      * one, then does nothing.
-     * 
-     * @param newItem
-     *            the new item
+     *
+     * @param newItem the new item
      */
     void push(A newItem);
 
     /**
      * Finds {@code item} and if it exists, removes all items after it.
-     * 
-     * @param item
-     *            {@link A}
+     *
+     * @param item {@link A}
      * @since v4.3 beta
      */
     void truncateAfter(A item);
 
     /**
      * Removes an item.
-     * 
-     * @param item
-     *            {@link A}
+     *
+     * @param item {@link A}
      * @since v4.0 beta
      */
     void remove(A item);
 
     /**
      * Removes all items by a filter.
-     * 
-     * @param filter
-     *            {@link HistoryFilter}
+     *
+     * @param filter {@link HistoryFilter}
      * @since v4.0 beta
      */
     void removeAll(HistoryFilter<A> filter);
 
     /**
      * Gets size of the history
-     * 
+     *
      * @return the size of the history
      */
     int size();
 
     /**
      * Gets index of item {@code a}
-     * 
-     * @param a
-     *            an item
+     *
+     * @param a an item
      * @return index of the {@code a}, or -1 if there is no one
      */
     int indexOf(A a);
 
     /**
      * Gets previous item of {@code a}
-     * 
-     * @param a
-     *            current item
+     *
+     * @param a current item
      * @return the previous item, can be {@code null}
      */
     A prevOf(A a);
 
     /**
      * Gets next item of {@code a}
-     * 
-     * @param a
-     *            current item
+     *
+     * @param a current item
      * @return the next item, can be {@code null}
      */
     A nextOf(A a);
 
     /**
      * Retrieves all items in this history, in an <i>independent</i> list.
-     * 
+     *
      * @return list of {@link A}.
      * @since v4.3 beta
      */
@@ -102,7 +93,7 @@ public interface History<A> extends Parcelable {
 
     /**
      * Checks if the history is empty or not.
-     * 
+     *
      * @return {@code true} if this history is empty, {@code false} otherwise.
      * @since v4.3 beta
      */
@@ -110,25 +101,23 @@ public interface History<A> extends Parcelable {
 
     /**
      * Clears this history.
-     * 
+     *
      * @since v4.3 beta.
      */
     void clear();
 
     /**
      * Adds a {@link HistoryListener}
-     * 
-     * @param listener
-     *            {@link HistoryListener}
+     *
+     * @param listener {@link HistoryListener}
      * @since v4.0 beta
      */
     void addListener(HistoryListener<A> listener);
 
     /**
      * Removes a {@link HistoryListener}
-     * 
-     * @param listener
-     *            {@link HistoryListener}
+     *
+     * @param listener {@link HistoryListener}
      * @return the removed listener
      * @since v4.0 beta
      */

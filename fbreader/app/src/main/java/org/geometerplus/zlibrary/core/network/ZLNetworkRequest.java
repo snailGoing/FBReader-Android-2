@@ -19,93 +19,94 @@
 
 package org.geometerplus.zlibrary.core.network;
 
-import java.io.*;
-import java.util.Map;
-import java.util.HashMap;
-
 import org.geometerplus.zlibrary.core.util.ZLNetworkUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class ZLNetworkRequest {
-	public static abstract class Get extends ZLNetworkRequest {
-		protected Get(String url) {
-			this(url, false);
-		}
+    public final Map<String, String> Headers = new HashMap<String, String>();
+    private final boolean myIsQuiet;
+    String URL;
 
-		protected Get(String url, boolean quiet) {
-			super(url, quiet);
-		}
-	}
+    private ZLNetworkRequest(String url) {
+        this(url, false);
+    }
 
-	public static abstract class PostWithMap extends ZLNetworkRequest {
-		public final Map<String,String> PostParameters = new HashMap<String,String>();
+    private ZLNetworkRequest(String url, boolean quiet) {
+        URL = url;
+        myIsQuiet = quiet;
+    }
 
-		protected PostWithMap(String url) {
-			this(url, false);
-		}
+    public void addHeader(String name, String value) {
+        Headers.put(name, value);
+    }
 
-		protected PostWithMap(String url, boolean quiet) {
-			super(url, quiet);
-		}
+    public String getURL() {
+        return URL;
+    }
 
-		public void addPostParameter(String name, String value) {
-			PostParameters.put(name, value);
-		}
-	}
+    public String host() {
+        return ZLNetworkUtil.hostFromUrl(URL);
+    }
 
-	public static abstract class PostWithBody extends ZLNetworkRequest {
-		public final String Body;
+    public boolean isQuiet() {
+        return myIsQuiet;
+    }
 
-		protected PostWithBody(String url, String body, boolean quiet) {
-			super(url, quiet);
-			Body = body;
-		}
-	}
+    public void doBefore() throws ZLNetworkException {
+    }
 
-	public static abstract class FileUpload extends ZLNetworkRequest {
-		final File File;
+    public void handleStream(InputStream inputStream, int length) throws IOException, ZLNetworkException {
+    }
 
-		protected FileUpload(String url, File file, boolean quiet) {
-			super(url, quiet);
-			File = file;
-		}
-	}
+    public void doAfter(boolean success) throws ZLNetworkException {
+    }
 
-	String URL;
-	public final Map<String,String> Headers = new HashMap<String,String>();
+    public static abstract class Get extends ZLNetworkRequest {
+        protected Get(String url) {
+            this(url, false);
+        }
 
-	private final boolean myIsQuiet;
+        protected Get(String url, boolean quiet) {
+            super(url, quiet);
+        }
+    }
 
-	private ZLNetworkRequest(String url) {
-		this(url, false);
-	}
+    public static abstract class PostWithMap extends ZLNetworkRequest {
+        public final Map<String, String> PostParameters = new HashMap<String, String>();
 
-	private ZLNetworkRequest(String url, boolean quiet) {
-		URL = url;
-		myIsQuiet = quiet;
-	}
+        protected PostWithMap(String url) {
+            this(url, false);
+        }
 
-	public void addHeader(String name, String value) {
-		Headers.put(name, value);
-	}
+        protected PostWithMap(String url, boolean quiet) {
+            super(url, quiet);
+        }
 
-	public String getURL() {
-		return URL;
-	}
+        public void addPostParameter(String name, String value) {
+            PostParameters.put(name, value);
+        }
+    }
 
-	public String host() {
-		return ZLNetworkUtil.hostFromUrl(URL);
-	}
+    public static abstract class PostWithBody extends ZLNetworkRequest {
+        public final String Body;
 
-	public boolean isQuiet() {
-		return myIsQuiet;
-	}
+        protected PostWithBody(String url, String body, boolean quiet) {
+            super(url, quiet);
+            Body = body;
+        }
+    }
 
-	public void doBefore() throws ZLNetworkException {
-	}
+    public static abstract class FileUpload extends ZLNetworkRequest {
+        final File File;
 
-	public void handleStream(InputStream inputStream, int length) throws IOException, ZLNetworkException {
-}
-
-	public void doAfter(boolean success) throws ZLNetworkException {
-	}
+        protected FileUpload(String url, File file, boolean quiet) {
+            super(url, quiet);
+            File = file;
+        }
+    }
 }

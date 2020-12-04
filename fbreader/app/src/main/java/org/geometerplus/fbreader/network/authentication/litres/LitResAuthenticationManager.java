@@ -19,506 +19,515 @@
 
 package org.geometerplus.fbreader.network.authentication.litres;
 
-import java.util.*;
-
+import org.geometerplus.fbreader.network.AlreadyPurchasedException;
+import org.geometerplus.fbreader.network.BasketItem;
+import org.geometerplus.fbreader.network.NetworkBookItem;
+import org.geometerplus.fbreader.network.NetworkException;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
+import org.geometerplus.fbreader.network.opds.OPDSNetworkLink;
+import org.geometerplus.fbreader.network.urlInfo.BookUrlInfo;
+import org.geometerplus.fbreader.network.urlInfo.DecoratedBookUrlInfo;
+import org.geometerplus.fbreader.network.urlInfo.UrlInfo;
 import org.geometerplus.zlibrary.core.money.Money;
-import org.geometerplus.zlibrary.core.network.*;
+import org.geometerplus.zlibrary.core.network.QuietNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkAuthenticationException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkContext;
+import org.geometerplus.zlibrary.core.network.ZLNetworkException;
+import org.geometerplus.zlibrary.core.network.ZLNetworkRequest;
 import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
 import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.util.ZLNetworkUtil;
 
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.fbreader.network.authentication.*;
-import org.geometerplus.fbreader.network.opds.OPDSNetworkLink;
-import org.geometerplus.fbreader.network.urlInfo.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class LitResAuthenticationManager extends NetworkAuthenticationManager {
-	private final ZLNetworkContext myNetworkContext = new QuietNetworkContext();
-	private volatile boolean myFullyInitialized;
+    private static final int BOOKS_PER_PAGE = 40;
+    private final ZLNetworkContext myNetworkContext = new QuietNetworkContext();
+    private final ZLStringOption mySidOption;
+    private final ZLStringOption myUserIdOption;
+    private final ZLBooleanOption myCanRebillOption;
+    private final BookCollection myPurchasedBooks = new BookCollection();
+    private final NetworkLibrary myLibrary;
+    private final Object InitialisationLock = new Object();
+    private volatile boolean myFullyInitialized;
+    private volatile String myInitializedDataSid;
+    private volatile Money myAccount;
 
-	private final ZLStringOption mySidOption;
-	private final ZLStringOption myUserIdOption;
-	private final ZLBooleanOption myCanRebillOption;
+    public LitResAuthenticationManager(NetworkLibrary library, OPDSNetworkLink link) {
+        super(link);
 
-	private volatile String myInitializedDataSid;
-	private volatile Money myAccount;
-	private final BookCollection myPurchasedBooks = new BookCollection();
+        myLibrary = library;
 
-	private final class BookCollection {
-		private final Map<String,NetworkBookItem> myMap = new HashMap<String,NetworkBookItem>();
-		private final List<NetworkBookItem> myList = new LinkedList<NetworkBookItem>();
+        mySidOption = new ZLStringOption(LitResUtil.HOST_NAME, "sid", "");
+        myUserIdOption = new ZLStringOption(LitResUtil.HOST_NAME, "userId", "");
+        myCanRebillOption = new ZLBooleanOption(LitResUtil.HOST_NAME, "canRebill", false);
+    }
 
-		public void clear() {
-			myMap.clear();
-			myList.clear();
-		}
+    private static String parseUrl(String url, Map<String, String> params) {
+        if (url == null) {
+            return null;
+        }
+        final String[] parts = url.split("\\?");
+        if (parts.length != 2) {
+            return url;
+        }
+        for (String s : parts[1].split("&")) {
+            final String[] pair = s.split("=");
+            if (pair.length == 2) {
+                params.put(pair[0], pair[1]);
+            }
+        }
+        return parts[0];
+    }
 
-		public boolean isEmpty() {
-			return myList.isEmpty();
-		}
+    public synchronized boolean initUser(String username, String sid, String userId, boolean canRebill) {
+        boolean changed = false;
+        if (username == null) {
+            username = UserNameOption.getValue();
+        } else if (!username.equals(UserNameOption.getValue())) {
+            changed = true;
+            UserNameOption.setValue(username);
+        }
 
-		public void addToStart(NetworkBookItem book) {
-			myMap.put(book.Id, book);
-			myList.add(0, book);
-		}
+        if (sid == null) {
+            sid = "";
+        }
+        if (userId == null) {
+            userId = "";
+        }
 
-		public void addToEnd(NetworkBookItem book) {
-			myMap.put(book.Id, book);
-			myList.add(book);
-		}
+        changed |= !sid.equals(mySidOption.getValue());
+        mySidOption.setValue(sid);
+        changed |= !userId.equals(myUserIdOption.getValue());
+        myUserIdOption.setValue(userId);
+        changed |= canRebill != myCanRebillOption.getValue();
+        myCanRebillOption.setValue(canRebill);
+        final boolean fullyInitialized =
+                !"".equals(username) && !"".equals(sid) && !"".equals(userId);
+        if (fullyInitialized != myFullyInitialized) {
+            changed = true;
+            myFullyInitialized = fullyInitialized;
+        }
+        return changed;
+    }
 
-		public boolean contains(NetworkBookItem book) {
-			return myMap.containsKey(book.Id);
-		}
+    @Override
+    public void logOut() {
+        logOut(true);
+    }
 
-		public List<NetworkBookItem> list() {
-			return Collections.unmodifiableList(myList);
-		}
-	}
+    private synchronized void logOut(boolean full) {
+        boolean changed = false;
+        if (full) {
+            changed = initUser(null, "", "", false);
+        } else {
+            changed = myFullyInitialized;
+            myFullyInitialized = false;
+        }
+        changed |= myInitializedDataSid != null;
+        myInitializedDataSid = null;
+        changed |= !myPurchasedBooks.isEmpty();
+        myPurchasedBooks.clear();
+        if (changed) {
+            myLibrary.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.SignedIn);
+        }
+    }
 
-	private final NetworkLibrary myLibrary;
+    @Override
+    public boolean isAuthorised(boolean useNetwork) throws ZLNetworkException {
+        final String sid;
+        synchronized (this) {
+            boolean authState =
+                    UserNameOption.getValue().length() != 0 &&
+                            mySidOption.getValue().length() != 0;
 
-	public LitResAuthenticationManager(NetworkLibrary library, OPDSNetworkLink link) {
-		super(link);
+            if (myFullyInitialized || !useNetwork) {
+                return authState;
+            }
 
-		myLibrary = library;
+            if (!authState) {
+                logOut(false);
+                return false;
+            }
+            sid = mySidOption.getValue();
+        }
 
-		mySidOption = new ZLStringOption(LitResUtil.HOST_NAME, "sid", "");
-		myUserIdOption = new ZLStringOption(LitResUtil.HOST_NAME, "userId", "");
-		myCanRebillOption = new ZLBooleanOption(LitResUtil.HOST_NAME, "canRebill", false);
-	}
+        try {
+            final LitResLoginXMLReader xmlReader = new LitResLoginXMLReader();
+            final Map<String, String> params = new HashMap<String, String>();
+            final String url = parseUrl(Link.getUrl(UrlInfo.Type.SignIn), params);
+            if (url == null) {
+                throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
+            }
+            final LitResNetworkRequest request = new LitResNetworkRequest(url, xmlReader);
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                request.addPostParameter(entry.getKey(), entry.getValue());
+            }
+            request.addPostParameter("sid", sid);
+            myNetworkContext.perform(request);
+            initUser(null, xmlReader.Sid, xmlReader.UserId, xmlReader.CanRebill);
+            return true;
+        } catch (ZLNetworkAuthenticationException e) {
+            throw e;
+        } catch (ZLNetworkException e) {
+            logOut(false);
+            return false;
+        }
+    }
 
-	public synchronized boolean initUser(String username, String sid, String userId, boolean canRebill) {
-		boolean changed = false;
-		if (username == null) {
-			username = UserNameOption.getValue();
-		} else if (!username.equals(UserNameOption.getValue())) {
-			changed = true;
-			UserNameOption.setValue(username);
-		}
+    @Override
+    public void authorise(String username, String password) throws ZLNetworkException {
+        final Map<String, String> params = new HashMap<String, String>();
+        final String url = parseUrl(Link.getUrl(UrlInfo.Type.SignIn), params);
+        if (url == null) {
+            throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
+        }
+        synchronized (this) {
+            UserNameOption.setValue(username);
+        }
 
-		if (sid == null) {
-			sid = "";
-		}
-		if (userId == null) {
-			userId = "";
-		}
+        try {
+            final LitResLoginXMLReader xmlReader = new LitResLoginXMLReader();
+            final LitResNetworkRequest request = new LitResNetworkRequest(url, xmlReader);
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                request.addPostParameter(entry.getKey(), entry.getValue());
+            }
+            request.addPostParameter("login", username);
+            request.addPostParameter("pwd", password);
+            myNetworkContext.perform(request);
+            myLibrary.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.SignedIn);
+            initUser(null, xmlReader.Sid, xmlReader.UserId, xmlReader.CanRebill);
+        } catch (ZLNetworkException e) {
+            logOut(false);
+            throw e;
+        }
+    }
 
-		changed |= !sid.equals(mySidOption.getValue());
-		mySidOption.setValue(sid);
-		changed |= !userId.equals(myUserIdOption.getValue());
-		myUserIdOption.setValue(userId);
-		changed |= canRebill != myCanRebillOption.getValue();
-		myCanRebillOption.setValue(canRebill);
-		final boolean fullyInitialized =
-			!"".equals(username) && !"".equals(sid) && !"".equals(userId);
-		if (fullyInitialized != myFullyInitialized) {
-			changed = true;
-			myFullyInitialized = fullyInitialized;
-		}
-		return changed;
-	}
+    @Override
+    public BookUrlInfo downloadReference(NetworkBookItem book) {
+        final String sid;
+        synchronized (this) {
+            sid = mySidOption.getValue();
+        }
+        if (sid.length() == 0) {
+            return null;
+        }
+        BookUrlInfo reference = book.reference(UrlInfo.Type.BookConditional);
+        if (reference == null) {
+            return null;
+        }
+        final String url = ZLNetworkUtil.appendParameter(reference.Url, "sid", sid);
+        return new DecoratedBookUrlInfo(reference, url);
+    }
 
-	@Override
-	public void logOut() {
-		logOut(true);
-	}
+    @Override
+    public synchronized boolean needPurchase(NetworkBookItem book) {
+        return !myPurchasedBooks.contains(book);
+    }
 
-	private synchronized void logOut(boolean full) {
-		boolean changed = false;
-		if (full) {
-			changed = initUser(null, "", "", false);
-		} else {
-			changed = myFullyInitialized;
-			myFullyInitialized = false;
-		}
-		changed |= myInitializedDataSid != null;
-		myInitializedDataSid = null;
-		changed |= !myPurchasedBooks.isEmpty();
-		myPurchasedBooks.clear();
-		if (changed) {
-			myLibrary.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.SignedIn);
-		}
-	}
+    @Override
+    public void purchaseBook(NetworkBookItem book) throws ZLNetworkException {
+        final String sid;
+        synchronized (this) {
+            sid = mySidOption.getValue();
+        }
+        if (sid.length() == 0) {
+            throw new ZLNetworkAuthenticationException();
+        }
 
-	@Override
-	public boolean isAuthorised(boolean useNetwork) throws ZLNetworkException {
-		final String sid;
-		synchronized (this) {
-			boolean authState =
-				UserNameOption.getValue().length() != 0 &&
-				mySidOption.getValue().length() != 0;
+        final BookUrlInfo reference = book.reference(UrlInfo.Type.BookBuy);
+        if (reference == null) {
+            throw ZLNetworkException.forCode(NetworkException.ERROR_BOOK_NOT_PURCHASED); // TODO: more correct error message???
+        }
 
-			if (myFullyInitialized || !useNetwork) {
-				return authState;
-			}
+        final LitResPurchaseXMLReader xmlReader = new LitResPurchaseXMLReader();
 
-			if (!authState) {
-				logOut(false);
-				return false;
-			}
-			sid = mySidOption.getValue();
-		}
+        ZLNetworkException exception = null;
+        try {
+            final LitResNetworkRequest request = new LitResNetworkRequest(reference.Url, xmlReader);
+            request.addPostParameter("sid", sid);
+            myNetworkContext.perform(request);
+        } catch (ZLNetworkException e) {
+            exception = e;
+        }
 
-		try {
-			final LitResLoginXMLReader xmlReader = new LitResLoginXMLReader();
-			final Map<String,String> params = new HashMap<String,String>();
-			final String url = parseUrl(Link.getUrl(UrlInfo.Type.SignIn), params);
-			if (url == null) {
-				throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
-			}
-			final LitResNetworkRequest request = new LitResNetworkRequest(url, xmlReader);
-			for (Map.Entry<String,String> entry : params.entrySet()) {
-				request.addPostParameter(entry.getKey(), entry.getValue());
-			}
-			request.addPostParameter("sid", sid);
-			myNetworkContext.perform(request);
-			initUser(null, xmlReader.Sid, xmlReader.UserId, xmlReader.CanRebill);
-			return true;
-		} catch (ZLNetworkAuthenticationException e) {
-			throw e;
-		} catch (ZLNetworkException e) {
-			logOut(false);
-			return false;
-		}
-	}
+        synchronized (this) {
+            if (xmlReader.Account != null) {
+                myAccount = new Money(xmlReader.Account, "RUB");
+            }
+            if (exception != null) {
+                if (exception instanceof ZLNetworkAuthenticationException) {
+                    logOut(false);
+                } else if (exception instanceof AlreadyPurchasedException) {
+                    myPurchasedBooks.addToStart(book);
+                }
+                throw exception;
+            }
+            if (xmlReader.BookId == null || !xmlReader.BookId.equals(book.Id)) {
+                throw ZLNetworkException.forCode(NetworkException.ERROR_SOMETHING_WRONG, LitResUtil.HOST_NAME);
+            }
+            myPurchasedBooks.addToStart(book);
+            final BasketItem basket = book.Link.getBasketItem();
+            if (basket != null) {
+                basket.remove(book);
+            }
+        }
+    }
 
-	@Override
-	public void authorise(String username, String password) throws ZLNetworkException {
-		final Map<String,String> params = new HashMap<String,String>();
-		final String url = parseUrl(Link.getUrl(UrlInfo.Type.SignIn), params);
-		if (url == null) {
-			throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
-		}
-		synchronized (this) {
-			UserNameOption.setValue(username);
-		}
+    @Override
+    public String topupLink(ZLNetworkContext nc, Money sum) throws ZLNetworkException {
+        final String sid;
+        synchronized (this) {
+            sid = mySidOption.getValue();
+        }
+        if (sid.length() == 0) {
+            return null;
+        }
+        String url = Link.getUrl(UrlInfo.Type.TopUp);
+        if (url == null) {
+            return null;
+        }
 
-		try {
-			final LitResLoginXMLReader xmlReader = new LitResLoginXMLReader();
-			final LitResNetworkRequest request = new LitResNetworkRequest(url, xmlReader);
-			for (Map.Entry<String,String> entry : params.entrySet()) {
-				request.addPostParameter(entry.getKey(), entry.getValue());
-			}
-			request.addPostParameter("login", username);
-			request.addPostParameter("pwd", password);
-			myNetworkContext.perform(request);
-			myLibrary.fireModelChangedEvent(NetworkLibrary.ChangeListener.Code.SignedIn);
-			initUser(null, xmlReader.Sid, xmlReader.UserId, xmlReader.CanRebill);
-		} catch (ZLNetworkException e) {
-			logOut(false);
-			throw e;
-		}
-	}
+        final LitResOnetimeSidXMLReader xmlReader = new LitResOnetimeSidXMLReader();
+        final LitResNetworkRequest request = new LitResNetworkRequest(
+                LitResUtil.url(Link, "pages/catalit_get_onetime_sid/"),
+                xmlReader
+        );
+        request.addPostParameter("sid", sid);
 
-	@Override
-	public BookUrlInfo downloadReference(NetworkBookItem book) {
-		final String sid;
-		synchronized (this) {
-			sid = mySidOption.getValue();
-		}
-		if (sid.length() == 0) {
-			return null;
-		}
-		BookUrlInfo reference = book.reference(UrlInfo.Type.BookConditional);
-		if (reference == null) {
-			return null;
-		}
-		final String url = ZLNetworkUtil.appendParameter(reference.Url, "sid", sid);
-		return new DecoratedBookUrlInfo(reference, url);
-	}
+        nc.perform(request);
+        url = ZLNetworkUtil.appendParameter(url, "otsid", xmlReader.Sid);
+        if (sum != null) {
+            url = ZLNetworkUtil.appendParameter(url, "summ", String.valueOf(sum.Amount));
+        }
+        return url;
+    }
 
-	@Override
-	public synchronized boolean needPurchase(NetworkBookItem book) {
-		return !myPurchasedBooks.contains(book);
-	}
+    @Override
+    public synchronized Money currentAccount() {
+        return myAccount;
+    }
 
-	@Override
-	public void purchaseBook(NetworkBookItem book) throws ZLNetworkException {
-		final String sid;
-		synchronized (this) {
-			sid = mySidOption.getValue();
-		}
-		if (sid.length() == 0) {
-			throw new ZLNetworkAuthenticationException();
-		}
+    void reloadPurchasedBooks() throws ZLNetworkException {
+        for (int page = 0; ; ++page) {
+            LitResNetworkRequest networkRequest;
+            synchronized (this) {
+                final String sid = mySidOption.getValue();
+                if (sid.length() == 0) {
+                    throw new ZLNetworkAuthenticationException();
+                }
+                if (!sid.equals(myInitializedDataSid)) {
+                    logOut(false);
+                    throw new ZLNetworkAuthenticationException();
+                }
+                networkRequest = loadPurchasedBooksRequest(sid, page);
+            }
 
-		final BookUrlInfo reference = book.reference(UrlInfo.Type.BookBuy);
-		if (reference == null) {
-			throw ZLNetworkException.forCode(NetworkException.ERROR_BOOK_NOT_PURCHASED); // TODO: more correct error message???
-		}
+            ZLNetworkException exception = null;
+            try {
+                myNetworkContext.perform(networkRequest);
+            } catch (ZLNetworkException e) {
+                exception = e;
+            }
 
-		final LitResPurchaseXMLReader xmlReader = new LitResPurchaseXMLReader();
+            synchronized (this) {
+                if (exception != null) {
+                    if (exception instanceof ZLNetworkAuthenticationException) {
+                        logOut(false);
+                    }
+                    throw exception;
+                }
+                if (loadPurchasedBooksOnSuccess(networkRequest, page == 0) < BOOKS_PER_PAGE) {
+                    break;
+                }
+            }
+        }
+    }
 
-		ZLNetworkException exception = null;
-		try {
-			final LitResNetworkRequest request = new LitResNetworkRequest(reference.Url, xmlReader);
-			request.addPostParameter("sid", sid);
-			myNetworkContext.perform(request);
-		} catch (ZLNetworkException e) {
-			exception = e;
-		}
+    @Override
+    public List<NetworkBookItem> purchasedBooks() {
+        synchronized (InitialisationLock) {
+            return myPurchasedBooks.list();
+        }
+    }
 
-		synchronized (this) {
-			if (xmlReader.Account != null) {
-				myAccount = new Money(xmlReader.Account, "RUB");
-			}
-			if (exception != null) {
-				if (exception instanceof ZLNetworkAuthenticationException) {
-					logOut(false);
-				} else if (exception instanceof AlreadyPurchasedException) {
-					myPurchasedBooks.addToStart(book);
-				}
-				throw exception;
-			}
-			if (xmlReader.BookId == null || !xmlReader.BookId.equals(book.Id)) {
-				throw ZLNetworkException.forCode(NetworkException.ERROR_SOMETHING_WRONG, LitResUtil.HOST_NAME);
-			}
-			myPurchasedBooks.addToStart(book);
-			final BasketItem basket = book.Link.getBasketItem();
-			if (basket != null) {
-				basket.remove(book);
-			}
-		}
-	}
+    @Override
+    public synchronized boolean needsInitialization() {
+        final String sid = mySidOption.getValue();
+        if (sid.length() == 0) {
+            return false;
+        }
+        return !sid.equals(myInitializedDataSid);
+    }
 
-	@Override
-	public String topupLink(ZLNetworkContext nc, Money sum) throws ZLNetworkException {
-		final String sid;
-		synchronized (this) {
-			sid = mySidOption.getValue();
-		}
-		if (sid.length() == 0) {
-			return null;
-		}
-		String url = Link.getUrl(UrlInfo.Type.TopUp);
-		if (url == null) {
-			return null;
-		}
+    @Override
+    public void initialize() throws ZLNetworkException {
+        synchronized (InitialisationLock) {
+            initializeInternal();
+        }
+    }
 
-		final LitResOnetimeSidXMLReader xmlReader = new LitResOnetimeSidXMLReader();
-		final LitResNetworkRequest request = new LitResNetworkRequest(
-			LitResUtil.url(Link, "pages/catalit_get_onetime_sid/"),
-			xmlReader
-		);
-		request.addPostParameter("sid", sid);
+    private void initializeInternal() throws ZLNetworkException {
+        final String sid;
+        final LitResNetworkRequest purchasedBooksRequest;
+        final LitResNetworkRequest accountRequest;
+        synchronized (this) {
+            sid = mySidOption.getValue();
+            if (sid.length() == 0) {
+                throw new ZLNetworkAuthenticationException();
+            }
+            if (sid.equals(myInitializedDataSid) || !isAuthorised(true)) {
+                return;
+            }
 
-		nc.perform(request);
-		url = ZLNetworkUtil.appendParameter(url, "otsid", xmlReader.Sid);
-		if (sum != null) {
-			url = ZLNetworkUtil.appendParameter(url, "summ", String.valueOf(sum.Amount));
-		}
-		return url;
-	}
+            purchasedBooksRequest = loadPurchasedBooksRequest(sid, 0);
+            accountRequest = loadAccountRequest(sid);
+        }
 
-	@Override
-	public synchronized Money currentAccount() {
-		return myAccount;
-	}
+        final LinkedList<ZLNetworkRequest> requests = new LinkedList<ZLNetworkRequest>();
+        requests.add(purchasedBooksRequest);
+        requests.add(accountRequest);
 
-	void reloadPurchasedBooks() throws ZLNetworkException {
-		for (int page = 0; ; ++page) {
-			LitResNetworkRequest networkRequest;
-			synchronized (this) {
-				final String sid = mySidOption.getValue();
-				if (sid.length() == 0) {
-					throw new ZLNetworkAuthenticationException();
-				}
-				if (!sid.equals(myInitializedDataSid)) {
-					logOut(false);
-					throw new ZLNetworkAuthenticationException();
-				}
-				networkRequest = loadPurchasedBooksRequest(sid, page);
-			}
+        try {
+            myNetworkContext.perform(requests);
+            final boolean hasMorePages;
+            synchronized (this) {
+                myInitializedDataSid = sid;
+                hasMorePages =
+                        loadPurchasedBooksOnSuccess(purchasedBooksRequest, true) == BOOKS_PER_PAGE;
+                myAccount = new Money(((LitResPurchaseXMLReader) accountRequest.Reader).Account, "RUB");
+            }
+            if (hasMorePages) {
+                for (int page = 1; ; ++page) {
+                    final LitResNetworkRequest r = loadPurchasedBooksRequest(sid, page);
+                    myNetworkContext.perform(r);
+                    synchronized (this) {
+                        if (loadPurchasedBooksOnSuccess(r, false) < BOOKS_PER_PAGE) {
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (ZLNetworkException e) {
+            synchronized (this) {
+                myInitializedDataSid = null;
+                loadPurchasedBooksOnError();
+                myAccount = null;
+            }
+            throw e;
+        }
+    }
 
-			ZLNetworkException exception = null;
-			try {
-				myNetworkContext.perform(networkRequest);
-			} catch (ZLNetworkException e) {
-				exception = e;
-			}
+    @Override
+    public void refreshAccountInformation() throws ZLNetworkException {
+        final LitResNetworkRequest accountRequest = loadAccountRequest(mySidOption.getValue());
+        myNetworkContext.perform(accountRequest);
+        synchronized (this) {
+            myAccount = new Money(((LitResPurchaseXMLReader) accountRequest.Reader).Account, "RUB");
+        }
+    }
 
-			synchronized (this) {
-				if (exception != null) {
-					if (exception instanceof ZLNetworkAuthenticationException) {
-						logOut(false);
-					}
-					throw exception;
-				}
-				if (loadPurchasedBooksOnSuccess(networkRequest, page == 0) < BOOKS_PER_PAGE) {
-					break;
-				}
-			}
-		}
-	}
+    private LitResNetworkRequest loadPurchasedBooksRequest(String sid, int page) {
+        final String query = "pages/catalit_browser/";
 
-	@Override
-	public List<NetworkBookItem> purchasedBooks() {
-		synchronized (InitialisationLock) {
-			return myPurchasedBooks.list();
-		}
-	}
+        final LitResNetworkRequest request = new LitResNetworkRequest(
+                LitResUtil.url(Link, query),
+                new LitResXMLReader(myLibrary, (OPDSNetworkLink) Link)
+        );
+        request.addPostParameter("my", "1");
+        request.addPostParameter("sid", sid);
+        request.addPostParameter("limit", page * BOOKS_PER_PAGE + "," + BOOKS_PER_PAGE);
+        return request;
+    }
 
-	@Override
-	public synchronized boolean needsInitialization() {
-		final String sid = mySidOption.getValue();
-		if (sid.length() == 0) {
-			return false;
-		}
-		return !sid.equals(myInitializedDataSid);
-	}
+    private void loadPurchasedBooksOnError() {
+        myPurchasedBooks.clear();
+    }
 
-	private final Object InitialisationLock = new Object();
+    private int loadPurchasedBooksOnSuccess(LitResNetworkRequest purchasedBooksRequest, boolean clear) {
+        if (clear) {
+            myPurchasedBooks.clear();
+        }
+        final LitResXMLReader reader = (LitResXMLReader) purchasedBooksRequest.Reader;
+        for (NetworkBookItem book : reader.Books) {
+            System.err.println("TITLE: " + book.Title);
+            myPurchasedBooks.addToEnd(book);
+        }
+        return reader.Books.size();
+    }
 
-	@Override
-	public void initialize() throws ZLNetworkException {
-		synchronized (InitialisationLock) {
-			initializeInternal();
-		}
-	}
+    private LitResNetworkRequest loadAccountRequest(String sid) {
+        final String query = "pages/purchase_book/";
 
-	private void initializeInternal() throws ZLNetworkException {
-		final String sid;
-		final LitResNetworkRequest purchasedBooksRequest;
-		final LitResNetworkRequest accountRequest;
-		synchronized (this) {
-			sid = mySidOption.getValue();
-			if (sid.length() == 0) {
-				throw new ZLNetworkAuthenticationException();
-			}
-			if (sid.equals(myInitializedDataSid) || !isAuthorised(true)) {
-				return;
-			}
+        final LitResNetworkRequest request = new LitResNetworkRequest(
+                LitResUtil.url(Link, query),
+                new LitResPurchaseXMLReader()
+        );
+        request.addPostParameter("sid", sid);
+        request.addPostParameter("art", "0");
+        return request;
+    }
 
-			purchasedBooksRequest = loadPurchasedBooksRequest(sid, 0);
-			accountRequest = loadAccountRequest(sid);
-		}
+    @Override
+    public boolean passwordRecoverySupported() {
+        return true;
+    }
 
-		final LinkedList<ZLNetworkRequest> requests = new LinkedList<ZLNetworkRequest>();
-		requests.add(purchasedBooksRequest);
-		requests.add(accountRequest);
+    @Override
+    public void recoverPassword(String email) throws ZLNetworkException {
+        final String url = Link.getUrl(UrlInfo.Type.RecoverPassword);
+        if (url == null) {
+            throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
+        }
+        final LitResPasswordRecoveryXMLReader xmlReader = new LitResPasswordRecoveryXMLReader();
+        final LitResNetworkRequest request = new LitResNetworkRequest(url, xmlReader);
+        request.addPostParameter("mail", email);
+        myNetworkContext.perform(request);
+    }
 
-		try {
-			myNetworkContext.perform(requests);
-			final boolean hasMorePages;
-			synchronized (this) {
-				myInitializedDataSid = sid;
-				hasMorePages =
-					loadPurchasedBooksOnSuccess(purchasedBooksRequest, true) == BOOKS_PER_PAGE;
-				myAccount = new Money(((LitResPurchaseXMLReader)accountRequest.Reader).Account, "RUB");
-			}
-			if (hasMorePages) {
-				for (int page = 1; ; ++page) {
-					final LitResNetworkRequest r = loadPurchasedBooksRequest(sid, page);
-					myNetworkContext.perform(r);
-					synchronized (this) {
-						if (loadPurchasedBooksOnSuccess(r, false) < BOOKS_PER_PAGE) {
-							break;
-						}
-					}
-				}
-			}
-		} catch (ZLNetworkException e) {
-			synchronized (this) {
-				myInitializedDataSid = null;
-				loadPurchasedBooksOnError();
-				myAccount = null;
-			}
-			throw e;
-		}
-	}
+    @Override
+    public Map<String, String> getTopupData() {
+        final HashMap<String, String> map = new HashMap<String, String>();
+        map.put("litres:userId", myUserIdOption.getValue());
+        map.put("litres:canRebill", myCanRebillOption.getValue() ? "true" : "false");
+        map.put("litres:sid", mySidOption.getValue());
+        return map;
+    }
 
-	@Override
-	public void refreshAccountInformation() throws ZLNetworkException {
-		final LitResNetworkRequest accountRequest = loadAccountRequest(mySidOption.getValue());
-		myNetworkContext.perform(accountRequest);
-		synchronized (this) {
-			myAccount = new Money(((LitResPurchaseXMLReader)accountRequest.Reader).Account, "RUB");
-		}
-	}
+    private final class BookCollection {
+        private final Map<String, NetworkBookItem> myMap = new HashMap<String, NetworkBookItem>();
+        private final List<NetworkBookItem> myList = new LinkedList<NetworkBookItem>();
 
-	private static final int BOOKS_PER_PAGE = 40;
-	private LitResNetworkRequest loadPurchasedBooksRequest(String sid, int page) {
-		final String query = "pages/catalit_browser/";
+        public void clear() {
+            myMap.clear();
+            myList.clear();
+        }
 
-		final LitResNetworkRequest request = new LitResNetworkRequest(
-			LitResUtil.url(Link, query),
-			new LitResXMLReader(myLibrary, (OPDSNetworkLink)Link)
-		);
-		request.addPostParameter("my", "1");
-		request.addPostParameter("sid", sid);
-		request.addPostParameter("limit", page * BOOKS_PER_PAGE + "," + BOOKS_PER_PAGE);
-		return request;
-	}
+        public boolean isEmpty() {
+            return myList.isEmpty();
+        }
 
-	private void loadPurchasedBooksOnError() {
-		myPurchasedBooks.clear();
-	}
+        public void addToStart(NetworkBookItem book) {
+            myMap.put(book.Id, book);
+            myList.add(0, book);
+        }
 
-	private int loadPurchasedBooksOnSuccess(LitResNetworkRequest purchasedBooksRequest, boolean clear) {
-		if (clear) {
-			myPurchasedBooks.clear();
-		}
-		final LitResXMLReader reader = (LitResXMLReader)purchasedBooksRequest.Reader;
-		for (NetworkBookItem book : reader.Books) {
-			System.err.println("TITLE: " + book.Title);
-			myPurchasedBooks.addToEnd(book);
-		}
-		return reader.Books.size();
-	}
+        public void addToEnd(NetworkBookItem book) {
+            myMap.put(book.Id, book);
+            myList.add(book);
+        }
 
-	private LitResNetworkRequest loadAccountRequest(String sid) {
-		final String query = "pages/purchase_book/";
+        public boolean contains(NetworkBookItem book) {
+            return myMap.containsKey(book.Id);
+        }
 
-		final LitResNetworkRequest request = new LitResNetworkRequest(
-			LitResUtil.url(Link, query),
-			new LitResPurchaseXMLReader()
-		);
-		request.addPostParameter("sid", sid);
-		request.addPostParameter("art", "0");
-		return request;
-	}
-
-	@Override
-	public boolean passwordRecoverySupported() {
-		return true;
-	}
-
-	@Override
-	public void recoverPassword(String email) throws ZLNetworkException {
-		final String url = Link.getUrl(UrlInfo.Type.RecoverPassword);
-		if (url == null) {
-			throw ZLNetworkException.forCode(NetworkException.ERROR_UNSUPPORTED_OPERATION);
-		}
-		final LitResPasswordRecoveryXMLReader xmlReader = new LitResPasswordRecoveryXMLReader();
-		final LitResNetworkRequest request = new LitResNetworkRequest(url, xmlReader);
-		request.addPostParameter("mail", email);
-		myNetworkContext.perform(request);
-	}
-
-	@Override
-	public Map<String,String> getTopupData() {
-		final HashMap<String,String> map = new HashMap<String,String>();
-		map.put("litres:userId", myUserIdOption.getValue());
-		map.put("litres:canRebill", myCanRebillOption.getValue() ? "true" : "false");
-		map.put("litres:sid", mySidOption.getValue());
-		return map;
-	}
-
-	private static String parseUrl(String url, Map<String,String> params) {
-		if (url == null) {
-			return null;
-		}
-		final String[] parts = url.split("\\?");
-		if (parts.length != 2) {
-			return url;
-		}
-		for (String s : parts[1].split("&")) {
-			final String[] pair = s.split("=");
-			if (pair.length == 2) {
-				params.put(pair[0], pair[1]);
-			}
-		}
-		return parts[0];
-	}
+        public List<NetworkBookItem> list() {
+            return Collections.unmodifiableList(myList);
+        }
+    }
 }

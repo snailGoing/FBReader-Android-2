@@ -11,9 +11,8 @@ import group.pals.android.lib.ui.filechooser.io.IFile;
 
 /**
  * This class is used to hold data ({@link IFile}) in {@link IFileAdapter}
- * 
+ *
  * @author Hai Bison
- * 
  */
 public class IFileDataModel {
 
@@ -23,9 +22,8 @@ public class IFileDataModel {
 
     /**
      * Creates new {@link IFileDataModel} with a {@link IFile}
-     * 
-     * @param file
-     *            {@link IFile}
+     *
+     * @param file {@link IFile}
      */
     public IFileDataModel(IFile file) {
         this.mFile = file;
@@ -33,7 +31,7 @@ public class IFileDataModel {
 
     /**
      * Gets the file which this container holds.
-     * 
+     *
      * @return {@link IFile}
      */
     public IFile getFile() {
@@ -42,7 +40,7 @@ public class IFileDataModel {
 
     /**
      * Gets the status of this item (listed in {@link android.widget.ListView})
-     * 
+     *
      * @return {@code true} if the item is mSelected, {@code false} otherwise
      */
     public boolean isSelected() {
@@ -51,7 +49,7 @@ public class IFileDataModel {
 
     /**
      * Sets the status of this item (listed in {@link android.widget.ListView})
-     * 
+     *
      * @param mSelected
      */
     public void setSelected(boolean selected) {
@@ -61,7 +59,7 @@ public class IFileDataModel {
 
     /**
      * Checks if this item is marked as to be deleted.
-     * 
+     *
      * @return {@code true} if this item is marked as to be deleted.
      */
     public boolean isTobeDeleted() {
@@ -70,9 +68,8 @@ public class IFileDataModel {
 
     /**
      * Marks this item as to be deleted.
-     * 
-     * @param tobeDeleted
-     *            {@code true} or {@code false}
+     *
+     * @param tobeDeleted {@code true} or {@code false}
      */
     public void setTobeDeleted(boolean tobeDeleted) {
         if (mTobeDeleted != tobeDeleted)

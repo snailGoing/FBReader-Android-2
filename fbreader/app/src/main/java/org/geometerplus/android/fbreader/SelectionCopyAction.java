@@ -22,36 +22,34 @@ package org.geometerplus.android.fbreader;
 import android.app.Application;
 import android.text.ClipboardManager;
 
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-
+import org.geometerplus.android.util.UIMessageUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.fbreader.FBView;
 import org.geometerplus.fbreader.util.TextSnippet;
-
-import org.geometerplus.android.util.UIMessageUtil;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 public class SelectionCopyAction extends FBAndroidAction {
-	SelectionCopyAction(FBReader baseActivity, FBReaderApp fbreader) {
-		super(baseActivity, fbreader);
-	}
+    SelectionCopyAction(FBReader baseActivity, FBReaderApp fbreader) {
+        super(baseActivity, fbreader);
+    }
 
-	@Override
-	protected void run(Object ... params) {
-		final FBView fbview = Reader.getTextView();
-		final TextSnippet snippet = fbview.getSelectedSnippet();
-		if (snippet == null) {
-			return;
-		}
+    @Override
+    protected void run(Object... params) {
+        final FBView fbview = Reader.getTextView();
+        final TextSnippet snippet = fbview.getSelectedSnippet();
+        if (snippet == null) {
+            return;
+        }
 
-		final String text = snippet.getText();
-		fbview.clearSelection();
+        final String text = snippet.getText();
+        fbview.clearSelection();
 
-		final ClipboardManager clipboard =
-			(ClipboardManager)BaseActivity.getApplication().getSystemService(Application.CLIPBOARD_SERVICE);
-		clipboard.setText(text);
-		UIMessageUtil.showMessageText(
-			BaseActivity,
-			ZLResource.resource("selection").getResource("textInBuffer").getValue().replace("%s", clipboard.getText())
-		);
-	}
+        final ClipboardManager clipboard =
+                (ClipboardManager) BaseActivity.getApplication().getSystemService(Application.CLIPBOARD_SERVICE);
+        clipboard.setText(text);
+        UIMessageUtil.showMessageText(
+                BaseActivity,
+                ZLResource.resource("selection").getResource("textInBuffer").getValue().replace("%s", clipboard.getText())
+        );
+    }
 }

@@ -1,57 +1,74 @@
-buildscript {
-	repositories {
-		mavenCentral()
-	}
-
-	dependencies {
-		classpath 'com.android.tools.build:gradle:1.3.0'
-	}
-}
-
 apply plugin: 'com.android.library'
 
-dependencies {
-	compile project(':fbreader/api')
-}
 
 android {
-	compileSdkVersion 10
-	buildToolsVersion '20'
+    compileSdkVersion 29
+    buildToolsVersion '29.0.3'
 
-	lintOptions {
-		abortOnError false
-	}
+    lintOptions {
+        abortOnError false
+    }
 
-	compileOptions {
-		sourceCompatibility JavaVersion.VERSION_1_7
-		targetCompatibility JavaVersion.VERSION_1_7
-	}
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+    }
 
-	sourceSets {
-		main.java.srcDirs = ['src/main/java']
-		main.jniLibs.srcDirs = ['src/main/libs']
-		main.jni.srcDirs = []
-	}
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
 
-	defaultConfig {
-		minSdkVersion 5
-		maxSdkVersion 10
-		targetSdkVersion 9
-		versionCode 1
-		versionName "1.0"
-	}
+        debug {
+            minifyEnabled false
+        }
+    }
 
-	task ndkBuild(type: Exec) {
-		def ndkDir = plugins.getPlugin('com.android.library').sdkHandler.getNdkFolder()
-		commandLine "$ndkDir/ndk-build", '-C', file('src/main/jni').absolutePath
-	}
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
-	tasks.withType(JavaCompile) {
-		compileTask -> compileTask.dependsOn ndkBuild
-	}
+    sourceSets {
+        main.java.srcDirs = ['src/main/java']
+        main.jniLibs.srcDirs = ['src/main/libs']
+        main.jni.srcDirs = []
+    }
 
-	clean {
-		delete 'src/main/obj'
-		delete 'src/main/libs'
-	}
+    defaultConfig {
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
+    }
+
+    task ndkBuild(type: Exec) {
+        def ndkDir = android.ndkDirectory
+        def ndkBuildCmd = "ndk-build.cmd"
+        def osName = System.getProperty("os.name").toLowerCase()
+
+
+        if (!osName.contains("windows")) {
+            ndkBuildCmd = "ndk-build"
+        }
+
+        commandLine "$ndkDir/$ndkBuildCmd", '-C', file('src/main/jni').absolutePath
+    }
+
+    tasks.withType(JavaCompile) {
+        compileTask -> compileTask.dependsOn ndkBuild
+    }
+
+    clean {
+        delete 'src/main/obj'
+        delete 'src/main/libs'
+    }
+
+    dependencies {
+        implementation fileTree(include: ['*.jar'], dir: 'libs')
+        implementation project(':fbreader:api')
+        implementation project(':fbreader:util')
+    }
 }

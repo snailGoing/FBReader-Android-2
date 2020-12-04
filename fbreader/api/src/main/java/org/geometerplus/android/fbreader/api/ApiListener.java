@@ -5,8 +5,8 @@
 package org.geometerplus.android.fbreader.api;
 
 public interface ApiListener {
-	String EVENT_READ_MODE_OPENED = "startReading";
-	String EVENT_READ_MODE_CLOSED = "stopReading";
+    String EVENT_READ_MODE_OPENED = "startReading";
+    String EVENT_READ_MODE_CLOSED = "stopReading";
 
-	void onEvent(int event);
+    void onEvent(int event);
 }

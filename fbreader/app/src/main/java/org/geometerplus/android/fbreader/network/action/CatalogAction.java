@@ -25,16 +25,16 @@ import org.geometerplus.fbreader.network.NetworkTree;
 import org.geometerplus.fbreader.network.tree.NetworkCatalogTree;
 
 abstract class CatalogAction extends Action {
-	protected CatalogAction(Activity activity, int code, String resourceKey, int iconId) {
-		super(activity, code, resourceKey, iconId);
-	}
+    protected CatalogAction(Activity activity, int code, String resourceKey, int iconId) {
+        super(activity, code, resourceKey, iconId);
+    }
 
-	protected CatalogAction(Activity activity, int code, String resourceKey) {
-		super(activity, code, resourceKey, -1);
-	}
+    protected CatalogAction(Activity activity, int code, String resourceKey) {
+        super(activity, code, resourceKey, -1);
+    }
 
-	@Override
-	public boolean isVisible(NetworkTree tree) {
-		return tree instanceof NetworkCatalogTree;
-	}
+    @Override
+    public boolean isVisible(NetworkTree tree) {
+        return tree instanceof NetworkCatalogTree;
+    }
 }
