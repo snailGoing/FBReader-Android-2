@@ -906,56 +906,96 @@ public abstract class ZLTextView extends ZLTextViewBase {
         return null;
     }
 
+    /**
+     * Build the specific page information base on the start cursor.
+     * This will output the end cursor result.
+     *
+     * @param page The page which to build.
+     * @param start The known page start cursor.
+     * @param result To output the end cursor.
+     */
     private void buildInfos(ZLTextPage page, ZLTextWordCursor start, ZLTextWordCursor result) {
+        // Step one: init some params.
         result.setCursor(start);
         int textAreaHeight = page.getTextHeight();
         page.LineInfos.clear();
         page.Column0Height = 0;
         boolean nextParagraph;
         ZLTextLineInfo info = null;
+
+        // Step two: compute the each line information for this page in loop.
         do {
             final ZLTextLineInfo previousInfo = info;
+            // reset style and apply the current paragraph position style.
             resetTextStyle();
             final ZLTextParagraphCursor paragraphCursor = result.getParagraphCursor();
             final int wordIndex = result.getElementIndex();
             applyStyleChanges(paragraphCursor, 0, wordIndex);
+
+            // init the current new text-line start information and end index range.
             info = new ZLTextLineInfo(paragraphCursor, wordIndex, result.getCharIndex(), getTextStyle());
             final int endIndex = info.ParagraphCursorLength;
+
+            // loop to deal with the current paragraph to obtain these new text-line informations.
             while (info.EndElementIndex != endIndex) {
+                // compute the current new text-line detail information.
                 info = processTextLine(page, paragraphCursor, info.EndElementIndex, info.EndCharIndex, endIndex, previousInfo);
+                // adjust the available height.
                 textAreaHeight -= info.Height + info.Descent;
+
+                // if no height to draw, and the numbers of the page's text-line are greater
+                // than the first column line counts.
                 if (textAreaHeight < 0 && page.LineInfos.size() > page.Column0Height) {
+                    // if the first column line counts: 0 and should show two column view.
                     if (page.Column0Height == 0 && page.twoColumnView()) {
+                        // re-init the available text height.
                         textAreaHeight = page.getTextHeight();
                         textAreaHeight -= info.Height + info.Descent;
+                        // save the first column view text-line counts to Column0Height.
+                        // we will show the second column view according to the Column0Height value.
                         page.Column0Height = page.LineInfos.size();
                     } else {
                         break;
                     }
                 }
+
+                // the available height minus the current line VSpaceAfter value.
                 textAreaHeight -= info.VSpaceAfter;
+                // move the cursor to the expected location.
                 result.moveTo(info.EndElementIndex, info.EndCharIndex);
+                // add a new text-line information to list.
                 page.LineInfos.add(info);
+
+                // detect the available text height again if need to show two column view.
                 if (textAreaHeight < 0) {
                     if (page.Column0Height == 0 && page.twoColumnView()) {
                         textAreaHeight = page.getTextHeight();
                         page.Column0Height = page.LineInfos.size();
                     } else {
+                        // jump the while loop.
                         break;
                     }
                 }
-            }
+            } // end the paragraph while loop.
+
+            // judge whether the result cursor's next position is next paragraph.
             nextParagraph = result.isEndOfParagraph() && result.nextParagraph();
             if (nextParagraph && result.getParagraphCursor().isEndOfSection()) {
+                // if the result position is the end section and two column view.
+                // re-init text height and set Column0Height value.
                 if (page.Column0Height == 0 && page.twoColumnView() && !page.LineInfos.isEmpty()) {
                     textAreaHeight = page.getTextHeight();
                     page.Column0Height = page.LineInfos.size();
                 }
             }
+
+            // 1. if exist next paragraph and available height.
+            // 2. not the section end.
+            // 3. should start from the second column view.
         } while (nextParagraph && textAreaHeight >= 0 &&
                 (!result.getParagraphCursor().isEndOfSection() ||
                         page.LineInfos.size() == page.Column0Height)
-        );
+        ); // end the [do ... while] loop when the page's lines is full.
         resetTextStyle();
     }
 

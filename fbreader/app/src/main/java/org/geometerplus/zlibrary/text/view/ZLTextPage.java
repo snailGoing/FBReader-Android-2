@@ -26,6 +26,9 @@ final class ZLTextPage {
     final ZLTextWordCursor EndCursor = new ZLTextWordCursor();
     final ArrayList<ZLTextLineInfo> LineInfos = new ArrayList<ZLTextLineInfo>();
     final ZLTextElementAreaVector TextElementMap = new ZLTextElementAreaVector();
+    /**
+     * The first column line counts when support two column view.
+     */
     int Column0Height;
     int PaintState = PaintStateEnum.NOTHING_TO_PAINT;
     private int myColumnWidth;
