@@ -21,13 +21,33 @@ package org.geometerplus.zlibrary.text.view;
 
 public abstract class ZLTextElement {
     public final static ZLTextElement HSpace = new ZLTextElement() {
+        @Override
+        public String toString() {
+            return "HSpace";
+        }
     };
     public final static ZLTextElement NBSpace = new ZLTextElement() {
+        @Override
+        public String toString() {
+            return "NBSpace";
+        }
     };
     public final static ZLTextElement AfterParagraph = new ZLTextElement() {
+        @Override
+        public String toString() {
+            return "AfterParagraph";
+        }
     };
     public final static ZLTextElement Indent = new ZLTextElement() {
+        @Override
+        public String toString() {
+            return "Indent";
+        }
     };
     public final static ZLTextElement StyleClose = new ZLTextElement() {
+        @Override
+        public String toString() {
+            return "StyleClose";
+        }
     };
 }
