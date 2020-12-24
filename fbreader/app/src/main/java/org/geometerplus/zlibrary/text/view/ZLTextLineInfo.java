@@ -66,6 +66,10 @@ final class ZLTextLineInfo {
         }
     }
 
+    /**
+     * Judge whether two objects are the same or not.
+     * This's need by ArrayList as key and value.
+     */
     @Override
     public boolean equals(Object o) {
         ZLTextLineInfo info = (ZLTextLineInfo) o;

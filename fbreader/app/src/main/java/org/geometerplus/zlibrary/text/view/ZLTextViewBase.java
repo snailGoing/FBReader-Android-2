@@ -277,16 +277,21 @@ abstract class ZLTextViewBase extends ZLView {
             }
             length = word.Length - start;
         }
+        // one: if not add hyphenation, directly measure width.
         if (!addHyphenationSign) {
             return getContext().getStringWidth(word.Data, word.Offset + start, length);
         }
+
         char[] part = myWordPartArray;
         if (length + 1 > part.length) {
             part = new char[length + 1];
             myWordPartArray = part;
         }
+        // firstly copy the length chars to part array.
         System.arraycopy(word.Data, word.Offset + start, part, 0, length);
+        // add '-' char to the index of 'length'.
         part[length] = '-';
+        // two: measure width of the string which has been added hyphenation.
         return getContext().getStringWidth(part, 0, length + 1);
     }
 
