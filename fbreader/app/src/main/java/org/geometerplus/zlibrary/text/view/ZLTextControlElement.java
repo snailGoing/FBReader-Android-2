@@ -19,6 +19,8 @@
 
 package org.geometerplus.zlibrary.text.view;
 
+import org.LogUtils;
+
 public class ZLTextControlElement extends ZLTextElement {
     private final static ZLTextControlElement[] myStartElements = new ZLTextControlElement[256];
     private final static ZLTextControlElement[] myEndElements = new ZLTextControlElement[256];
@@ -36,6 +38,7 @@ public class ZLTextControlElement extends ZLTextElement {
         if (element == null) {
             element = new ZLTextControlElement(kind, isStart);
             elements[kind & 0xFF] = element;
+            LogUtils.d(TAG, "ZLTextControlElement: check styles.css config, kind = " + kind + " isStart = " +isStart);
         }
         return element;
     }

@@ -20,6 +20,8 @@
 package org.geometerplus.zlibrary.text.view;
 
 public abstract class ZLTextElement {
+    protected static final String TAG = ZLTextElement.class.getSimpleName();
+
     public final static ZLTextElement HSpace = new ZLTextElement() {
         @Override
         public String toString() {

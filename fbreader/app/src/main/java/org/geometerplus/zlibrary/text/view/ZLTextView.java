@@ -1112,10 +1112,11 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
         info.Width = info.LeftIndent;
 
+        // this maybe empty line paragraph, only one paragraph-start-control element.
         if (info.RealStartElementIndex == endIndex) {
             info.EndElementIndex = info.RealStartElementIndex;
             info.EndCharIndex = info.RealStartCharIndex;
-            LogUtils.i(TAG, "processTextLineInternal: 2. The start index is equal to end index, return info.");
+            LogUtils.i(TAG, "processTextLineInternal: 2. The start index is equal to end index, return info. index = " + endIndex);
             return info;
         }
 
@@ -1245,7 +1246,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 storedStyle = getTextStyle();
                 removeLastSpace = !wordOccurred && internalSpaceCounter > 0;
             } else if (previousElement instanceof ZLTextWord) {
-                LogUtils.i(TAG, "processTextLineInternal: 4. do ... while, add WordInfo: "+ (ZLTextWord) previousElement);
+                LogUtils.i(TAG, "processTextLineInternal: 4. do ... while, end = "
+                        + (currentElementIndex != endIndex) + ", add WordInfo =" + (ZLTextWord) previousElement);
                 // save this loop index element.
                 words.add(new WordInfo(
                         (ZLTextWord) previousElement,
@@ -1261,7 +1263,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 (isHyphenationPossible() || info.EndElementIndex == startIndex)) {
             final ZLTextElement element = paragraphCursor.getElement(currentElementIndex);
             boolean hyphenated = false;
-            LogUtils.d(TAG, "processTextLineInternal 5.  handle hyphenation info of needing newline. startIndex == "
+            LogUtils.d(TAG, "processTextLineInternal: 5.  handle hyphenation info of needing newline. startIndex == "
                     + (info.EndElementIndex == startIndex));
 
             // make a hyphenation to ZLTextWord if no sapce to show the whole word.
@@ -1317,13 +1319,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
                     // debug to print info.
                     if (currentCharIndex != 0) {
-                        LogUtils.d(TAG, "processTextLineInternal 6. currentCharIndex: " + currentCharIndex + " word :" + word.toString());
+                        LogUtils.d(TAG, "processTextLineInternal: 6. currentCharIndex: " + currentCharIndex + " word :" + word.toString());
                     }
 
                     // if not find the hyphenation point by "for" loop and no element in this ZLTextLineInfo,
                     // binary search to find the best hyphenation position.
                     if (hyphenationPosition == currentCharIndex && info.EndElementIndex == startIndex) {
-                        LogUtils.i(TAG, "processTextLineInternal 7.  " + " word :" + word.toString());
+                        LogUtils.i(TAG, "processTextLineInternal: 7.  " + " word :" + word.toString());
                         subwordWidth = getWordWidth(word, currentCharIndex, 1, false);
                         int right = word.Length == currentCharIndex + 1 ? word.Length : word.Length - 1;
                         int left = currentCharIndex + 1;
@@ -1363,11 +1365,16 @@ public abstract class ZLTextView extends ZLTextViewBase {
                         removeLastSpace = false;
                     }
                 }
-                LogUtils.d(TAG, "processTextLineInternal 8.  hyphenated: " + hyphenated + "  word: " + word);
+                // if "hyphenated" true, word will be spilt into two parts at least by '-' char which is shown at two lines.
+                // Or false, word will be shown in the start of the next line.
+                LogUtils.d(TAG, "processTextLineInternal: 8.  hyphenated: " + hyphenated + "  word: " + word);
             }
 
-            // if cann't hyphenate.
+            // if cann't hyphenate, again need to check WordInfo list from the end.
+            // such as: "tao yuan ming" must be in the same line when happen in the end of line.
+            // you must attempt to hyphenate to {tao、yuan、ming}.
             if (!hyphenated) {
+                // add element to words list referencing [processTextLineInternal: 4]
                 for (int i = words.size() - 1; i >= 0; --i) {
                     final WordInfo wi = words.get(i);
                     final ZLTextWord word = wi.Word;
@@ -1405,7 +1412,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
                         break;
                     }
                 }
-                LogUtils.d(TAG, "processTextLineInternal 9.  cann't hyphenate, words:  " + words.size());
+                int size = words.size();
+                if (size > 0) {
+                    LogUtils.d(TAG, "processTextLineInternal: 9.  cann't hyphenate, words:  " + size);
+                }
             }
         }
 
