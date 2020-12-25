@@ -26,6 +26,12 @@ public abstract class ZLTextElement {
             return "HSpace";
         }
     };
+
+    /**
+     * Non Breaking Space.
+     * such as: "Mr Green", can't be divided into two parts, you must keep
+     * "Mr Green" in the same line.
+     */
     public final static ZLTextElement NBSpace = new ZLTextElement() {
         @Override
         public String toString() {

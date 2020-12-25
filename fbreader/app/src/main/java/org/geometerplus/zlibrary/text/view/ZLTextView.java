@@ -1091,6 +1091,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
             info.StartStyle = getTextStyle();
             info.RealStartElementIndex = currentElementIndex;
             info.RealStartCharIndex = currentCharIndex;
+            LogUtils.d(TAG, "processTextLineInternal: 1. isFirstLine and compute start location.");
         }
 
         ZLTextStyle storedStyle = getTextStyle();
@@ -1114,6 +1115,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
         if (info.RealStartElementIndex == endIndex) {
             info.EndElementIndex = info.RealStartElementIndex;
             info.EndCharIndex = info.RealStartCharIndex;
+            LogUtils.i(TAG, "processTextLineInternal: 2. The start index is equal to end index, return info.");
             return info;
         }
 
@@ -1164,8 +1166,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
             newHeight = Math.max(newHeight, getElementHeight(element));
             newDescent = Math.max(newDescent, getElementDescent(element));
 
-            // HSpace: {@link Character.isWhitespace(ch)}.
-            // NBSpace: if not the HSpace,but {@link Character.isSpaceChar(ch}.
+            // HSpace: {@link Character.isWhitespace(ch)} means you can begin a newline
+            // NBSpace: if not the HSpace,but {@link Character.isSpaceChar(ch}. means Non Breaking Space.
             if (element == ZLTextElement.HSpace) {
                 if (wordOccurred) {
                     wordOccurred = false;
@@ -1196,6 +1198,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
             // if reach the max width and jump loop.
             if (newWidth > maxWidth) {
                 if (info.EndElementIndex != startIndex || element instanceof ZLTextWord) {
+                    LogUtils.d(TAG, "processTextLineInternal: 3. It reachs the max width of line, break do ... while");
                     break;
                 }
             }
@@ -1224,9 +1227,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
                                 !(element instanceof ZLTextControlElement);
             }
 
-            // allow to break.(1. reach the end index 2. by fixing)
+            // allow to break.(1. reach the end index 2. every word in the line.)
             if (allowBreak) {
                 words.clear();
+                // update element info to ZLTextLineInfo.
                 info.IsVisible = isVisible;
                 info.Width = newWidth;
                 if (info.Height < newHeight) {
@@ -1241,6 +1245,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 storedStyle = getTextStyle();
                 removeLastSpace = !wordOccurred && internalSpaceCounter > 0;
             } else if (previousElement instanceof ZLTextWord) {
+                LogUtils.i(TAG, "processTextLineInternal: 4. do ... while, add WordInfo: "+ (ZLTextWord) previousElement);
                 // save this loop index element.
                 words.add(new WordInfo(
                         (ZLTextWord) previousElement,
@@ -1251,16 +1256,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
             }
         } while (currentElementIndex != endIndex);
 
-        // debug info.
-        if (info.EndElementIndex == startIndex) {
-            LogUtils.d(TAG, "info EndElementIndex: " + startIndex);
-        }
-
         // if not reach the endIndex, and {can hyphenate or the EndElementIndex is equal to startIndex}.
         if (currentElementIndex != endIndex &&
                 (isHyphenationPossible() || info.EndElementIndex == startIndex)) {
             final ZLTextElement element = paragraphCursor.getElement(currentElementIndex);
             boolean hyphenated = false;
+            LogUtils.d(TAG, "processTextLineInternal 5.  handle hyphenation info of needing newline. startIndex == "
+                    + (info.EndElementIndex == startIndex));
 
             // make a hyphenation to ZLTextWord if no sapce to show the whole word.
             // such as: "suddenly" can be separated into "sud-denly".
@@ -1315,12 +1317,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
                     // debug to print info.
                     if (currentCharIndex != 0) {
-                        LogUtils.d(TAG, "currentCharIndex: " + currentCharIndex + " word :" + word.toString());
+                        LogUtils.d(TAG, "processTextLineInternal 6. currentCharIndex: " + currentCharIndex + " word :" + word.toString());
                     }
 
                     // if not find the hyphenation point by "for" loop and no element in this ZLTextLineInfo,
                     // binary search to find the best hyphenation position.
                     if (hyphenationPosition == currentCharIndex && info.EndElementIndex == startIndex) {
+                        LogUtils.i(TAG, "processTextLineInternal 7.  " + " word :" + word.toString());
                         subwordWidth = getWordWidth(word, currentCharIndex, 1, false);
                         int right = word.Length == currentCharIndex + 1 ? word.Length : word.Length - 1;
                         int left = currentCharIndex + 1;
@@ -1360,6 +1363,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                         removeLastSpace = false;
                     }
                 }
+                LogUtils.d(TAG, "processTextLineInternal 8.  hyphenated: " + hyphenated + "  word: " + word);
             }
 
             // if cann't hyphenate.
@@ -1401,6 +1405,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                         break;
                     }
                 }
+                LogUtils.d(TAG, "processTextLineInternal 9.  cann't hyphenate, words:  " + words.size());
             }
         }
 
