@@ -72,11 +72,24 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
         myFontManager = fontManager;
     }
 
+    /**
+     * Binary search the index of array which the input text size value locates array element range.
+     *
+     * @param array the total text size before the corresponding paragraph which is array.
+     * @param length the number of paragraphs.
+     * @param value the input text size.
+     *
+     * @return
+     * if the value isn't equal to the array element(such as: value = 10850, array = [...,9805,11000,15300,...]),
+     * this will return (-lowIndex - 1), namely 15300's index, this because the caller will
+     * use the negative return result minus one to get the correct index.
+     */
     private static int binarySearch(int[] array, int length, int value) {
         int lowIndex = 0;
         int highIndex = length - 1;
 
         while (lowIndex <= highIndex) {
+            // maybe odd number which is equal to lowIndex.
             int midIndex = (lowIndex + highIndex) >>> 1;
             int midValue = array[midIndex];
             if (midValue > value) {
@@ -199,6 +212,9 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
         return myTextSizes[Math.min(index, myParagraphsNumber - 1)];
     }
 
+    /**
+     * Binary search the paragraph index of the specified text size.
+     */
     public final int findParagraphByTextLength(int length) {
         int index = binarySearch(myTextSizes, myParagraphsNumber, length);
         if (index >= 0) {

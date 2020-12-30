@@ -613,13 +613,18 @@ public abstract class ZLTextView extends ZLTextViewBase {
         return sizeOfText;
     }
 
+    /**
+     * Calculate the counts of characters per page.
+     */
     // Can be called only when (myModel.getParagraphsNumber() != 0)
     private synchronized float computeCharsPerPage() {
         setTextStyle(getTextStyleCollection().getBaseStyle());
 
+        // pages' width and height.
         final int textWidth = getTextColumnWidth();
         final int textHeight = getTextAreaHeight();
 
+        // calculate the average length of the paragraph.
         final int num = myModel.getParagraphsNumber();
         final int totalTextSize = myModel.getTextLength(num - 1);
         final float charsPerParagraph = ((float) totalTextSize) / num;
@@ -641,6 +646,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
         return charsPerLine * linesPerPage;
     }
 
+    /**
+     * Calculate the number of pages about the specified text sizes.
+     */
     private synchronized int computeTextPageNumber(int textSize) {
         if (myModel == null || myModel.getParagraphsNumber() == 0) {
             return 1;
@@ -692,6 +700,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
         return getContext().getStringWidth(pattern, 0, length) / ((float) length);
     }
 
+    /**
+     * Calculate the number of pages read and the number of total pages.
+     */
     public final synchronized PagePosition pagePosition() {
         int current = computeTextPageNumber(getCurrentCharNumber(PageIndex.current, false));
         int total = computeTextPageNumber(sizeOfFullText());
