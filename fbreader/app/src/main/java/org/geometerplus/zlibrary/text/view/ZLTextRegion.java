@@ -19,11 +19,21 @@
 
 package org.geometerplus.zlibrary.text.view;
 
+import org.geometerplus.fbreader.fbreader.FBView;
 import org.geometerplus.zlibrary.core.view.Hull;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 页面的元素区域类
+ *
+ * 一般情形，一个文本就是一个区域。但是对于超链接可能包含多个文本，
+ * 此时，当超链接元素添加后，如果后面的文本元素范围被超链接包含，
+ * 那么，后面的文本元素就不会创建一个新的 ZLTextRegion 对象，而是
+ * 在超链接的 ZLTextRegion 对象上执行扩充 extend()。
+ * Reference {@link ZLTextElementAreaVector#add(ZLTextElementArea)}使用
+ */
 public final class ZLTextRegion {
     public static Filter AnyRegionFilter = new Filter() {
         public boolean accepts(ZLTextRegion region) {
@@ -236,6 +246,16 @@ public final class ZLTextRegion {
         boolean accepts(ZLTextRegion region);
     }
 
+    /**
+     * 作用于页面区域点击时，查找满足指定匹配条件的区域
+     * 作为 {@link ZLTextRegion} 元素区域的成员
+     *
+     * Soul 指定的区域的元素范围[start, end]，对于超链接可能包含多个
+     * 元素，那么，end 索引应该是对后一个元素的位置。
+     *
+     * 可查阅 {@link FBView#onFingerSingleTap(int, int)} 中的使用
+     * {@link FBView#findRegion(int, int, int, Filter)} 参数 Filter 为指定的过滤条件
+     */
     public static abstract class Soul implements Comparable<Soul> {
         final int ParagraphIndex;
         final int StartElementIndex;

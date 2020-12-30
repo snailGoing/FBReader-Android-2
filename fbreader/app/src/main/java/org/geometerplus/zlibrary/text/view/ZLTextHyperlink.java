@@ -23,10 +23,19 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * 超链接元素
+ *
+ * 当遇到超链接开始控制元素，创建此对象；
+ * 当遇到超链接结束控制元素，此超链接结束添加新元素
+ */
 public class ZLTextHyperlink {
     public static final ZLTextHyperlink NO_LINK = new ZLTextHyperlink((byte) 0, null);
     public final byte Type;
     public final String Id;
+    /**
+     * 指定具有此超链接属性的全部元素索引集合
+     */
     private List<Integer> myElementIndexes;
 
     ZLTextHyperlink(byte type, String id) {
