@@ -348,6 +348,7 @@ public final class FBView extends ZLTextView {
         }
     }
 
+    @Override
     public boolean onTrackballRotated(int diffX, int diffY) {
         if (diffX == 0 && diffY == 0) {
             return true;
@@ -568,6 +569,7 @@ public final class FBView extends ZLTextView {
         private Map<String, Integer> myHeightMap = new HashMap<String, Integer>();
         private Map<String, Integer> myCharHeightMap = new HashMap<String, Integer>();
 
+        @Override
         public int getHeight() {
             return myViewOptions.FooterHeight.getValue();
         }
@@ -674,6 +676,7 @@ public final class FBView extends ZLTextView {
     }
 
     private class FooterOldStyle extends Footer {
+        @Override
         public synchronized void paint(ZLPaintContext context) {
             final ZLFile wallpaper = getWallpaperFile();
             if (wallpaper != null) {
@@ -742,6 +745,7 @@ public final class FBView extends ZLTextView {
     }
 
     private class FooterNewStyle extends Footer {
+        @Override
         public synchronized void paint(ZLPaintContext context) {
             final ColorProfile cProfile = myViewOptions.getColorProfile();
             context.clear(cProfile.FooterNGBackgroundOption.getValue());

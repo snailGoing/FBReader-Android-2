@@ -177,12 +177,14 @@ public final class FBReaderApp extends ZLApplication implements IBookCollection.
 
         final SynchronousExecutor executor = createExecutor("loadingBook");
         executor.execute(new Runnable() {
+            @Override
             public void run() {
                 openBookInternal(bookToOpen, bookmark, false);
             }
         }, postAction);
     }
 
+    @Override
     public ZLKeyBindings keyBindings() {
         return myBindings;
     }
@@ -464,6 +466,7 @@ public final class FBReaderApp extends ZLApplication implements IBookCollection.
         setView(BookTextView);
     }
 
+    @Override
     public void onWindowClosing() {
         storePosition();
     }
@@ -686,6 +689,7 @@ public final class FBReaderApp extends ZLApplication implements IBookCollection.
         }
     }
 
+    @Override
     public void onBookEvent(BookEvent event, Book book) {
         switch (event) {
             case BookmarkStyleChanged:
@@ -705,6 +709,7 @@ public final class FBReaderApp extends ZLApplication implements IBookCollection.
         }
     }
 
+    @Override
     public void onBuildEvent(IBookCollection.Status status) {
     }
 
@@ -727,6 +732,7 @@ public final class FBReaderApp extends ZLApplication implements IBookCollection.
             myProgress = progress;
         }
 
+        @Override
         public void run() {
             myPositionManager.storePositionLocally(myBook, myPosition);
             myBook.setProgress(myProgress);
