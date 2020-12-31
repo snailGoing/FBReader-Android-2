@@ -22,11 +22,32 @@ package org.geometerplus.zlibrary.text.view;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
 
 public final class ZLTextWord extends ZLTextElement {
+
+    /**
+     * Char array of a cache file.
+     */
     public final char[] Data;
+    /**
+     * The start index in data array.
+     */
     public final int Offset;
+    /**
+     * The word's length.
+     */
     public final int Length;
+
+    /**
+     * Save the measure width of this word.
+     */
     private int myWidth = -1;
+    /**
+     * Indicate whether this word is a mark of searching result or not,
+     * if not, means the value is null.
+     */
     private Mark myMark;
+    /**
+     * The start offset in its' paragraph.
+     */
     private int myParagraphOffset;
 
     ZLTextWord(String word, int paragraphOffset) {
@@ -90,6 +111,9 @@ public final class ZLTextWord extends ZLTextElement {
         return new String(Data, Offset, Length);
     }
 
+    /**
+     * A mark class which is used to marking the search results.
+     */
     class Mark {
         public final int Start;
         public final int Length;

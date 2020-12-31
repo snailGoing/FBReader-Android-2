@@ -269,6 +269,10 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
         return Math.min(-index - 1, myParagraphsNumber - 1);
     }
 
+    /**
+     * A core iterator class which is used to loop the paragraph's element.
+     * Reference {@link #next()} function.
+     */
     final class EntryIteratorImpl implements ZLTextParagraph.EntryIterator {
         int myDataIndex;
         int myDataOffset;

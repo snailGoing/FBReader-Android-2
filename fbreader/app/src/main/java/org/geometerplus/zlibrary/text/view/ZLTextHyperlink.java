@@ -31,7 +31,13 @@ import java.util.List;
  */
 public class ZLTextHyperlink {
     public static final ZLTextHyperlink NO_LINK = new ZLTextHyperlink((byte) 0, null);
+    /**
+     * The hyperlink type:{@link org.geometerplus.fbreader.bookmodel.FBHyperlinkType}
+     */
     public final byte Type;
+    /**
+     * The hyperlink id, maybe a url.
+     */
     public final String Id;
     /**
      * 指定具有此超链接属性的全部元素索引集合
