@@ -33,15 +33,48 @@ import java.util.Map;
 public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Feature {
     private final String myId;
     private final String myLanguage;
+    /**
+     * Use to read ncahe file and storage char[] datas.
+     */
     private final CachedCharStorage myStorage;
+    /**
+     *        key                                                 value
+     * "media/cover.png" - ZFileImage{ ZLZipEntryFile { ZLFile [/storage/emulated/0/GGG.epub:media/cover.png]} }
+     */
     private final Map<String, ZLImage> myImageMap;
+    /**
+     * The font manager is used to storage the font info which provided by native so.
+     */
     private final FontManager myFontManager;
+
+    /**
+     * Provide the index of the ncache file array which the paragraph is in.
+     */
     private int[] myStartEntryIndices;
+    /**
+     * Provide the starting offset of the paragraph which in the corresponding ncache char array.
+     */
     private int[] myStartEntryOffsets;
+    /**
+     * Provide the length of every paragraph.
+     */
     private int[] myParagraphLengths;
+    /**
+     * Provide the total number of words at any paragraph position
+     */
     private int[] myTextSizes;
+    /**
+     * Provide the kind of every paragraph.
+     */
     private byte[] myParagraphKinds;
+    /**
+     * Provide the total number of paragraphs.
+     */
     private int myParagraphsNumber;
+
+    /**
+     * Save the marks results of searching word.
+     */
     private ArrayList<ZLTextMark> myMarks;
 
     public ZLTextPlainModel(
