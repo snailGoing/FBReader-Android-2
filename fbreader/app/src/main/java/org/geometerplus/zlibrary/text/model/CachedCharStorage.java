@@ -27,7 +27,14 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Provide the char array data of the specified ncache file by reading file.
+ */
 public final class CachedCharStorage {
+
+    /**
+     * Cache the char array data of any index ncache file.
+     */
     protected final ArrayList<WeakReference<char[]>> myArray =
             new ArrayList<WeakReference<char[]>>();
 
@@ -48,6 +55,11 @@ public final class CachedCharStorage {
         return myArray.size();
     }
 
+    /**
+     * Obtain the specified index ncache file's data.
+     *
+     * @param index the index of ncache file.
+     */
     public char[] block(int index) {
         if (index < 0 || index >= myArray.size()) {
             return null;

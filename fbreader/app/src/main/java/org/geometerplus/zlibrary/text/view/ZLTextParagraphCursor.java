@@ -34,11 +34,28 @@ import org.vimgadgets.linebreak.LineBreaker;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The paragraph data which will be filled according to the specified format.
+ */
 public final class ZLTextParagraphCursor {
+
     private static final char[] SPACE_ARRAY = {' '};
+    /**
+     * The index of this paragraph.
+     */
     public final int Index;
+    /**
+     * The model of text which provide all the paragraphs info.
+     */
     public final ZLTextModel Model;
+    /**
+     * Create a paragraph of the specified index.
+     */
     final CursorManager CursorManager;
+
+    /**
+     * Used to storage all the elements of this paragraph.
+     */
     private final ArrayList<ZLTextElement> myElements = new ArrayList<ZLTextElement>();
 
     public ZLTextParagraphCursor(ZLTextModel model, int index) {
@@ -52,10 +69,14 @@ public final class ZLTextParagraphCursor {
         fill();
     }
 
+    /**
+     * Fill the paragraph data.
+     */
     void fill() {
         ZLTextParagraph paragraph = Model.getParagraph(Index);
         switch (paragraph.getKind()) {
             case ZLTextParagraph.Kind.TEXT_PARAGRAPH:
+                // major implementation to fill data.
                 new Processor(paragraph, CursorManager.ExtensionManager, new LineBreaker(Model.getLanguage()), Model.getMarks(), Index, myElements).fill();
                 break;
             case ZLTextParagraph.Kind.EMPTY_LINE_PARAGRAPH:
@@ -148,15 +169,20 @@ public final class ZLTextParagraphCursor {
             myLineBreaker = lineBreaker;
             myElements = elements;
             myMarks = marks;
+
+            // Here is the processing of search results.
             final ZLTextMark mark = new ZLTextMark(paragraphIndex, 0, 0);
             int i;
             for (i = 0; i < myMarks.size(); i++) {
+                // get the first mark (included) after the beginning element of this paragraph
                 if (((ZLTextMark) myMarks.get(i)).compareTo(mark) >= 0) {
                     break;
                 }
             }
+            // save first mark location.
             myFirstMark = i;
             myLastMark = myFirstMark;
+            // loop to find the last mark in this paragraph.
             for (; myLastMark != myMarks.size() && ((ZLTextMark) myMarks.get(myLastMark)).ParagraphIndex == paragraphIndex; myLastMark++)
                 ;
             myOffset = 0;
@@ -167,6 +193,7 @@ public final class ZLTextParagraphCursor {
             ZLTextHyperlink hyperlink = null;
 
             final ArrayList<ZLTextElement> elements = myElements;
+            // ZLTextParagraph can provide the iterator and loop every element of this paragraph.
             for (ZLTextParagraph.EntryIterator it = myParagraph.iterator(); it.next(); ) {
                 switch (it.getType()) {
                     case ZLTextParagraph.Entry.TEXT:
@@ -179,6 +206,7 @@ public final class ZLTextParagraphCursor {
                                 hyperlink = null;
                             }
                         }
+                        // create control element and add it to list.
                         elements.add(ZLTextControlElement.get(it.getControlKind(), it.getControlIsStart()));
                         break;
                     case ZLTextParagraph.Entry.HYPERLINK_CONTROL: {
@@ -227,6 +255,8 @@ public final class ZLTextParagraphCursor {
                     case ZLTextParagraph.Entry.FIXED_HSPACE:
                         elements.add(ZLTextFixedHSpaceElement.getElement(it.getFixedHSpaceLength()));
                         break;
+                    default:
+                        break;
                 }
             }
         }
@@ -237,6 +267,7 @@ public final class ZLTextParagraphCursor {
                     ourBreaks = new byte[length];
                 }
                 final byte[] breaks = ourBreaks;
+                // make a line-break to the input length char array.
                 myLineBreaker.setLineBreaks(data, offset, length, breaks);
 
                 final ZLTextElement hSpace = ZLTextElement.HSpace;
@@ -282,6 +313,8 @@ public final class ZLTextParagraphCursor {
                                     wordStart = index;
                                 }
                                 break;
+                            default:
+                                break;
                         }
                         spaceState = NO_SPACE;
                     }
@@ -296,11 +329,24 @@ public final class ZLTextParagraphCursor {
                     case NO_SPACE:
                         addWord(data, offset + wordStart, length - wordStart, myOffset + wordStart, hyperlink);
                         break;
+                    default:
+                        break;
                 }
                 myOffset += length;
             }
         }
 
+        /**
+         * Add a new ZLTextWord to list.
+         * If a hyperlink contains this word, add this word index to the hyperlink.
+         * Besides, if the search marks contains this word, create a new mark.
+         *
+         * @param data The ncache files' char array source.
+         * @param offset The start offset in the array of data.
+         * @param len The words' length.
+         * @param paragraphOffset The start offset in this paragraph.
+         * @param hyperlink The hyperlink value, maybe {@link ZLTextHyperlink#NO_LINK}.
+         */
         private final void addWord(char[] data, int offset, int len, int paragraphOffset, ZLTextHyperlink hyperlink) {
             ZLTextWord word = new ZLTextWord(data, offset, len, paragraphOffset);
             for (int i = myFirstMark; i < myLastMark; ++i) {
