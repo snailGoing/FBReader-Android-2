@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 
-
+def enableCMake = true
 android {
     compileSdkVersion 29
     buildToolsVersion '29.0.3'
@@ -30,6 +30,23 @@ android {
         ndk {
             abiFilters "armeabi-v7a"
         }
+
+        if (enableCMake) {
+            externalNativeBuild {
+                cmake {
+                    arguments '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=c++_static', '-DCMAKE_BUILD_TYPE=Debug'
+
+                }
+            }
+        }
+    }
+
+    if (enableCMake) {
+        externalNativeBuild {
+            cmake {
+                path 'src/main/jni/CMakeLists.txt'
+            }
+        }
     }
 
     task ndkBuild(type: Exec) {
@@ -45,15 +62,20 @@ android {
         commandLine "$ndkDir/$ndkBuildCmd", '-C', file('src/main/jni').absolutePath
     }
 
-    tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn ndkBuild
+    if (!enableCMake) {
+        tasks.withType(JavaCompile) {
+            compileTask -> compileTask.dependsOn ndkBuild
+        }
     }
-
     clean {
         delete 'src/main/obj'
         delete 'src/main/libs'
         delete 'build'
         delete '.externalNativeBuild'
+    }
+
+    packagingOptions {
+        pickFirst 'lib/armeabi-v7a/libNativeFormats-v4.so'
     }
 }
 
