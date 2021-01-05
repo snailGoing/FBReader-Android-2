@@ -202,6 +202,7 @@ public final class ZLTextParagraphCursor {
                     case ZLTextParagraph.Entry.CONTROL:
                         if (hyperlink != null) {
                             hyperlinkDepth += it.getControlIsStart() ? 1 : -1;
+                            // if the depth of hyperlink is 0, set hyperlink null.
                             if (hyperlinkDepth == 0) {
                                 hyperlink = null;
                             }
@@ -210,6 +211,8 @@ public final class ZLTextParagraphCursor {
                         elements.add(ZLTextControlElement.get(it.getControlKind(), it.getControlIsStart()));
                         break;
                     case ZLTextParagraph.Entry.HYPERLINK_CONTROL: {
+                        // create a hyperlink control element which indicates starting.
+                        // the hyperlink will be applied to subsequent elements till the end of hyperlink(null).
                         final byte hyperlinkType = it.getHyperlinkType();
                         if (hyperlinkType != 0) {
                             final ZLTextHyperlinkControlElement control =
@@ -223,6 +226,7 @@ public final class ZLTextParagraphCursor {
                         break;
                     }
                     case ZLTextParagraph.Entry.IMAGE:
+                        // create a image element.
                         final ZLImageEntry imageEntry = it.getImageEntry();
                         final ZLImage image = imageEntry.getImage();
                         if (image != null) {
@@ -261,13 +265,21 @@ public final class ZLTextParagraphCursor {
             }
         }
 
+        /**
+         * Handle the text data, if the hyperlink exists, apply it to text.
+         *
+         * @param data All text data.
+         * @param offset The start offset of current text in data.
+         * @param length The length of current text.
+         * @param hyperlink The hyperlink data, maybe null.
+         */
         private void processTextEntry(final char[] data, final int offset, final int length, ZLTextHyperlink hyperlink) {
             if (length != 0) {
                 if (ourBreaks.length < length) {
                     ourBreaks = new byte[length];
                 }
                 final byte[] breaks = ourBreaks;
-                // make a line-break to the input length char array.
+                // Step one: make a line-break to the input length char array.
                 myLineBreaker.setLineBreaks(data, offset, length, breaks);
 
                 final ZLTextElement hSpace = ZLTextElement.HSpace;
@@ -277,6 +289,7 @@ public final class ZLTextParagraphCursor {
                 char previousChar = 0;
                 int spaceState = NO_SPACE;
                 int wordStart = 0;
+                // here, 'for' loop handling to obtain a word.
                 for (int index = 0; index < length; ++index) {
                     previousChar = ch;
                     ch = data[offset + index];
@@ -319,6 +332,8 @@ public final class ZLTextParagraphCursor {
                         spaceState = NO_SPACE;
                     }
                 }
+
+                // Step two: handle the last read state.
                 switch (spaceState) {
                     case SPACE:
                         elements.add(hSpace);
@@ -332,6 +347,8 @@ public final class ZLTextParagraphCursor {
                     default:
                         break;
                 }
+
+                // Step three: calculate the char length of this paragraph.
                 myOffset += length;
             }
         }
