@@ -25,14 +25,24 @@ final class ZLTextLineInfo {
 
     final int StartElementIndex;
     final int StartCharIndex;
+    /**
+     * Will be updated in first line of this paragraph.
+     */
     int RealStartElementIndex;
     int RealStartCharIndex;
+
     int EndElementIndex;
     int EndCharIndex;
 
     boolean IsVisible;
     int LeftIndent;
+    /**
+     * The width of this text line.
+     */
     int Width;
+    /**
+     * The height of this text line.
+     */
     int Height;
     int Descent;
     int VSpaceBefore;
