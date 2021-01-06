@@ -151,6 +151,9 @@ abstract class ZLTextViewBase extends ZLView {
         setTextStyle(getTextStyleCollection().getBaseStyle());
     }
 
+    /**
+     * Determine whether a style element or not.
+     */
     boolean isStyleChangeElement(ZLTextElement element) {
         return
                 element == ZLTextElement.StyleClose ||
@@ -158,6 +161,9 @@ abstract class ZLTextViewBase extends ZLView {
                         element instanceof ZLTextControlElement;
     }
 
+    /**
+     * Apply style element.
+     */
     void applyStyleChangeElement(ZLTextElement element) {
         if (element == ZLTextElement.StyleClose) {
             applyStyleClose();
@@ -174,6 +180,14 @@ abstract class ZLTextViewBase extends ZLView {
         }
     }
 
+    /**
+     * Apply control element style(defined in styles.css).
+     *
+     * If a css style defined in book, such as: h1, firstly will create
+     * a control h1 element, then add a h1 css style element. If you enable
+     * the css style in settings, the css style will operate, not this.
+     *
+     */
     private void applyControl(ZLTextControlElement control) {
         if (control.IsStart) {
             final ZLTextHyperlink hyperlink = control instanceof ZLTextHyperlinkControlElement
