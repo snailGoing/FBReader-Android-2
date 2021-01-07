@@ -27,12 +27,18 @@ import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.text.view.style.ZLTextStyleCollection;
 
 public class ViewOptions {
+    /**
+     * Two column view setting when horizontal screen.
+     */
     public final ZLBooleanOption TwoColumnView;
     public final ZLIntegerRangeOption LeftMargin;
     public final ZLIntegerRangeOption RightMargin;
     public final ZLIntegerRangeOption TopMargin;
     public final ZLIntegerRangeOption BottomMargin;
     public final ZLIntegerRangeOption SpaceBetweenColumns;
+    /**
+     * Read progress scroll bar style settings.
+     */
     public final ZLIntegerRangeOption ScrollbarType;
     public final ZLIntegerRangeOption FooterHeight;
     public final ZLStringOption ColorProfileName;
