@@ -31,12 +31,16 @@ import java.util.HashSet;
 import java.util.List;
 
 public abstract class AbstractBook extends TitledEntity<AbstractBook> {
+    /**
+     * Label's name defined by followings:
+     */
     public static final String FAVORITE_LABEL = "favorite";
     public static final String READ_LABEL = "read";
     public static final String SYNCHRONISED_LABEL = "sync-success";
     public static final String SYNC_FAILURE_LABEL = "sync-failure";
     public static final String SYNC_DELETED_LABEL = "sync-deleted";
     public static final String SYNC_TOSYNC_LABEL = "sync-tosync";
+
     public volatile boolean HasBookmark;
     protected volatile long myId;
     protected volatile String myEncoding;

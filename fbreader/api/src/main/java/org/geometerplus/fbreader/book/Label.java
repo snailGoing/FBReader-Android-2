@@ -21,6 +21,9 @@ package org.geometerplus.fbreader.book;
 
 import java.util.UUID;
 
+/**
+ * Label table inner join BookLabel table when listLabels() from database.
+ */
 public class Label {
     public final String Uid;
     public final String Name;
