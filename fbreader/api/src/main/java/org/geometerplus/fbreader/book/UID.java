@@ -19,6 +19,13 @@
 
 package org.geometerplus.fbreader.book;
 
+/**
+ * Read the metadata identifier info.
+ *
+ * Epub: <dc:identifier scheme="epub-id-1">urn:uuid:0f0896dc-21ab-4fe8-b87c-0c1138e66053</dc:identifier>
+ *      Type: "epub-id-1"      Id:"urn:uuid:0f0896dc-21ab-4fe8-b87c-0c1138e66053"
+ * If a text, will be created by MessageDigest base on the file bytes.
+ */
 public class UID {
     public final String Type;
     public final String Id;
