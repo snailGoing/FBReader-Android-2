@@ -19,6 +19,10 @@
 
 package org.geometerplus.zlibrary.text.model;
 
+/**
+ * It mainly provides some configurations for styles,
+ * such as font and pixel density.
+ */
 public final class ZLTextMetrics {
     public final int DPI;
     public final int FullWidth;

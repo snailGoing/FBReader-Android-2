@@ -61,6 +61,7 @@ final class ZLTextElementAreaVector {
 
     public boolean add(ZLTextElementArea area) {
         synchronized (myAreas) {
+            // if already exist valid region which can accept input area, only extend.
             if (myCurrentElementRegion != null
                     && myCurrentElementRegion.getSoul().accepts(area)) {
                 myCurrentElementRegion.extend();
@@ -78,6 +79,7 @@ final class ZLTextElementAreaVector {
                 } else if (area.Element instanceof ExtensionElement) {
                     soul = new ExtensionRegionSoul(area, (ExtensionElement) area.Element);
                 }
+                // create a new ZLTextRegion based on the new soul.
                 if (soul != null) {
                     myCurrentElementRegion = new ZLTextRegion(soul, myAreas, myAreas.size());
                     myElementRegions.add(myCurrentElementRegion);

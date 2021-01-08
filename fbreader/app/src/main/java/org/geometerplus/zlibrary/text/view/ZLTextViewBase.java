@@ -42,6 +42,9 @@ abstract class ZLTextViewBase extends ZLView {
         super(application);
     }
 
+    /**
+     * Provide the max selection distance for locating element.
+     */
     protected final int maxSelectionDistance() {
         if (myMaxSelectionDistance == 0) {
             myMaxSelectionDistance = ZLibrary.Instance().getDisplayDPI() / 20;
@@ -324,6 +327,17 @@ abstract class ZLTextViewBase extends ZLView {
         return 0;
     }
 
+    /**
+     * Draw the word at specified coordinates.
+     *
+     * @param x The x start coordinate.
+     * @param y The y start coordinate
+     * @param word To draw text word.
+     * @param start The start offset of word's data.
+     * @param length The word's length.
+     * @param addHyphenationSign Judge whether add '-' or not, this maybe true when reach line end.
+     * @param color The text color.
+     */
     final void drawWord(int x, int y, ZLTextWord word, int start, int length, boolean addHyphenationSign, ZLColor color) {
         final ZLPaintContext context = getContext();
         if (start == 0 && length == -1) {
