@@ -24,6 +24,13 @@ interface PaintStateEnum {
     int READY = 1;
     int START_IS_KNOWN = 2;
     int END_IS_KNOWN = 3;
+    /**
+     *  Page down.
+     *  Pull down to trigger one line scrolling and turn page when longPress selection.
+     */
     int TO_SCROLL_FORWARD = 4;
+    /**
+     * Page up by pulling up.
+     */
     int TO_SCROLL_BACKWARD = 5;
 };

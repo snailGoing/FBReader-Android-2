@@ -1570,6 +1570,15 @@ public abstract class ZLTextView extends ZLTextViewBase {
         }
     }
 
+    /**
+     * Mainly used to turn page when in scrolling mode with {@link ScrollingMode#SCROLL_LINES}.
+     * Besides, it maybe used to {@link #gotoMark} {@link #gotoHighlighting}
+     * {@link #gotoPosition} {@link #gotoPositionByEnd} with {@link ScrollingMode#NO_OVERLAPPING}.
+     *
+     * @param forward page down if true, or page up.
+     * @param scrollingMode
+     * @param value
+     */
     public synchronized final void turnPage(boolean forward, int scrollingMode, int value) {
         preparePaintInfo(myCurrentPage);
         myPreviousPage.reset();
@@ -2021,8 +2030,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
     public interface ScrollingMode {
         int NO_OVERLAPPING = 0;
+        // no use.
         int KEEP_LINES = 1;
         int SCROLL_LINES = 2;
+        // no use.
         int SCROLL_PERCENTAGE = 3;
     }
 
