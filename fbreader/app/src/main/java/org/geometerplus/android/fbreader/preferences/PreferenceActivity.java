@@ -70,6 +70,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Read related settings.
+ * A single process is defined: android:process=":networkLibrary"
+ */
 public class PreferenceActivity extends ZLPreferenceActivity {
     private static final int BACKGROUND_REQUEST_CODE = 3000;
     private final ActivityNetworkContext myNetworkContext = new ActivityNetworkContext(this);
