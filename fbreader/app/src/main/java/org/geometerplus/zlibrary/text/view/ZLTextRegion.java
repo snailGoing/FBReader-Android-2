@@ -36,26 +36,31 @@ import java.util.List;
  */
 public final class ZLTextRegion {
     public static Filter AnyRegionFilter = new Filter() {
+        @Override
         public boolean accepts(ZLTextRegion region) {
             return true;
         }
     };
     public static Filter HyperlinkFilter = new Filter() {
+        @Override
         public boolean accepts(ZLTextRegion region) {
             return region.getSoul() instanceof ZLTextHyperlinkRegionSoul;
         }
     };
     public static Filter VideoFilter = new Filter() {
+        @Override
         public boolean accepts(ZLTextRegion region) {
             return region.getSoul() instanceof ZLTextVideoRegionSoul;
         }
     };
     public static Filter ExtensionFilter = new Filter() {
+        @Override
         public boolean accepts(ZLTextRegion region) {
             return region.getSoul() instanceof ExtensionRegionSoul;
         }
     };
     public static Filter ImageOrHyperlinkFilter = new Filter() {
+        @Override
         public boolean accepts(ZLTextRegion region) {
             final Soul soul = region.getSoul();
             return

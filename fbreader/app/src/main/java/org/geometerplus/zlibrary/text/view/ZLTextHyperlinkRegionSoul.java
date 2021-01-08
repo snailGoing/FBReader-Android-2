@@ -21,6 +21,9 @@ package org.geometerplus.zlibrary.text.view;
 
 import java.util.List;
 
+/**
+ * The hyperlink region soul contains all index of elements applied.
+ */
 public class ZLTextHyperlinkRegionSoul extends ZLTextRegion.Soul {
     public final ZLTextHyperlink Hyperlink;
 

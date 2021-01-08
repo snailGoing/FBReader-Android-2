@@ -424,6 +424,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
     @Override
     public synchronized void paint(ZLPaintContext context, PageIndex pageIndex) {
         setContext(context);
+        // clear and reset wallpaper.
         final ZLFile wallpaper = getWallpaperFile();
         if (wallpaper != null) {
             context.clear(wallpaper, getFillMode());
@@ -460,12 +461,14 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
         page.TextElementMap.clear();
 
+        // build the info of this page.
         preparePaintInfo(page);
 
         if (page.StartCursor.isNull() || page.EndCursor.isNull()) {
             return;
         }
 
+        // calculate all the elements' coordinate.
         final ArrayList<ZLTextLineInfo> lineInfos = page.LineInfos;
         final int[] labels = new int[lineInfos.size() + 1];
         int x = getLeftMargin();
@@ -486,6 +489,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
             previousInfo = info;
         }
 
+        // then, start to draw the page.
         final List<ZLTextHighlighting> hilites = findHilites(page);
 
         x = getLeftMargin();
