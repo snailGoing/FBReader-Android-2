@@ -234,18 +234,30 @@ void ZLUnicodeUtil::utf8ToUcs4(Ucs4String &to, const std::string &from, int toLe
 	utf8ToUcs4(to, from.data(), from.length(), toLength);
 }
 
+/**
+ * utf-8 编码（1到4字节）转换为 ucs2 2字节编码，保存到容器 to
+ *
+ * @param to 输出保存的容器vector
+ * @param from 待转换的源字符串
+ * @param length 待转换源长度
+ * @param toLength 目标转换后输出字符长度（utf-8编码前字符个数）
+ */
 void ZLUnicodeUtil::utf8ToUcs2(Ucs2String &to, const char *from, int length, int toLength) {
 	to.clear();
 	if (toLength < 0) {
+		// 获取utf-8编码前字符个数
 		toLength = utf8Length(from, length);
 	}
+	// 容量设置至少 toLength
 	to.reserve(toLength);
 	const char *last = from + length;
 	for (const char *ptr = from; ptr < last;) {
 		if ((*ptr & 0x80) == 0) {
+			// 单字节
 			to.push_back(*ptr);
 			++ptr;
 		} else if ((*ptr & 0x20) == 0) {
+			// 2字节
 			Ucs2Char ch = *ptr & 0x1f;
 			++ptr;
 			ch <<= 6;
@@ -253,6 +265,7 @@ void ZLUnicodeUtil::utf8ToUcs2(Ucs2String &to, const char *from, int length, int
 			to.push_back(ch);
 			++ptr;
 		} else if ((*ptr & 0x10) == 0) {
+			// 三字节  1110xxxx 10xxxxxx 10xxxxxx，待保存的x占16位2字节
 			Ucs2Char ch = *ptr & 0x0f;
 			++ptr;
 			ch <<= 6;
@@ -263,6 +276,7 @@ void ZLUnicodeUtil::utf8ToUcs2(Ucs2String &to, const char *from, int length, int
 			to.push_back(ch);
 			++ptr;
 		} else {
+			// 4字节(超出基本多语言范围的极少字符)
 			// symbol number is > 0xffff :(
 			to.push_back('X');
 			ptr += 4;
