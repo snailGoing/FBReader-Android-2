@@ -1581,7 +1581,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
      *
      * @param forward page down if true, or page up.
      * @param scrollingMode
-     * @param value
+     * @param value This value maybe 0( when NO_OVERLAPPING) or 1(when SCROLL_LINES).
      */
     public synchronized final void turnPage(boolean forward, int scrollingMode, int value) {
         preparePaintInfo(myCurrentPage);
@@ -1783,6 +1783,14 @@ public abstract class ZLTextView extends ZLTextViewBase {
         return (unit == SizeUnit.PIXEL_UNIT) ? (info.Height + info.Descent + info.VSpaceAfter) : (info.IsVisible ? 1 : 0);
     }
 
+    /**
+     * Calculate the paragraph's height and margin.
+     *
+     * @param page
+     * @param cursor The input cursor position, maybe start or end which is decided by "beforeCurrentPosition".
+     * @param beforeCurrentPosition
+     * @param unit The unit is defined by {@link SizeUnit} PIXEL_UNIT or LINE_UNIT, usually equal to PIXEL_UNIT.
+     */
     private ParagraphSize paragraphSize(ZLTextPage page, ZLTextWordCursor cursor, boolean beforeCurrentPosition, int unit) {
         final ParagraphSize size = new ParagraphSize();
 
@@ -1804,6 +1812,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
             wordIndex = info.EndElementIndex;
             charIndex = info.EndCharIndex;
             size.Height += infoSize(info, unit);
+            // update margin info to "size".
             if (prev == null) {
                 size.TopMargin = info.VSpaceBefore;
             }
@@ -1813,6 +1822,14 @@ public abstract class ZLTextView extends ZLTextViewBase {
         return size;
     }
 
+    /**
+     * Jump back the number of rows of the specified height.
+     *
+     * @param page
+     * @param cursor The current line's start cursor.
+     * @param unit
+     * @param size The height of Jumping back.
+     */
     private void skip(ZLTextPage page, ZLTextWordCursor cursor, int unit, int size) {
         final ZLTextParagraphCursor paragraphCursor = cursor.getParagraphCursor();
         if (paragraphCursor == null) {
@@ -2056,6 +2073,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
         }
     }
 
+    /**
+     * Define height and margin info of a paragraph.
+     */
     private static class ParagraphSize {
         public int Height;
         public int TopMargin;
