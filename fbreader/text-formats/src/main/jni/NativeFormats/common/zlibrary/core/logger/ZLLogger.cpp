@@ -22,6 +22,10 @@
 const std::string ZLLogger::DEFAULT_CLASS;
 
 ZLLogger *ZLLogger::ourInstance = 0;
+/**
+ * Control the log output.
+ */
+bool ZLLogger::DEBUG = true;
 
 ZLLogger &ZLLogger::Instance() {
 	if (ourInstance == 0) {
@@ -34,5 +38,17 @@ ZLLogger::ZLLogger() {
 }
 
 void ZLLogger::registerClass(const std::string &className) {
-	myRegisteredClasses.insert(className);
+	if (DEBUG) {
+		if (myRegisteredClasses.count(className) == 0) {
+			myRegisteredClasses.insert(className);
+		}
+	}
+}
+
+void ZLLogger::unregisterClass(const std::string &className) {
+	if (DEBUG) {
+		if (myRegisteredClasses.count(className) != 0) {
+			myRegisteredClasses.erase(className);
+		}
+	}
 }

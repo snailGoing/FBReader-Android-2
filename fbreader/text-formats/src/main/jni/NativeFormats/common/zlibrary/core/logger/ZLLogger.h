@@ -27,7 +27,7 @@ class ZLLogger {
 
 public:
 	static const std::string DEFAULT_CLASS;
-
+	static bool DEBUG;
 	static ZLLogger &Instance();
 
 private:
@@ -38,6 +38,7 @@ private:
 
 public:
 	void registerClass(const std::string &className);
+	void unregisterClass(const std::string &className);
 	void println(const std::string &className, const std::string &message) const;
 
 private:
