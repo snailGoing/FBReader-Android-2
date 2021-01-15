@@ -95,6 +95,9 @@ static void fillLanguageAndEncoding(JNIEnv* env, jobject javaBook, Book &book) {
 
 extern "C"
 JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readMetainfoNative(JNIEnv* env, jobject thiz, jobject javaBook) {
+    ZLLogger::Instance().registerClass("NativeFormat");
+    ZLLogger::Instance().println("NativeFormat", "read meta info start --->");
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return 1;
@@ -107,11 +110,16 @@ JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 	}
 
 	fillMetaInfo(env, javaBook, *book);
+
+    ZLLogger::Instance().println("NativeFormat", "read meta info success, end.");
 	return 0;
 }
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readEncryptionInfosNative(JNIEnv* env, jobject thiz, jobject javaBook) {
+    ZLLogger::Instance().registerClass("NativeFormat");
+    ZLLogger::Instance().println("NativeFormat", "read encryption info start --->");
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return 0;
@@ -120,6 +128,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_geometerplus_fbreader_formats_NativeForm
 	shared_ptr<Book> book = Book::loadFromJavaBook(env, javaBook);
 	std::vector<shared_ptr<FileEncryptionInfo> > infos = plugin->readEncryptionInfos(*book);
 	if (infos.empty()) {
+        ZLLogger::Instance().println("NativeFormat", "read encryption info empty, end.");
 		return 0;
 	}
 
@@ -131,11 +140,16 @@ JNIEXPORT jobjectArray JNICALL Java_org_geometerplus_fbreader_formats_NativeForm
 		env->SetObjectArrayElement(jList, i, jInfo);
 		env->DeleteLocalRef(jInfo);
 	}
+
+    ZLLogger::Instance().println("NativeFormat", "read encryption success, end.");
 	return jList;
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readUidsNative(JNIEnv* env, jobject thiz, jobject javaBook) {
+    ZLLogger::Instance().registerClass("NativeFormat");
+    ZLLogger::Instance().println("NativeFormat", "read uids start --->");
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return false;
@@ -145,11 +159,16 @@ JNIEXPORT jboolean JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPl
 
 	plugin->readUids(*book);
 	fillUids(env, javaBook, *book);
+
+    ZLLogger::Instance().println("NativeFormat", "read uids success, end.");
 	return true;
 }
 
 extern "C"
 JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_detectLanguageAndEncodingNative(JNIEnv* env, jobject thiz, jobject javaBook) {
+    ZLLogger::Instance().registerClass("NativeFormat");
+    ZLLogger::Instance().println("NativeFormat", "read language and encoding start --->");
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return;
@@ -161,6 +180,8 @@ JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 	}
 
 	fillLanguageAndEncoding(env, javaBook, *book);
+
+    ZLLogger::Instance().println("NativeFormat", "read language and encoding success, end.");
 }
 
 static bool initInternalHyperlinks(JNIEnv *env, jobject javaModel, BookModel &model, const std::string &cacheDir) {
@@ -361,12 +382,15 @@ JNIEXPORT jint JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 		if (normal != 0) env->DeleteLocalRef(normal);
 	}
 
-    ZLLogger::Instance().println("NativeFormat", "read model success, end --->");
+    ZLLogger::Instance().println("NativeFormat", "read model success, end.");
 	return 0;
 }
 
 extern "C"
 JNIEXPORT jstring JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readAnnotationNative(JNIEnv* env, jobject thiz, jobject file) {
+    ZLLogger::Instance().registerClass("NativeFormat");
+    ZLLogger::Instance().println("NativeFormat", "read annotation start --->");
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return 0;
@@ -378,6 +402,9 @@ JNIEXPORT jstring JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlu
 
 extern "C"
 JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin_readCoverNative(JNIEnv* env, jobject thiz, jobject file, jobjectArray box) {
+    ZLLogger::Instance().registerClass("NativeFormat");
+    ZLLogger::Instance().println("NativeFormat", "read cover start --->");
+
 	shared_ptr<FormatPlugin> plugin = findCppPlugin(thiz);
 	if (plugin.isNull()) {
 		return;
@@ -391,4 +418,6 @@ JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 		env->SetObjectArrayElement(box, 0, javaImage);
 		env->DeleteLocalRef(javaImage);
 	}
+
+    ZLLogger::Instance().println("NativeFormat", "read cover success, end.");
 }
