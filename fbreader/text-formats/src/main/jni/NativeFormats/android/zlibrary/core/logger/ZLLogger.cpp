@@ -18,6 +18,7 @@
  */
 
 #include <android/log.h>
+#include <stdio.h>
 
 #include <ZLLogger.h>
 
@@ -32,5 +33,28 @@ void ZLLogger::println(const std::string &className, const std::string &message)
 		} else if (myRegisteredClasses.find(className) != myRegisteredClasses.end()) {
 			__android_log_print(ANDROID_LOG_WARN, className.c_str(), "%s", m.c_str());
 		}
+	}
+}
+
+void ZLLogger::println(const std::string &className, const char *fmt, ...) const {
+	if (DEBUG) {
+		char *pszStr = NULL;
+		if (NULL != fmt)
+		{
+			va_list marker;
+			// init val.
+			va_start(marker, fmt);
+			// obtain the length of format string.
+			size_t nLength = vprintf(fmt, marker) + 1;
+			pszStr = new char[nLength];
+			memset(pszStr, '\0', nLength);
+            vsprintf(pszStr, fmt, marker);
+			// reset.
+			va_end(marker);
+		}
+		std::string strResult(pszStr);
+		delete[]pszStr;
+
+		println(className, strResult);
 	}
 }

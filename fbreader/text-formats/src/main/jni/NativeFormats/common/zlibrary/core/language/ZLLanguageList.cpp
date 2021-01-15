@@ -22,6 +22,7 @@
 #include <ZLibrary.h>
 //#include <ZLResource.h>
 #include <ZLFile.h>
+#include <ZLLogger.h>
 
 #include "ZLLanguageList.h"
 
@@ -55,5 +56,7 @@ const std::vector<std::string> &ZLLanguageList::languageCodes() {
 		}
 	}
 
+    ZLLogger::Instance().registerClass("ZLLanguageList");
+	ZLLogger::Instance().println("ZLLanguageList", "languageCodes(): %d", ourLanguageCodes.size());
 	return ourLanguageCodes;
 }

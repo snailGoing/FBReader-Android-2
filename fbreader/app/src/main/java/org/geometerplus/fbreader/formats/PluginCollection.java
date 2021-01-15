@@ -25,6 +25,7 @@ import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.filetypes.FileType;
 import org.geometerplus.zlibrary.core.filetypes.FileTypeCollection;
 import org.geometerplus.zlibrary.core.util.SystemInfo;
+import org.geometerplus.zlibrary.ui.android.BuildConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +35,7 @@ import java.util.List;
 
 public class PluginCollection implements IFormatPluginCollection {
     private static volatile PluginCollection ourInstance;
+    private static boolean DEBUG = BuildConfig.DEBUG;
 
     static {
         System.loadLibrary("NativeFormats-v4");
@@ -62,7 +64,7 @@ public class PluginCollection implements IFormatPluginCollection {
     private static synchronized void createInstance(SystemInfo systemInfo) {
         if (ourInstance == null) {
             ourInstance = new PluginCollection(systemInfo);
-
+            ourInstance.enableLog(DEBUG);
             // This code cannot be moved to constructor
             // because nativePlugins() is a native method
             for (NativeFormatPlugin p : ourInstance.nativePlugins(systemInfo)) {
@@ -122,6 +124,7 @@ public class PluginCollection implements IFormatPluginCollection {
     }
 
     private native NativeFormatPlugin[] nativePlugins(SystemInfo systemInfo);
+    private native void enableLog(boolean log);
 
     private native void free();
 

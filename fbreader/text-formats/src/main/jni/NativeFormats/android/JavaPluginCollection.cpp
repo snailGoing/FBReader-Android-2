@@ -21,6 +21,7 @@
 
 #include <AndroidUtil.h>
 #include <JniEnvelope.h>
+#include <ZLLogger.h>
 
 #include "../common/fbreader/formats/FormatPlugin.h"
 
@@ -40,6 +41,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_geometerplus_fbreader_formats_PluginColl
 		env->DeleteLocalRef(fileType);
 	}
 	return javaPlugins;
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_PluginCollection_enableLog(JNIEnv* env, jobject thiz, jboolean log) {
+	ZLLogger::Instance().DEBUG = (log == JNI_TRUE);
 }
 
 extern "C"

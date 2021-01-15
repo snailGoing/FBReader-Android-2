@@ -40,6 +40,7 @@ public:
 	void registerClass(const std::string &className);
 	void unregisterClass(const std::string &className);
 	void println(const std::string &className, const std::string &message) const;
+    void println(const std::string &className, const char *fmt, ...) const;
 
 private:
 	std::set<std::string> myRegisteredClasses;
