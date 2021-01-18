@@ -32,9 +32,15 @@ public:
 		NavPoint();
 		NavPoint(int order, std::size_t level);
 
+		// Define the reading order which is initialized by
+		// myPlayIndex's incrementing from -65535.
 		int Order;
+		// The depth of chapter points (Level 1 directory: 0,
+		// level 2 directory: 1,...)is determined by myPointStack.
 		std::size_t Level;
+		// The chapter name.
 		std::string Text;
+		// The chapter file name.
 		std::string ContentHRef;
 	};
 
@@ -49,7 +55,9 @@ private:
 	const std::vector<std::string> &externalDTDs() const;
 
 private:
+	// Save the chapter point corresponding to order (- 65535 increment)
 	std::map<int,NavPoint> myNavigationMap;
+	// Temporary stack for parsing chapter points.
 	std::vector<NavPoint> myPointStack;
 
 	enum {

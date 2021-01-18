@@ -33,6 +33,9 @@
 class ZLImage;
 class Book;
 
+/**
+ * Toc tree, the root "myReference" as -1 by default constructor.
+ */
 class ContentsTree {
 
 public:

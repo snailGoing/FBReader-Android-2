@@ -32,6 +32,9 @@ static const std::string TAG_NAVLABEL = "navLabel";
 static const std::string TAG_CONTENT = "content";
 static const std::string TAG_TEXT = "text";
 
+/**
+ * The start tag handle function.
+ */
 void NCXReader::startElementHandler(const char *fullTag, const char **attributes) {
 	std::string tag = fullTag;
 	const std::size_t index = tag.rfind(':');
@@ -46,16 +49,19 @@ void NCXReader::startElementHandler(const char *fullTag, const char **attributes
 			break;
 		case READ_MAP:
 			if (TAG_NAVPOINT == tag) {
+				// save chapter point to stack.
 				myPointStack.push_back(NavPoint(myPlayIndex++, myPointStack.size()));
 				myReadState = READ_POINT;
 			}
 			break;
 		case READ_POINT:
 			if (TAG_NAVPOINT == tag) {
+				// save chapter point to stack.
 				myPointStack.push_back(NavPoint(myPlayIndex++, myPointStack.size()));
 			} else if (TAG_NAVLABEL == tag) {
 				myReadState = READ_LABEL;
 			} else if (TAG_CONTENT == tag) {
+				// save the chapter file name.
 				const char *src = attributeValue(attributes, "src");
 				if (src != 0) {
 					myPointStack.back().ContentHRef = MiscUtil::decodeHtmlURL(src);
@@ -72,6 +78,9 @@ void NCXReader::startElementHandler(const char *fullTag, const char **attributes
 	}
 }
 
+/**
+ * The end tag handle function.
+ */
 void NCXReader::endElementHandler(const char *fullTag) {
 	std::string tag = fullTag;
 	const std::size_t index = tag.rfind(':');
@@ -88,10 +97,13 @@ void NCXReader::endElementHandler(const char *fullTag) {
 			break;
 		case READ_POINT:
 			if (TAG_NAVPOINT == tag) {
+				// special treatment for empty chapter name.
 				if (myPointStack.back().Text.empty()) {
 					myPointStack.back().Text = "...";
 				}
+				// save current chapter point to map.
 				myNavigationMap[myPointStack.back().Order] = myPointStack.back();
+				// the chapter point pops up in the stack.
 				myPointStack.pop_back();
 				myReadState = myPointStack.empty() ? READ_MAP : READ_POINT;
 			}
@@ -108,6 +120,12 @@ void NCXReader::endElementHandler(const char *fullTag) {
 	}
 }
 
+/**
+ * Tag's content handle function.
+ *
+ * @param text Content's starting address.
+ * @param len Content's length.
+ */
 void NCXReader::characterDataHandler(const char *text, std::size_t len) {
 	if (myReadState == READ_TEXT) {
 		myPointStack.back().Text.append(text, len);

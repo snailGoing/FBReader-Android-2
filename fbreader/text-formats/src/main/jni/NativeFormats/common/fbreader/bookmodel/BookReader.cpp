@@ -301,23 +301,38 @@ void BookReader::addImageReference(const std::string &id, short vOffset, bool is
 	}
 }
 
+/**
+ * Add a new chapter navigation to ContentsTree and stack.
+ */
 void BookReader::beginContentsParagraph(int referenceNumber) {
 	if (myCurrentTextModel == myModel.myBookTextModel) {
+		// special treatment when invalid referenceNumber.
 		if (referenceNumber == -1) {
 			referenceNumber = myCurrentTextModel->paragraphsNumber();
 		}
+
+		// get the current chapter's parent, root tree provided by contentsTree().
 		shared_ptr<ContentsTree> parent =
 			myContentsTreeStack.empty() ? myModel.contentsTree() : myContentsTreeStack.top();
 		if (parent->text().empty()) {
 			parent->addText("...");
 		}
+
+		// add this chapter to parent's children.
 		new ContentsTree(*parent, referenceNumber);
+
+		// push this chapter ContentsTree to stack.
 		const std::vector<shared_ptr<ContentsTree> > &children = parent->children();
 		myContentsTreeStack.push(children[children.size() - 1]);
+
+		// mark toc stack valid data.
 		myContentsParagraphExists = true;
 	}
 }
 
+/**
+ * End the chapter toc tree stack.
+ */
 void BookReader::endContentsParagraph() {
 	if (!myContentsTreeStack.empty()) {
 		shared_ptr<ContentsTree> tree = myContentsTreeStack.top();

@@ -183,10 +183,18 @@ void OEBBookReader::endElementHandler(const char *tag) {
 	}
 }
 
+/**
+ * The core function is used to analyze the whold book.
+ *
+ * @param opfFile The opf file that contains the spine and manifest, which specify href file.
+ *                Besides, metadata and guide are both in this file.
+ */
 bool OEBBookReader::readBook(const ZLFile &opfFile) {
 	const ZLFile epubFile = opfFile.getContainerArchive();
 	epubFile.forceArchiveType(ZLFile::ZIP);
 	shared_ptr<ZLDir> epubDir = epubFile.directory();
+
+	// Step one: "META-INF/rights.xml" and "META-INF/encryption.xml" info, maybe empty.
 	if (!epubDir.isNull()) {
 		myEncryptionMap = new EncryptionMap();
 		const std::vector<shared_ptr<FileEncryptionInfo> > encodingInfos =
@@ -209,6 +217,7 @@ bool OEBBookReader::readBook(const ZLFile &opfFile) {
 	myGuideTOC.clear();
 	myState = READ_NONE;
 
+	// Step two: analyze the whole opf file structure info.
 	if (!readDocument(opfFile)) {
 		return false;
 	}
@@ -216,6 +225,7 @@ bool OEBBookReader::readBook(const ZLFile &opfFile) {
 	myModelReader.setMainTextModel();
 	myModelReader.pushKind(REGULAR);
 
+	// Step three: loop all xhtml files in spine.
 	//ZLLogger::Instance().registerClass("oeb");
 	XHTMLReader xhtmlReader(myModelReader, myEncryptionMap);
 	for (std::vector<std::string>::const_iterator it = myHtmlFileNames.begin(); it != myHtmlFileNames.end(); ++it) {
@@ -233,6 +243,7 @@ bool OEBBookReader::readBook(const ZLFile &opfFile) {
 		} else {
 			myModelReader.insertEndOfSectionParagraph();
 		}
+		// analyze the specified xhtml file.
 		//ZLLogger::Instance().println("oeb", "start " + xhtmlFile.path());
 		if (!xhtmlReader.readFile(xhtmlFile, *it)) {
 			if (opfFile.exists() && !myEncryptionMap.isNull()) {
@@ -245,37 +256,62 @@ bool OEBBookReader::readBook(const ZLFile &opfFile) {
 		//ZLLogger::Instance().println("oeb", debug);
 	}
 
+	// Step four: generate the toc.
 	generateTOC(xhtmlReader);
 
 	return true;
 }
 
+/**
+ * Generate a toc.
+ */
 void OEBBookReader::generateTOC(const XHTMLReader &xhtmlReader) {
+	ZLLogger::Instance().registerClass("TOC");
+
 	if (!myNCXTOCFileName.empty()) {
 		NCXReader ncxReader;
 		const ZLFile ncxFile(myFilePrefix + myNCXTOCFileName);
 		if (ncxReader.readDocument(ncxFile.inputStream(myEncryptionMap))) {
+			// obtain the chapter toc list.
 			const std::map<int,NCXReader::NavPoint> navigationMap = ncxReader.navigationMap();
 			if (!navigationMap.empty()) {
 				std::size_t level = 0;
 				for (std::map<int,NCXReader::NavPoint>::const_iterator it = navigationMap.begin(); it != navigationMap.end(); ++it) {
 					const NCXReader::NavPoint &point = it->second;
+					// get the corresponding starting paragraph number of current chapter file.
 					int index = myModelReader.model().label(xhtmlReader.normalizedReference(point.ContentHRef)).ParagraphNumber;
+
+					// If the (level > point.Level), meaning this point isn't previous chapter's child,
+					// so need end the previous chapter, and the level minus 1.
+					// (When the previous chapter is added to the directory, level is incremented by 1.)
 					while (level > point.Level) {
 						myModelReader.endContentsParagraph();
+						ZLLogger::Instance().println("TOC","part1: pointLevel = %d,"
+										 " level = %d", point.Level, level);
 						--level;
 					}
+
+					// add 1 to level and compare.
 					while (++level <= point.Level) {
+						// special treatment, impossible happen (eg: the first level chapter is followed
+						// by the third level chapter).
 						myModelReader.beginContentsParagraph(-2);
 						myModelReader.addContentsData("...");
 					}
+
+					// add a new chapter to toc.
 					myModelReader.beginContentsParagraph(index);
 					myModelReader.addContentsData(point.Text);
-				}
+
+					ZLLogger::Instance().println("TOC","part1: %s", point.Text.c_str());
+				} // end for.
+
+				// deal with the last subdirectory of the last chapter.
 				while (level > 0) {
 					myModelReader.endContentsParagraph();
 					--level;
 				}
+				ZLLogger::Instance().unregisterClass("TOC");
 				return;
 			}
 		}
@@ -284,10 +320,13 @@ void OEBBookReader::generateTOC(const XHTMLReader &xhtmlReader) {
 	std::vector<std::pair<std::string,std::string> > &toc = myTourTOC.empty() ? myGuideTOC : myTourTOC;
 	for (std::vector<std::pair<std::string,std::string> >::const_iterator it = toc.begin(); it != toc.end(); ++it) {
 		int index = myModelReader.model().label(it->second).ParagraphNumber;
+		ZLLogger::Instance().println("TOC", " part2: title = %s, labelId = %s, paraNum = %d",
+				it->first.c_str(), it->second.c_str(), index);
 		if (index != -1) {
 			myModelReader.beginContentsParagraph(index);
 			myModelReader.addContentsData(it->first);
 			myModelReader.endContentsParagraph();
 		}
 	}
+	ZLLogger::Instance().unregisterClass("TOC");
 }

@@ -106,6 +106,7 @@ private:
 	std::vector<FBTextKind> myKindStack;
 
 	bool myContentsParagraphExists;
+	// 构建目录时，记录当前正在解析的目录栈（如该级目录被添加完毕，栈顶弹出该级目录节点）
 	std::stack<shared_ptr<ContentsTree> > myContentsTreeStack;
 
 	bool mySectionContainsRegularContents;
