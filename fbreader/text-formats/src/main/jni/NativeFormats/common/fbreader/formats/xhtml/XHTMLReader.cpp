@@ -706,11 +706,21 @@ void XHTMLReader::setMarkFirstImageAsCover() {
 	myMarkNextImageAsCover = true;
 }
 
+/**
+ * It is used to read the contents of the chapter file in the book
+ *
+ * @param file The xhtml file，eg: "/storage/emulated/0/1/free.epub:OPS/chapter1.html".
+ * @param referenceName The xhtml name，eg: "chapter1.html".
+ */
 bool XHTMLReader::readFile(const ZLFile &file, const std::string &referenceName) {
+	// Step 1: bind tag and action.
 	fillTagTable();
 
 	myPathPrefix = MiscUtil::htmlDirectoryPrefix(file.path());
+	// find alias [0,1,2 ...].
 	myReferenceAlias = fileAlias(referenceName);
+
+	// Step 2: add a chapter starting link label.
 	myModelReader.addHyperlinkLabel(myReferenceAlias);
 
 	const int index = referenceName.rfind('/', referenceName.length() - 1);
@@ -726,9 +736,11 @@ bool XHTMLReader::readFile(const ZLFile &file, const std::string &referenceName)
 	myFontMap = new FontMap();
 	myTagDataStack.clear();
 
+	// Step 3: create a single style parser.
 	myStyleParser = new StyleSheetSingleStyleParser(myPathPrefix);
 	myTableParser.reset();
 
+	// Step 4: read file content.
 	return readDocument(file.inputStream(myEncryptionMap));
 }
 
@@ -1060,6 +1072,11 @@ bool XHTMLReader::processNamespaces() const {
 	return true;
 }
 
+/**
+ * Normalize the reference name.
+ *
+ * @param reference Eg: "ch001.xhtml#introduction", "ch001.xhtml" alias "3", return "3#introduction".
+ */
 const std::string XHTMLReader::normalizedReference(const std::string &reference) const {
 	const std::size_t index = reference.find('#');
 	if (index == std::string::npos) {
@@ -1069,6 +1086,10 @@ const std::string XHTMLReader::normalizedReference(const std::string &reference)
 	}
 }
 
+/**
+ * Get the alias of the input file name.
+ * The alias [0, 1, 2, ...] will be created based on the called order.
+ */
 const std::string &XHTMLReader::fileAlias(const std::string &fileName) const {
 	std::map<std::string,std::string>::const_iterator it = myFileNumbers.find(fileName);
 	if (it != myFileNumbers.end()) {
@@ -1084,6 +1105,7 @@ const std::string &XHTMLReader::fileAlias(const std::string &fileName) const {
 
 	std::string num;
 	ZLStringUtil::appendNumber(num, myFileNumbers.size());
+	// take the number of files as the serial number
 	myFileNumbers.insert(std::make_pair(correctedFileName, num));
 	it = myFileNumbers.find(correctedFileName);
 	return it->second;

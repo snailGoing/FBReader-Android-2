@@ -303,7 +303,8 @@ void OEBBookReader::generateTOC(const XHTMLReader &xhtmlReader) {
 					myModelReader.beginContentsParagraph(index);
 					myModelReader.addContentsData(point.Text);
 
-					ZLLogger::Instance().println("TOC","part1: %s", point.Text.c_str());
+					ZLLogger::Instance().println("TOC","part1: %s, ref: %s",
+							point.Text.c_str(), point.ContentHRef.c_str());
 				} // end for.
 
 				// deal with the last subdirectory of the last chapter.

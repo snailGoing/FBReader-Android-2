@@ -62,6 +62,7 @@ private:
 	std::string myFilePrefix;
 	std::map<std::string,std::string> myIdToHref;
 	std::map<std::string,std::string> myHrefToMediatype;
+	// xhtml file collection pointed by itemref in spine tag.
 	std::vector<std::string> myHtmlFileNames;
 	std::string myNCXTOCFileName;
 	std::string myCoverFileName;

@@ -99,6 +99,9 @@ private:
 	shared_ptr<ZLTextModel> myBookTextModel;
 	shared_ptr<ContentsTree> myContentsTree;
 	std::map<std::string,shared_ptr<ZLTextModel> > myFootnotes;
+	// Inner link cache is added when traversing XHTML collection to read.
+	// key: xhtml file's alias [0,1,2...] or use alias to splicing '#' and linkId.
+	// Value: label (model and total number of paragraphs written)
 	std::map<std::string,Label> myInternalHyperlinks;
 	shared_ptr<HyperlinkMatcher> myHyperlinkMatcher;
 	FontManager myFontManager;

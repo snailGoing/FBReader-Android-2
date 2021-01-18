@@ -21,6 +21,7 @@
 
 #include <ZLImage.h>
 #include <ZLFile.h>
+#include <ZLLogger.h>
 
 #include "BookModel.h"
 #include "BookReader.h"
@@ -29,6 +30,7 @@
 #include "../library/Book.h"
 
 BookModel::BookModel(const shared_ptr<Book> book, jobject javaModel, const std::string &cacheDir) : CacheDir(cacheDir), myBook(book) {
+	ZLLogger::Instance().registerClass("BookModel");
 	myJavaModel = AndroidUtil::getEnv()->NewGlobalRef(javaModel);
 
 	myBookTextModel = new ZLTextPlainModel(std::string(), book->language(), 131072, CacheDir, "ncache", myFontManager);
@@ -41,14 +43,21 @@ BookModel::BookModel(const shared_ptr<Book> book, jobject javaModel, const std::
 
 BookModel::~BookModel() {
 	AndroidUtil::getEnv()->DeleteGlobalRef(myJavaModel);
+	ZLLogger::Instance().unregisterClass("BookModel");
 }
 
 void BookModel::setHyperlinkMatcher(shared_ptr<HyperlinkMatcher> matcher) {
 	myHyperlinkMatcher = matcher;
 }
 
+/**
+ * Get the Label of input id.
+ *
+ * @param id The xhtml file's alias [0,1,2...] or use alias to splicing '#' and linkId.
+ */
 BookModel::Label BookModel::label(const std::string &id) const {
 	if (!myHyperlinkMatcher.isNull()) {
+		ZLLogger::Instance().println("BookModel", " label()   id = " + id);
 		return myHyperlinkMatcher->match(myInternalHyperlinks, id);
 	}
 

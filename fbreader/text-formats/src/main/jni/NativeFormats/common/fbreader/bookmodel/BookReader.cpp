@@ -185,6 +185,11 @@ void BookReader::addHyperlinkControl(FBTextKind kind, const std::string &label) 
 	myHyperlinkReference = label;
 }
 
+/**
+ * Add a hyperlink with label.
+ *
+ * @param label Maybe a starting chapter, cover image, new section in chapter, or a hyperlink.
+ */
 void BookReader::addHyperlinkLabel(const std::string &label) {
 	if (!myCurrentTextModel.isNull()) {
 		int paragraphNumber = myCurrentTextModel->paragraphsNumber();
@@ -195,6 +200,12 @@ void BookReader::addHyperlinkLabel(const std::string &label) {
 	}
 }
 
+/**
+ * Add a new hyper link label about the "paragraphNumber".
+ *
+ * @param label Maybe a alias[0, 1, 2, ...] or alias splicing '#' and linkId. eg: "0#cover-image".
+ * @param paragraphNumber The current total paragraph number till this link.
+ */
 void BookReader::addHyperlinkLabel(const std::string &label, int paragraphNumber) {
 //	ZLLogger::Instance().println(
 //		"hyperlink",
@@ -331,7 +342,7 @@ void BookReader::beginContentsParagraph(int referenceNumber) {
 }
 
 /**
- * End the chapter toc tree stack.
+ * Pop up the chapter point from stack top.
  */
 void BookReader::endContentsParagraph() {
 	if (!myContentsTreeStack.empty()) {
