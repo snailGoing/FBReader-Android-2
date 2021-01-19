@@ -26,6 +26,11 @@
 
 #include "XMLTextStream.h"
 
+/**
+ * Only the content of a tag in the XHTML file is parsed.
+ *
+ * Scene: detecting book's Language and coding about the 'body' tag content.
+ */
 class XMLTextReader : public ZLXMLReader {
 
 public:

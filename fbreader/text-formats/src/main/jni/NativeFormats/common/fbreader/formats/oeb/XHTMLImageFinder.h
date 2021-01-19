@@ -26,6 +26,9 @@
 class ZLFile;
 class ZLImage;
 
+/**
+ * Used to read the cover page xhtml(such as cover.xhtml), get the cover image information.
+ */
 class XHTMLImageFinder : public ZLXMLReader {
 
 public:

@@ -28,6 +28,9 @@
 #include "OEBEncryptionReader.h"
 #include "OEBSimpleIdReader.h"
 
+/**
+ * Read "META-INF/rights.xml" file info.
+ */
 class EpubRightsFileReader : public ZLXMLReader {
 
 public:
@@ -42,6 +45,9 @@ private:
 	std::string myMethod;
 };
 
+/**
+ *  Read "META-INF/encryption.xml" file info.
+ */
 class EpubEncryptionFileReader : public ZLXMLReader {
 
 public:

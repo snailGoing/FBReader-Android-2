@@ -49,6 +49,9 @@ enum XHTMLReadingState {
 	XHTML_READ_VIDEO
 };
 
+/**
+ * Define tag operation abstract class, and provide tag start and end interfaces.
+ */
 class XHTMLTagAction {
 
 public:
@@ -65,6 +68,15 @@ protected:
 	static void endParagraph(XHTMLReader &reader);
 };
 
+/**
+ * Implement "ZLXMLReader" abstract class to read XHTML file.
+ *
+ * Realize tag processing function and tag content processing function.
+ * Register binding tag action, and define tag start and end implementation for each action.
+ * The "BookReader" object is held internally to add the parsed data, eg: addData(const std::string &data).
+ * It provides the parser for the style of the book XHTML file, and is responsible for parsing
+ * the xx.css file, style tag and style attribute.
+ */
 class XHTMLReader : public ZLXMLReader {
 
 public:

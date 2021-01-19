@@ -31,6 +31,12 @@ class ZLInputStream;
 class ZLAsynchronousInputStream;
 class ZLXMLReaderInternal;
 
+/**
+ * Define abstract classes for parsing XML files.
+ * It is used to read an XML file and provides the core interface of
+ * tag processing function and character processing function.
+ * Hold a "ZLXMLReaderInternal" object internally to realize real parsing.
+ */
 class ZLXMLReader {
 
 public:

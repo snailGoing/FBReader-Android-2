@@ -63,12 +63,19 @@ void XHTMLTagAction::endParagraph(XHTMLReader &reader) {
 	reader.endParagraph();
 }
 
+/**
+ * Global tag base class.
+ * eg: body tag, head sub tags: style and link.
+ */
 class XHTMLGlobalTagAction : public XHTMLTagAction {
 
 private:
 	bool isEnabled(XHTMLReadingState state);
 };
 
+/**
+ * A text mode tag is usually a sub tag in the body.
+ */
 class XHTMLTextModeTagAction : public XHTMLTagAction {
 
 private:
