@@ -26,6 +26,11 @@
 
 class ZLXMLReader;
 
+/**
+ * Based on expat third-party, register tag processing function and
+ * string processing function to process char * data of XHTML file.
+ * Finally, the callback function delegates the result to the "userData" object ZLXMLReader.
+ */
 class ZLXMLReaderInternal {
 
 private:
@@ -44,7 +49,9 @@ private:
 	void setupEntities();
 
 private:
+	// The object registered to expat, which is used by the callback function to process the result.
 	ZLXMLReader &myReader;
+	// The expat third-party parser.
 	XML_Parser myParser;
 	bool myInitialized;
 
