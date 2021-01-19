@@ -33,6 +33,19 @@
 class ZLFile;
 class ZLInputStream;
 
+/**
+ * Define the style sheet parser abstract class.
+ *
+ * Subclass：
+ *   |
+ *    -- StyleSheetMultiStyleParser: Multi style parser
+ *   |    |
+ *   |    |-- StyleSheetParserWithCache: Multi style parser with cache, parsing xx.css file
+ *   |    |
+ *   |     -- StyleSheetTableParser: Parsing < style type = "text / CSS" > in <head> tags.
+ *   |
+ *    -- StyleSheetSingleStyleParser: Define the inline style parser and use the style attribute in the tag.
+ */
 class StyleSheetParser {
 
 protected:
@@ -113,6 +126,9 @@ private:
 	StyleSheetTable &myStyleTable;
 };
 
+/**
+ * For parsing and saving xx.css Selectors for style files.
+ */
 class StyleSheetParserWithCache : public StyleSheetMultiStyleParser {
 
 private:

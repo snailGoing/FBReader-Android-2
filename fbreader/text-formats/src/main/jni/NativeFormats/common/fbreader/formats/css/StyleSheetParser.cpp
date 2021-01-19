@@ -31,13 +31,16 @@
 #include "CSSInputStream.h"
 #include "../util/MiscUtil.h"
 
+static const std::string TAG = "CSS-SELECTOR";
+
 StyleSheetParser::StyleSheetParser(const std::string &pathPrefix) : myPathPrefix(pathPrefix) {
 	//ZLLogger::Instance().registerClass("CSS-IMPORT");
-	ZLLogger::Instance().registerClass("CSS-SELECTOR");
+	ZLLogger::Instance().registerClass(TAG);
 	reset();
 }
 
 StyleSheetParser::~StyleSheetParser() {
+	ZLLogger::Instance().unregisterClass(TAG);
 }
 
 void StyleSheetParser::reset() {
@@ -224,12 +227,15 @@ void StyleSheetParser::processWord(const std::string &word) {
 		{
 			std::string stripped = word;
 			ZLStringUtil::stripWhiteSpaces(stripped);
+			// save attribute and value.
 			std::string &current = myMap[myAttributeName];
 			if (current.size() == 0) {
 				current = stripped;
 			} else {
 				current += ' ' + stripped;
 			}
+			ZLLogger::Instance().println(TAG, "attribute: %s,  value: %s ",
+					myAttributeName.c_str(), current.c_str());
 			break;
 		}
 	}

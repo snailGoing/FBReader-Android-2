@@ -40,6 +40,7 @@
 static const std::string ANY = "*";
 static const std::string EMPTY = "";
 static const XHTMLTagInfoList EMPTY_INFO_LIST;
+static const std::string TAG = "XHTMLReader";
 
 std::map<std::string,XHTMLTagAction*> XHTMLReader::ourTagActions;
 std::map<shared_ptr<XHTMLReader::FullNamePredicate>,XHTMLTagAction*> XHTMLReader::ourNsTagActions;
@@ -192,9 +193,13 @@ private:
 	XHTMLSvgImageNamePredicate &myPredicate;
 };
 
+/**
+ * Tag: ol/ul analytic function.
+ */
 class XHTMLTagListAction : public XHTMLTextModeTagAction {
 
 private:
+	// value: 1 for ol, 0 for ul.
 	const int myStartIndex;
 
 public:
@@ -397,9 +402,11 @@ void XHTMLTagItemAction::doAtStart(XHTMLReader &reader, const char**) {
 		bookReader(reader).addFixedHSpace(3 * reader.myListNumStack.size());
 		int &index = reader.myListNumStack.top();
 		if (index == 0) {
+			// meaning ul tag: unordered list.
 			static const std::string bullet = "\xE2\x80\xA2\xC0\xA0";
 			bookReader(reader).addData(bullet);
 		} else {
+			// meaning ol tag: ordered list.
 			bookReader(reader).addData(ZLStringUtil::numberToString(index++) + ".");
 		}
 		bookReader(reader).addFixedHSpace(1);
@@ -706,7 +713,11 @@ void XHTMLReader::fillTagTable() {
 
 XHTMLReader::XHTMLReader(BookReader &modelReader, shared_ptr<EncryptionMap> map) : myModelReader(modelReader), myEncryptionMap(map) {
 	myMarkNextImageAsCover = false;
-	//ZLLogger::Instance().registerClass("XHTML");
+	ZLLogger::Instance().registerClass(TAG);
+}
+
+XHTMLReader::~XHTMLReader() {
+    ZLLogger::Instance().unregisterClass(TAG);
 }
 
 void XHTMLReader::setMarkFirstImageAsCover() {
@@ -825,6 +836,7 @@ void XHTMLReader::applyTagStyles(const std::string &tag, const std::string &aCla
 	for (std::vector<std::pair<CSSSelector,shared_ptr<ZLTextStyleEntry> > >::const_iterator it = controls.begin(); it != controls.end(); ++it) {
 		if (matches(it->first.Next)) {
 			applySingleEntry(it->second);
+			ZLLogger::Instance().println(TAG, "applyTagStyles:  tag = %s, class = %s", tag.c_str(), aClass.c_str());
 		}
 	}
 }
@@ -877,6 +889,7 @@ void XHTMLReader::startElementHandler(const char *tag, const char **attributes) 
 	std::vector<std::string> classesList;
 	const char *aClasses = attributeValue(attributes, "class");
 	if (aClasses != 0) {
+	    ZLLogger::Instance().println(TAG, "startElementHandler:  tag: %s class: %s", sTag.c_str(), aClasses);
 		const std::vector<std::string> split = ZLStringUtil::split(aClasses, " ", true);
 		for (std::vector<std::string>::const_iterator it = split.begin(); it != split.end(); ++it) {
 			classesList.push_back(*it);
@@ -909,6 +922,7 @@ void XHTMLReader::startElementHandler(const char *tag, const char **attributes) 
 	}
 	if (breakBefore == B3_TRUE) {
 		myModelReader.insertEndOfSectionParagraph();
+        ZLLogger::Instance().println(TAG, "startElementHandler:  insertEndOfSectionParagraph");
 	}
 
 	XHTMLTagAction *action = getAction(sTag);
@@ -916,6 +930,7 @@ void XHTMLReader::startElementHandler(const char *tag, const char **attributes) 
 		action->doAtStart(*this, attributes);
 	}
 
+	// apply tag styles.
 	applyTagStyles(ANY, EMPTY);
 	applyTagStyles(sTag, EMPTY);
 	for (std::vector<std::string>::const_iterator it = classesList.begin(); it != classesList.end(); ++it) {

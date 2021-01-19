@@ -101,6 +101,7 @@ private:
 
 public:
 	XHTMLReader(BookReader &modelReader, shared_ptr<EncryptionMap> map);
+	~XHTMLReader();
 
 	bool readFile(const ZLFile &file, const std::string &referenceName);
 	const std::string &fileAlias(const std::string &fileName) const;
@@ -140,6 +141,7 @@ private:
 	std::string myReferenceDirName;
 	bool myPreformatted;
 	bool myNewParagraphInProgress;
+	// .css style sheet, saving attribute selector and style element mapping collection.
 	StyleSheetTable myStyleSheetTable;
 	shared_ptr<FontMap> myFontMap;
 	std::vector<shared_ptr<TagData> > myTagDataStack;
@@ -149,6 +151,7 @@ private:
 	std::map<std::string,shared_ptr<StyleSheetParserWithCache> > myFileParsers;
 	XHTMLReadingState myReadState;
 	int myBodyCounter;
+	// tag: ol / UL list stack, if start-tag into the stack else out of the stack.
 	std::stack<int> myListNumStack;
 	bool myMarkNextImageAsCover;
 	shared_ptr<ZLVideoEntry> myVideoEntry;
