@@ -510,16 +510,6 @@ public abstract class ZLTextView extends ZLTextViewBase {
         }
 
         // TODO: find backgroud color area, and draw.
-        List<ZLTextElementArea> areas = page.TextElementMap.areas();
-        Rect rect = new Rect();
-        for (ZLTextElementArea area : areas) {
-            String bgColor = area.Style.getBgColor();
-            if (!TextUtils.isEmpty(bgColor)) {
-                rect.top = area.YStart;
-            } else if (rect.bottom == 0 && rect.top != 0){
-                rect.bottom = area.YEnd;
-            }
-        }
 
         for (ZLTextHighlighting h : hilites) {
             int mode = Hull.DrawMode.None;
