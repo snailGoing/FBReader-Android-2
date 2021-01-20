@@ -84,7 +84,10 @@ void StyleSheetParser::parse(const char *text, int len, bool final) {
 			processWord(myWord);
 			myWord.erase();
 			start = ptr + 1;
-		} else if (isControlSymbol(*ptr)) {
+		} else if (isControlSymbol(*ptr) || (myReadState == WAITING_FOR_SELECTOR && *ptr == '{')) {
+		    // Case 1: Regular control symbol operation.
+            // Case 2: bugfix. Need to do something if no space between selector and attribute.
+            //         eg: ".copyright{color:#ff4500}".
 			if (start != ptr) {
 				myWord.append(start, ptr - start);
 			}

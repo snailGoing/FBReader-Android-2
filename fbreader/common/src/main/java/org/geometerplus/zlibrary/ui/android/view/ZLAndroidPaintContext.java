@@ -286,8 +286,12 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
         myTextPaint.setTextSize(size);
         myTextPaint.setUnderlineText(underline);
         myTextPaint.setStrikeThruText(strikeThrought);
-        if (!TextUtils.isEmpty(color)) {
-            myTextPaint.setColor(Color.parseColor(color));
+        try {
+            if (!TextUtils.isEmpty(color)) {
+                myTextPaint.setColor(Color.parseColor(color));
+            }
+        } catch (Exception e) {
+            // TODO: The color maybe other formats not like this "color:#ff4500".
         }
     }
 
