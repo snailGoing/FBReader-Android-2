@@ -21,6 +21,7 @@ package org.geometerplus.zlibrary.text.model;
 
 import org.geometerplus.zlibrary.core.fonts.FontManager;
 import org.geometerplus.zlibrary.core.image.ZLImage;
+import org.geometerplus.zlibrary.core.util.CSSUtil;
 import org.geometerplus.zlibrary.core.util.ZLSearchPattern;
 import org.geometerplus.zlibrary.core.util.ZLSearchUtil;
 
@@ -493,7 +494,7 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
                         colorLen += (((int) data[dataOffset++]) << 16);
                         colorLen = Math.min(colorLen, data.length - dataOffset);
                         String color = new String(data, dataOffset, colorLen);
-                        entry.setColor(color);
+                        entry.setColor(CSSUtil.transferColor(color));
                         dataOffset += colorLen;
                     }
 
