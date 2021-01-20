@@ -286,8 +286,8 @@ void OEBBookReader::generateTOC(const XHTMLReader &xhtmlReader) {
 					// (When the previous chapter is added to the directory, level is incremented by 1.)
 					while (level > point.Level) {
 						myModelReader.endContentsParagraph();
-						ZLLogger::Instance().println("TOC","part1: pointLevel = %d,"
-										 " level = %d", point.Level, level);
+//						ZLLogger::Instance().println("TOC","part1: pointLevel = %d,"
+//										 " level = %d", point.Level, level);
 						--level;
 					}
 
@@ -303,8 +303,7 @@ void OEBBookReader::generateTOC(const XHTMLReader &xhtmlReader) {
 					myModelReader.beginContentsParagraph(index);
 					myModelReader.addContentsData(point.Text);
 
-					ZLLogger::Instance().println("TOC","part1: %s, ref: %s",
-							point.Text.c_str(), point.ContentHRef.c_str());
+					//ZLLogger::Instance().println("TOC","part1: %s, ref: %s", point.Text.c_str(), point.ContentHRef.c_str());
 				} // end for.
 
 				// deal with the last subdirectory of the last chapter.

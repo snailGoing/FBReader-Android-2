@@ -237,8 +237,8 @@ void StyleSheetParser::processWord(const std::string &word) {
 			} else {
 				current += ' ' + stripped;
 			}
-			ZLLogger::Instance().println(TAG, "attribute: %s,  value: %s ",
-					myAttributeName.c_str(), current.c_str());
+//			ZLLogger::Instance().println(TAG, "attribute: %s,  value: %s ",
+//					myAttributeName.c_str(), current.c_str());
 			break;
 		}
 	}

@@ -836,7 +836,7 @@ void XHTMLReader::applyTagStyles(const std::string &tag, const std::string &aCla
 	for (std::vector<std::pair<CSSSelector,shared_ptr<ZLTextStyleEntry> > >::const_iterator it = controls.begin(); it != controls.end(); ++it) {
 		if (matches(it->first.Next)) {
 			applySingleEntry(it->second);
-			ZLLogger::Instance().println(TAG, "applyTagStyles:  tag = %s, class = %s", tag.c_str(), aClass.c_str());
+//			ZLLogger::Instance().println(TAG, "applyTagStyles:  tag = %s, class = %s", tag.c_str(), aClass.c_str());
 		}
 	}
 }
@@ -889,7 +889,7 @@ void XHTMLReader::startElementHandler(const char *tag, const char **attributes) 
 	std::vector<std::string> classesList;
 	const char *aClasses = attributeValue(attributes, "class");
 	if (aClasses != 0) {
-	    ZLLogger::Instance().println(TAG, "startElementHandler:  tag: %s class: %s", sTag.c_str(), aClasses);
+//	    ZLLogger::Instance().println(TAG, "startElementHandler:  tag: %s class: %s", sTag.c_str(), aClasses);
 		const std::vector<std::string> split = ZLStringUtil::split(aClasses, " ", true);
 		for (std::vector<std::string>::const_iterator it = split.begin(); it != split.end(); ++it) {
 			classesList.push_back(*it);
@@ -922,7 +922,7 @@ void XHTMLReader::startElementHandler(const char *tag, const char **attributes) 
 	}
 	if (breakBefore == B3_TRUE) {
 		myModelReader.insertEndOfSectionParagraph();
-        ZLLogger::Instance().println(TAG, "startElementHandler:  insertEndOfSectionParagraph");
+//        ZLLogger::Instance().println(TAG, "startElementHandler:  insertEndOfSectionParagraph");
 	}
 
 	XHTMLTagAction *action = getAction(sTag);
