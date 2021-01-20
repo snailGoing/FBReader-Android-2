@@ -487,6 +487,16 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
                         entry.setFontModifiers((byte) (value & 0xFF), (byte) ((value >> 8) & 0xFF));
                     }
 
+                    // add text color.
+                    if (ZLTextStyleEntry.isFeatureSupported(mask, COLOR)) {
+                        int colorLen = (int) data[dataOffset++];
+                        colorLen += (((int) data[dataOffset++]) << 16);
+                        colorLen = Math.min(colorLen, data.length - dataOffset);
+                        String color = new String(data, dataOffset, colorLen);
+                        entry.setColor(color);
+                        dataOffset += colorLen;
+                    }
+
                     myStyleEntry = entry;
                 }
                 case ZLTextParagraph.Entry.STYLE_CLOSE:

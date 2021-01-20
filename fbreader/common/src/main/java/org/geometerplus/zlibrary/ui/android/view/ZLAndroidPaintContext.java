@@ -22,6 +22,7 @@ package org.geometerplus.zlibrary.ui.android.view;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.CornerPathEffect;
 import android.graphics.EmbossMaskFilter;
 import android.graphics.Matrix;
@@ -31,6 +32,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.text.TextUtils;
 
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.fonts.FontEntry;
@@ -43,6 +45,7 @@ import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageData;
 import org.geometerplus.zlibrary.ui.android.util.ZLAndroidColorUtil;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class ZLAndroidPaintContext extends ZLPaintContext {
     public static ZLBooleanOption AntiAliasOption = new ZLBooleanOption("Fonts", "AntiAlias", true);
@@ -270,7 +273,8 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
     }
 
     @Override
-    protected void setFontInternal(List<FontEntry> entries, int size, boolean bold, boolean italic, boolean underline, boolean strikeThrought) {
+    protected void setFontInternal(List<FontEntry> entries, int size, boolean bold, boolean italic,
+                                   boolean underline, boolean strikeThrought, String color) {
         Typeface typeface = null;
         for (FontEntry e : entries) {
             typeface = AndroidFontUtil.typeface(getSystemInfo(), e, bold, italic);
@@ -282,6 +286,9 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
         myTextPaint.setTextSize(size);
         myTextPaint.setUnderlineText(underline);
         myTextPaint.setStrikeThruText(strikeThrought);
+        if (!TextUtils.isEmpty(color)) {
+            myTextPaint.setColor(Color.parseColor(color));
+        }
     }
 
     @Override

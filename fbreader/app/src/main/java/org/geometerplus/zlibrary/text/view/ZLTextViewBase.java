@@ -112,7 +112,7 @@ abstract class ZLTextViewBase extends ZLView {
 
     public abstract ZLColor getHighlightingForegroundColor();
 
-    public abstract ZLColor getTextColor(ZLTextHyperlink hyperlink);
+    public abstract ZLColor getTextColor(ZLTextStyle style);
 
     ZLPaintContext.Size getTextAreaSize() {
         return new ZLPaintContext.Size(getTextColumnWidth(), getTextAreaHeight());
@@ -147,7 +147,8 @@ abstract class ZLTextViewBase extends ZLView {
             myTextStyle = style;
             myWordHeight = -1;
         }
-        getContext().setFont(style.getFontEntries(), style.getFontSize(metrics()), style.isBold(), style.isItalic(), style.isUnderline(), style.isStrikeThrough());
+        getContext().setFont(style.getFontEntries(), style.getFontSize(metrics()), style.isBold(),
+                style.isItalic(), style.isUnderline(), style.isStrikeThrough(), style.getColor());
     }
 
     final void resetTextStyle() {

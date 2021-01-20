@@ -19,6 +19,8 @@
 
 package org.geometerplus.zlibrary.core.view;
 
+import android.text.TextUtils;
+
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.fonts.FontEntry;
 import org.geometerplus.zlibrary.core.image.ZLImageData;
@@ -42,6 +44,9 @@ abstract public class ZLPaintContext {
     private boolean myFontIsStrikedThrough;
     private int mySpaceWidth = -1;
     private int myStringHeight = -1;
+
+    private String myColor;
+
     private Map<Character, Integer> myCharHeights = new TreeMap<Character, Integer>();
     private int myDescent = -1;
 
@@ -59,7 +64,8 @@ abstract public class ZLPaintContext {
 
     abstract public ZLColor getBackgroundColor();
 
-    public final void setFont(List<FontEntry> entries, int size, boolean bold, boolean italic, boolean underline, boolean strikeThrough) {
+    public final void setFont(List<FontEntry> entries, int size, boolean bold, boolean italic,
+                              boolean underline, boolean strikeThrough, String color) {
         if (entries != null && !entries.equals(myFontEntries)) {
             myFontEntries = entries;
             myResetFont = true;
@@ -84,9 +90,13 @@ abstract public class ZLPaintContext {
             myFontIsStrikedThrough = strikeThrough;
             myResetFont = true;
         }
+        if (!TextUtils.isEmpty(color)) {
+            myColor = color;
+            myResetFont = true;
+        }
         if (myResetFont) {
             myResetFont = false;
-            setFontInternal(myFontEntries, size, bold, italic, underline, strikeThrough);
+            setFontInternal(myFontEntries, size, bold, italic, underline, strikeThrough, color);
             mySpaceWidth = -1;
             myStringHeight = -1;
             myDescent = -1;
@@ -94,7 +104,8 @@ abstract public class ZLPaintContext {
         }
     }
 
-    abstract protected void setFontInternal(List<FontEntry> entries, int size, boolean bold, boolean italic, boolean underline, boolean strikeThrough);
+    abstract protected void setFontInternal(List<FontEntry> entries, int size, boolean bold,
+                                            boolean italic, boolean underline, boolean strikeThrough, String color);
 
     abstract public void setTextColor(ZLColor color);
 

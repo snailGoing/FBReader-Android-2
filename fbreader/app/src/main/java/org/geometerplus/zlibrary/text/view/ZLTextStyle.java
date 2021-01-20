@@ -37,6 +37,8 @@ public abstract class ZLTextStyle {
 
     public abstract int getFontSize(ZLTextMetrics metrics);
 
+    public abstract String getColor();
+
     public abstract boolean isBold();
 
     public abstract boolean isItalic();

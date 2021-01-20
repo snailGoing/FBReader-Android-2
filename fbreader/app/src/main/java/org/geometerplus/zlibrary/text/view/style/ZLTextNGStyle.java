@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ZLTextNGStyle extends ZLTextDecoratedStyle {
+
     private final ZLTextNGStyleDescription myDescription;
 
     public ZLTextNGStyle(ZLTextStyle parent, ZLTextNGStyleDescription description, ZLTextHyperlink hyperlink) {
@@ -56,6 +57,11 @@ public class ZLTextNGStyle extends ZLTextDecoratedStyle {
     @Override
     protected int getFontSizeInternal(ZLTextMetrics metrics) {
         return myDescription.getFontSize(metrics, Parent.getFontSize(metrics));
+    }
+
+    @Override
+    protected String getColorInternal() {
+        return "";
     }
 
     @Override

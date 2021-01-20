@@ -19,6 +19,8 @@
 
 package org.geometerplus.zlibrary.text.view.style;
 
+import android.text.TextUtils;
+
 import org.geometerplus.zlibrary.core.fonts.FontEntry;
 import org.geometerplus.zlibrary.text.model.ZLTextMetrics;
 import org.geometerplus.zlibrary.text.view.ZLTextHyperlink;
@@ -51,6 +53,8 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
     private int myLeftPadding;
     private int myRightPadding;
     private int myFirstLineIndent;
+
+    private String mColor;
     private ZLTextMetrics myMetrics;
 
     protected ZLTextDecoratedStyle(ZLTextStyle base, ZLTextHyperlink hyperlink) {
@@ -70,6 +74,7 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
         myAlignment = getAlignmentInternal();
         myAllowHyphenations = allowHyphenationsInternal();
 
+        mColor = getColor();
         myIsNotCached = false;
     }
 
@@ -84,6 +89,7 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
         myLeftPadding = getLeftPaddingInternal(metrics, myFontSize);
         myRightPadding = getRightPaddingInternal(metrics, myFontSize);
         myFirstLineIndent = getFirstLineIndentInternal(metrics, myFontSize);
+        mColor = getColor();
     }
 
     @Override
@@ -93,6 +99,16 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
         }
         return myFontEntries;
     }
+
+    @Override
+    public String getColor() {
+        if (TextUtils.isEmpty(mColor)) {
+            mColor = getColorInternal();
+        }
+        return mColor;
+    }
+
+    protected abstract String getColorInternal();
 
     protected abstract List<FontEntry> getFontEntriesInternal();
 

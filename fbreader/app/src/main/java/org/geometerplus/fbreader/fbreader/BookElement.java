@@ -101,7 +101,7 @@ public final class BookElement extends ExtensionElement {
                     ZLPaintContext.ColorAdjustingMode.NONE
             );
         } else {
-            final ZLColor color = myView.getTextColor(ZLTextHyperlink.NO_LINK);
+            final ZLColor color = myView.getTextColor(myView.getTextStyleCollection().getBaseStyle());
             context.setLineColor(color);
             context.setFillColor(color, 0x33);
             final int xStart = area.XStart + hMargin;

@@ -19,6 +19,9 @@
 
 package org.geometerplus.fbreader.fbreader;
 
+import android.graphics.Color;
+import android.text.TextUtils;
+
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.FBHyperlinkType;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
@@ -45,6 +48,7 @@ import org.geometerplus.zlibrary.text.view.ZLTextHyperlinkRegionSoul;
 import org.geometerplus.zlibrary.text.view.ZLTextImageRegionSoul;
 import org.geometerplus.zlibrary.text.view.ZLTextPosition;
 import org.geometerplus.zlibrary.text.view.ZLTextRegion;
+import org.geometerplus.zlibrary.text.view.ZLTextStyle;
 import org.geometerplus.zlibrary.text.view.ZLTextVideoRegionSoul;
 import org.geometerplus.zlibrary.text.view.ZLTextView;
 import org.geometerplus.zlibrary.text.view.ZLTextWordRegionSoul;
@@ -439,11 +443,21 @@ public final class FBView extends ZLTextView {
     }
 
     @Override
-    public ZLColor getTextColor(ZLTextHyperlink hyperlink) {
+    public ZLColor getTextColor(ZLTextStyle style) {
+        ZLTextHyperlink hyperlink = style.Hyperlink;
         final ColorProfile profile = myViewOptions.getColorProfile();
         switch (hyperlink.Type) {
-            default:
             case FBHyperlinkType.NONE:
+                // add for text color support.
+                String color = style.getColor();
+                try {
+                    if (!TextUtils.isEmpty(color)) {
+                        int rgb = Color.parseColor(color);
+                        return new ZLColor(rgb);
+                    }
+                } catch (Exception e) {
+
+                }
                 return profile.RegularTextOption.getValue();
             case FBHyperlinkType.INTERNAL:
             case FBHyperlinkType.FOOTNOTE:
@@ -452,6 +466,8 @@ public final class FBView extends ZLTextView {
                         : profile.HyperlinkTextOption.getValue();
             case FBHyperlinkType.EXTERNAL:
                 return profile.HyperlinkTextOption.getValue();
+            default:
+                return profile.RegularTextOption.getValue();
         }
     }
 
@@ -654,7 +670,7 @@ public final class FBView extends ZLTextView {
             final String key = family + (bold ? "N" : "B") + height;
             final Integer cached = myHeightMap.get(key);
             if (cached != null) {
-                context.setFont(myFontEntry, cached, bold, false, false, false);
+                context.setFont(myFontEntry, cached, bold, false, false, false, "");
                 final Integer charHeight = myCharHeightMap.get(key);
                 return charHeight != null ? charHeight : height;
             } else {
@@ -662,7 +678,7 @@ public final class FBView extends ZLTextView {
                 int charHeight = height;
                 final int max = height < 9 ? height - 1 : height - 2;
                 for (; h > 5; --h) {
-                    context.setFont(myFontEntry, h, bold, false, false, false);
+                    context.setFont(myFontEntry, h, bold, false, false, false, "");
                     charHeight = context.getCharHeight('H');
                     if (charHeight <= max) {
                         break;
@@ -692,7 +708,7 @@ public final class FBView extends ZLTextView {
 
             //final ZLColor bgColor = getBackgroundColor();
             // TODO: separate color option for footer color
-            final ZLColor fgColor = getTextColor(ZLTextHyperlink.NO_LINK);
+            final ZLColor fgColor = getTextColor(getTextStyleCollection().getBaseStyle());
             final ZLColor fillColor = myViewOptions.getColorProfile().FooterFillOption.getValue();
 
             final int left = getLeftMargin();

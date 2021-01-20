@@ -849,7 +849,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                     final ZLColor hlColor = hl != null ? hl.getForegroundColor() : null;
                     drawWord(
                             areaX, areaY, (ZLTextWord) element, charIndex, -1, false,
-                            hlColor != null ? hlColor : getTextColor(getTextStyle().Hyperlink)
+                            hlColor != null ? hlColor : getTextColor(getTextStyle())
                     );
                 } else if (element instanceof ZLTextImageElement) {
                     final ZLTextImageElement imageElement = (ZLTextImageElement) element;
@@ -862,7 +862,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                     );
                 } else if (element instanceof ZLTextVideoElement) {
                     // TODO: draw
-                    context.setLineColor(getTextColor(ZLTextHyperlink.NO_LINK));
+                    context.setLineColor(getTextColor(getTextStyleCollection().getBaseStyle()));
                     context.setFillColor(new ZLColor(127, 127, 127));
                     final int xStart = area.XStart + 10;
                     final int xEnd = area.XEnd - 10;
@@ -906,7 +906,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
             drawWord(
                     area.XStart, area.YEnd - context.getDescent() - getTextStyle().getVerticalAlign(metrics()),
                     word, start, len, area.AddHyphenationSign,
-                    hlColor != null ? hlColor : getTextColor(getTextStyle().Hyperlink)
+                    hlColor != null ? hlColor : getTextColor(getTextStyle())
             );
         }
     }
