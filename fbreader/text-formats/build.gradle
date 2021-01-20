@@ -28,7 +28,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 26
         ndk {
-            abiFilters "armeabi-v7a"
+            abiFilters "armeabi-v7a", "arm64-v8a"
         }
 
         if (enableCMake) {
