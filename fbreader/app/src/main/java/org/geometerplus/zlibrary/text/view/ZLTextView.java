@@ -19,6 +19,9 @@
 
 package org.geometerplus.zlibrary.text.view;
 
+import android.graphics.Rect;
+import android.text.TextUtils;
+
 import org.LogUtils;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
@@ -33,6 +36,7 @@ import org.geometerplus.zlibrary.text.model.ZLTextAlignmentType;
 import org.geometerplus.zlibrary.text.model.ZLTextMark;
 import org.geometerplus.zlibrary.text.model.ZLTextModel;
 import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
+import org.geometerplus.zlibrary.ui.android.R;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -505,6 +509,18 @@ public abstract class ZLTextView extends ZLTextViewBase {
             }
         }
 
+        // TODO: find backgroud color area, and draw.
+        List<ZLTextElementArea> areas = page.TextElementMap.areas();
+        Rect rect = new Rect();
+        for (ZLTextElementArea area : areas) {
+            String bgColor = area.Style.getBgColor();
+            if (!TextUtils.isEmpty(bgColor)) {
+                rect.top = area.YStart;
+            } else if (rect.bottom == 0 && rect.top != 0){
+                rect.bottom = area.YEnd;
+            }
+        }
+
         for (ZLTextHighlighting h : hilites) {
             int mode = Hull.DrawMode.None;
 
@@ -840,6 +856,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 if (area.ChangeStyle) {
                     setTextStyle(area.Style);
                 }
+
                 final int areaX = area.XStart;
                 final int areaY = area.YEnd - getElementDescent(element) - getTextStyle().getVerticalAlign(metrics());
                 if (element instanceof ZLTextWord) {

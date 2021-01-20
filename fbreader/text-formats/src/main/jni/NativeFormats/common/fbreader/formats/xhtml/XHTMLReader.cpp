@@ -841,6 +841,18 @@ void XHTMLReader::applyTagStyles(const std::string &tag, const std::string &aCla
 	}
 }
 
+void XHTMLReader:: addStyleCloseEntry() {
+	myModelReader.addStyleCloseEntry();
+}
+
+/**
+ * Add text css style.
+ *
+ * Should pay attention to where this method is called.
+ * This help you to understand the styles' implementation.
+ *
+ * The opposite function: addStyleCloseEntry() should be focused.
+ */
 void XHTMLReader::addTextStyleEntry(const ZLTextStyleEntry &entry, unsigned char depth) {
 	if (!entry.isFeatureSupported(ZLTextStyleEntry::FONT_FAMILY)) {
 		myModelReader.addStyleEntry(entry, depth);
@@ -973,7 +985,7 @@ void XHTMLReader::endElementHandler(const char *tag) {
 	}
 
 	for (; entryCount > 0; --entryCount) {
-		myModelReader.addStyleCloseEntry();
+		addStyleCloseEntry();
 	}
 
 	if (tagData.PageBreakAfter == B3_TRUE) {
@@ -1031,7 +1043,7 @@ void XHTMLReader::restartParagraph(bool addEmptyLine) {
 	}
 	addTextStyleEntry(*spaceAfterBlocker, depth);
 	endParagraph();
-	myModelReader.addStyleCloseEntry();
+	addStyleCloseEntry();
 	beginParagraph(true);
 	applySingleEntry(spaceBeforeBlocker);
 }

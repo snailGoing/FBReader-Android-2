@@ -55,6 +55,7 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
     private int myFirstLineIndent;
 
     private String mColor;
+    private String mBgColor;
     private ZLTextMetrics myMetrics;
 
     protected ZLTextDecoratedStyle(ZLTextStyle base, ZLTextHyperlink hyperlink) {
@@ -74,7 +75,8 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
         myAlignment = getAlignmentInternal();
         myAllowHyphenations = allowHyphenationsInternal();
 
-        mColor = getColor();
+        mColor = getColorInternal();
+        mBgColor = getBgColorInternal();
         myIsNotCached = false;
     }
 
@@ -89,7 +91,8 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
         myLeftPadding = getLeftPaddingInternal(metrics, myFontSize);
         myRightPadding = getRightPaddingInternal(metrics, myFontSize);
         myFirstLineIndent = getFirstLineIndentInternal(metrics, myFontSize);
-        mColor = getColor();
+        mColor = getColorInternal();
+        mBgColor = getBgColorInternal();
     }
 
     @Override
@@ -109,6 +112,16 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
     }
 
     protected abstract String getColorInternal();
+
+    @Override
+    public String getBgColor() {
+        if (TextUtils.isEmpty(mColor)) {
+            mBgColor = getBgColorInternal();
+        }
+        return mBgColor;
+    }
+
+    protected abstract String getBgColorInternal();
 
     protected abstract List<FontEntry> getFontEntriesInternal();
 

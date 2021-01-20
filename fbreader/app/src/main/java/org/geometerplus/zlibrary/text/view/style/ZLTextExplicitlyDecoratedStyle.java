@@ -337,6 +337,18 @@ public class ZLTextExplicitlyDecoratedStyle extends ZLTextDecoratedStyle impleme
     }
 
     @Override
+    protected String getBgColorInternal() {
+        String color = Parent.getBgColor();
+        if (myEntry instanceof ZLTextCSSStyleEntry) {
+            boolean isSupportColor = myEntry.isFeatureSupported(BACKGROUND_COLOR);
+            if (isSupportColor) {
+                color = myEntry.getBgColor();
+            }
+        }
+        return color;
+    }
+
+    @Override
     protected boolean allowHyphenationsInternal() {
         // TODO: implement
         return Parent.allowHyphenations();

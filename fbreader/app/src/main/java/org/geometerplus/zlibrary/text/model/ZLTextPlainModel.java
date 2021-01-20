@@ -498,6 +498,15 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
                         dataOffset += colorLen;
                     }
 
+                    if (ZLTextStyleEntry.isFeatureSupported(mask, BACKGROUND_COLOR)) {
+                        int colorLen = (int) data[dataOffset++];
+                        colorLen += (((int) data[dataOffset++]) << 16);
+                        colorLen = Math.min(colorLen, data.length - dataOffset);
+                        String color = new String(data, dataOffset, colorLen);
+                        entry.setBgColor(CSSUtil.transferColor(color));
+                        dataOffset += colorLen;
+                    }
+
                     myStyleEntry = entry;
                 }
                 case ZLTextParagraph.Entry.STYLE_CLOSE:

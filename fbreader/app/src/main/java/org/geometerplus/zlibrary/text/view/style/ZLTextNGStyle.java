@@ -65,6 +65,11 @@ public class ZLTextNGStyle extends ZLTextDecoratedStyle {
     }
 
     @Override
+    protected String getBgColorInternal() {
+        return "";
+    }
+
+    @Override
     protected boolean isBoldInternal() {
         switch (myDescription.isBold()) {
             case TRUE:

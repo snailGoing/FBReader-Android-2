@@ -97,6 +97,11 @@ public class ZLTextBaseStyle extends ZLTextStyle {
     }
 
     @Override
+    public String getBgColor() {
+        return "";
+    }
+
+    @Override
     public boolean isBold() {
         return BoldOption.getValue();
     }

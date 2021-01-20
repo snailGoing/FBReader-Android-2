@@ -269,6 +269,13 @@ void ZLTextModel::addStyleEntry(const ZLTextStyleEntry &entry, const std::vector
 		const std::size_t colorlen = ucs2str.size();
 		len = len + 2*colorlen + 4;
 	}
+
+	if (entry.isFeatureSupported(ZLTextStyleEntry::BACKGROUND_COLOR)) {
+		ZLUnicodeUtil::Ucs2String ucs2str;
+		ZLUnicodeUtil::utf8ToUcs2(ucs2str, entry.myBgColor);
+		const std::size_t colorlen = ucs2str.size();
+		len = len + 2*colorlen + 4;
+	}
 	// --- calculating entry size
 
 /*
@@ -314,6 +321,16 @@ void ZLTextModel::addStyleEntry(const ZLTextStyleEntry &entry, const std::vector
 	if (entry.isFeatureSupported(ZLTextStyleEntry::COLOR)) {
 		ZLUnicodeUtil::Ucs2String ucs2str;
 		ZLUnicodeUtil::utf8ToUcs2(ucs2str, entry.myColor);
+		const std::size_t colorlen = ucs2str.size();
+		// write the color str length.
+		ZLCachedMemoryAllocator::writeUInt32(address, colorlen);
+		// write the color str info.
+		std::memcpy(address + 4, &ucs2str.front(), 2 * colorlen);
+	}
+
+	if (entry.isFeatureSupported(ZLTextStyleEntry::BACKGROUND_COLOR)) {
+		ZLUnicodeUtil::Ucs2String ucs2str;
+		ZLUnicodeUtil::utf8ToUcs2(ucs2str, entry.myBgColor);
 		const std::size_t colorlen = ucs2str.size();
 		// write the color str length.
 		ZLCachedMemoryAllocator::writeUInt32(address, colorlen);

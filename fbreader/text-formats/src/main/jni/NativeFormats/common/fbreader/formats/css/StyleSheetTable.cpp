@@ -268,6 +268,12 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		entry->setColor(color);
 	}
 
+	// add text color support.
+	const std::string bgColor = value(styles, "background-color");
+	if (!bgColor.empty()) {
+		entry->setBgColor(bgColor);
+	}
+
 	const std::string margin = value(styles, "margin");
 	if (!margin.empty()) {
 		std::vector<std::string> split = ZLStringUtil::split(margin, " ", true);

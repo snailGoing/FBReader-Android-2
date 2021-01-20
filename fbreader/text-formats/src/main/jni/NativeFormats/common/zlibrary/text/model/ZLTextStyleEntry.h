@@ -77,7 +77,8 @@ public:
 		FONT_STYLE_MODIFIER =               NUMBER_OF_LENGTHS + 2,
 		NON_LENGTH_VERTICAL_ALIGN =         NUMBER_OF_LENGTHS + 3,
 		DISPLAY =                           NUMBER_OF_LENGTHS + 4, // 11; max = 15
-		COLOR =                             NUMBER_OF_LENGTHS + 5
+		COLOR =                             NUMBER_OF_LENGTHS + 5,
+		BACKGROUND_COLOR = NUMBER_OF_LENGTHS + 6
 	};
 
 	enum DisplayCode {
@@ -131,6 +132,8 @@ public:
 
 	void setColor(const std::string &color);
 
+	void setBgColor(const std::string &color);
+
 	const std::vector<std::string> &fontFamilies() const;
 	void setFontFamilies(const std::vector<std::string> &fontFamilies);
 
@@ -156,6 +159,7 @@ private:
 	unsigned char myVerticalAlignCode;
 	DisplayCode myDisplayCode;
 	std::string myColor;
+	std::string myBgColor;
 
 	friend class ZLTextModel;
 };
@@ -204,6 +208,13 @@ inline void ZLTextStyleEntry::setColor(const std::string &color) {
 	if (!color.empty()) {
 		myFeatureMask |= 1 << COLOR;
 		myColor = color;
+	}
+}
+
+inline void ZLTextStyleEntry::setBgColor(const std::string &color) {
+	if (!color.empty()) {
+		myFeatureMask |= 1 << BACKGROUND_COLOR;
+		myBgColor = color;
 	}
 }
 

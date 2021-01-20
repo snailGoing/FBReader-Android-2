@@ -35,6 +35,7 @@ public abstract class ZLTextStyleEntry {
     private byte myFontModifiers;
     private byte myVerticalAlignCode;
     private String mColor;
+    private String mBgColor;
 
     protected ZLTextStyleEntry(short depth) {
         Depth = depth;
@@ -116,6 +117,15 @@ public abstract class ZLTextStyleEntry {
         return mColor;
     }
 
+    final void setBgColor(String color) {
+        myFeatureMask |= 1 << Feature.BACKGROUND_COLOR;
+        mBgColor = color;
+    }
+
+    public String getBgColor() {
+        return mBgColor;
+    }
+
     final void setFontFamilies(FontManager fontManager, int fontFamiliesIndex) {
         myFeatureMask |= 1 << Feature.FONT_FAMILY;
         myFontEntries = fontManager.getFamilyEntries(fontFamiliesIndex);
@@ -189,6 +199,7 @@ public abstract class ZLTextStyleEntry {
         // not transferred at the moment
         int DISPLAY = NUMBER_OF_LENGTHS + 4;
         int COLOR = NUMBER_OF_LENGTHS + 5;
+        int BACKGROUND_COLOR = NUMBER_OF_LENGTHS + 6;
     }
 
     public interface FontModifier {

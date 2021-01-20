@@ -39,6 +39,8 @@ public abstract class ZLTextStyle {
 
     public abstract String getColor();
 
+    public abstract String getBgColor();
+
     public abstract boolean isBold();
 
     public abstract boolean isItalic();

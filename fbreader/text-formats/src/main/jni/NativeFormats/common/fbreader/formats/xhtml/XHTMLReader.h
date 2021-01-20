@@ -128,6 +128,7 @@ private:
 	void applySingleEntry(shared_ptr<ZLTextStyleEntry> entry);
 	void applyTagStyles(const std::string &tag, const std::string &aClass);
 	void addTextStyleEntry(const ZLTextStyleEntry &entry, unsigned char depth);
+	void addStyleCloseEntry();
 
 	void pushTextKind(FBTextKind kind);
 
