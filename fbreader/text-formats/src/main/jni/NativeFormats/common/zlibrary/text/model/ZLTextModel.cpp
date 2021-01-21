@@ -245,7 +245,7 @@ void ZLTextModel::addStyleEntry(const ZLTextStyleEntry &entry, unsigned char dep
 
 void ZLTextModel::addStyleEntry(const ZLTextStyleEntry &entry, const std::vector<std::string> &fontFamilies, unsigned char depth) {
 	// +++ calculating entry size
-	std::size_t len = 4; // entry type + feature mask
+	std::size_t len = 2 + 4; // entry type + feature mask
 	for (int i = 0; i < ZLTextStyleEntry::NUMBER_OF_LENGTHS; ++i) {
 		if (entry.isFeatureSupported((ZLTextStyleEntry::Feature)i)) {
 			len += 4; // each supported length
@@ -294,7 +294,7 @@ void ZLTextModel::addStyleEntry(const ZLTextStyleEntry &entry, const std::vector
 
 	*address++ = entry.entryKind();
 	*address++ = depth;
-	address = ZLCachedMemoryAllocator::writeUInt16(address, entry.myFeatureMask);
+	address = ZLCachedMemoryAllocator::writeUInt32(address, entry.myFeatureMask);
 
 	for (int i = 0; i < ZLTextStyleEntry::NUMBER_OF_LENGTHS; ++i) {
 		if (entry.isFeatureSupported((ZLTextStyleEntry::Feature)i)) {

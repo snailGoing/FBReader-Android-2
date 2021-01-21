@@ -27,7 +27,7 @@ import java.util.List;
 
 public abstract class ZLTextStyleEntry {
     public final short Depth;
-    private short myFeatureMask;
+    private int myFeatureMask;
     private Length[] myLengths = new Length[Feature.NUMBER_OF_LENGTHS];
     private byte myAlignmentType;
     private List<FontEntry> myFontEntries;
@@ -41,7 +41,7 @@ public abstract class ZLTextStyleEntry {
         Depth = depth;
     }
 
-    static boolean isFeatureSupported(short mask, int featureId) {
+    static boolean isFeatureSupported(int mask, int featureId) {
         return (mask & (1 << featureId)) != 0;
     }
 

@@ -461,8 +461,8 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
                             type == ZLTextParagraph.Entry.STYLE_CSS
                                     ? new ZLTextCSSStyleEntry(depth)
                                     : new ZLTextOtherStyleEntry();
-
-                    final short mask = (short) data[dataOffset++];
+                    int mask = (int) data[dataOffset++];
+                    mask += (((int) data[dataOffset++]) << 16);
                     for (int i = 0; i < NUMBER_OF_LENGTHS; ++i) {
                         if (ZLTextStyleEntry.isFeatureSupported(mask, i)) {
                             final short size = (short) data[dataOffset++];

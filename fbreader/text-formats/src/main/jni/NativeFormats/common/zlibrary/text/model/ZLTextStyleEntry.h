@@ -149,7 +149,7 @@ public:
 
 private:
 	const unsigned char myEntryKind;
-	unsigned short myFeatureMask;
+	unsigned int myFeatureMask;
 
 	LengthType myLengths[NUMBER_OF_LENGTHS];
 	ZLTextAlignmentType myAlignmentType;

@@ -34,14 +34,14 @@ void StyleSheetTable::addMap(shared_ptr<CSSSelector> selectorPtr, const Attribut
 		const CSSSelector &selector = *selectorPtr;
 		myControlMap[selector] = createOrUpdateControl(map, myControlMap[selector]);
 
-		const std::string &pbb = value(map, "page-break-before");
+		const std::string &pbb = value(map, CSS_PAGE_BREAK_BEFORE);
 		if (pbb == "always" || pbb == "left" || pbb == "right") {
 			myPageBreakBeforeMap[selector] = true;
 		} else if (pbb == "avoid") {
 			myPageBreakBeforeMap[selector] = false;
 		}
 
-		const std::string &pba = value(map, "page-break-after");
+		const std::string &pba = value(map, CSS_PAGE_BREAK_AFTER);
 		if (pba == "always" || pba == "left" || pba == "right") {
 			myPageBreakAfterMap[selector] = true;
 		} else if (pba == "avoid") {
@@ -171,7 +171,7 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		entry = new ZLTextStyleEntry(ZLTextStyleEntry::STYLE_CSS_ENTRY);
 	}
 
-	const std::string &alignment = value(styles, "text-align");
+	const std::string &alignment = value(styles, CSS_TEXT_ALIGN);
 	if (alignment == "justify") {
 		entry->setAlignmentType(ALIGN_JUSTIFY);
 	} else if (alignment == "left") {
@@ -182,7 +182,7 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		entry->setAlignmentType(ALIGN_CENTER);
 	}
 
-	const std::string &deco = value(styles, "text-decoration");
+	const std::string &deco = value(styles, CSS_TEXT_DECORATION);
 	if (deco == "underline") {
 		entry->setFontModifier(ZLTextStyleEntry::FONT_MODIFIER_UNDERLINED, true);
 	} else if (deco == "line-through") {
@@ -192,7 +192,7 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		entry->setFontModifier(ZLTextStyleEntry::FONT_MODIFIER_STRIKEDTHROUGH, false);
 	}
 
-	const std::string bold = value(styles, "font-weight");
+	const std::string bold = value(styles, CSS_FONT_WEIGHT);
 	if (!bold.empty()) {
 		int num = -1;
 		if (bold == "bold") {
@@ -211,22 +211,22 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		}
 	}
 
-	const std::string &italic = value(styles, "font-style");
+	const std::string &italic = value(styles, CSS_FONT_STYLE);
 	if (!italic.empty()) {
 		entry->setFontModifier(ZLTextStyleEntry::FONT_MODIFIER_ITALIC, italic == "italic" || italic == "oblique");
 	}
 
-	const std::string &variant = value(styles, "font-variant");
+	const std::string &variant = value(styles, CSS_FONT_VARIANT);
 	if (!variant.empty()) {
 		entry->setFontModifier(ZLTextStyleEntry::FONT_MODIFIER_SMALLCAPS, variant == "small-caps");
 	}
 
-	const std::string &fontFamily = value(styles, "font-family");
+	const std::string &fontFamily = value(styles, CSS_FONT_FAMILY);
 	if (!fontFamily.empty()) {
 		entry->setFontFamilies(StyleSheetUtil::splitCommaSeparatedList(fontFamily));
 	}
 
-	const std::string &fontSize = value(styles, "font-size");
+	const std::string &fontSize = value(styles, CSS_FONT_SIZE);
 	if (!fontSize.empty()) {
 		bool doSetFontSize = true;
 		short size = 100;
@@ -263,18 +263,18 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 	}
 
 	// add text color support.
-	const std::string color = value(styles, "color");
+	const std::string color = value(styles, CSS_COLOR);
 	if (!color.empty()) {
 		entry->setColor(color);
 	}
 
 	// add text color support.
-	const std::string bgColor = value(styles, "background-color");
+	const std::string bgColor = value(styles, CSS_BG_COLOR);
 	if (!bgColor.empty()) {
 		entry->setBgColor(bgColor);
 	}
 
-	const std::string margin = value(styles, "margin");
+	const std::string margin = value(styles, CSS_MARGIN);
 	if (!margin.empty()) {
 		std::vector<std::string> split = ZLStringUtil::split(margin, " ", true);
 		if (split.size() > 0) {
@@ -295,7 +295,7 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		::trySetLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_AFTER, split[2]);
 		::trySetLength(*entry, ZLTextStyleEntry::LENGTH_MARGIN_LEFT, split[3]);
 	}
-	const std::string padding = value(styles, "padding");
+	const std::string padding = value(styles, CSS_PADDING);
 	if (!padding.empty()) {
 		std::vector<std::string> split = ZLStringUtil::split(padding, " ", true);
 		if (split.size() > 0) {
@@ -316,17 +316,17 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		::trySetLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_AFTER, split[2]);
 		::trySetLength(*entry, ZLTextStyleEntry::LENGTH_PADDING_LEFT, split[3]);
 	}
-	setLength(*entry, ZLTextStyleEntry::LENGTH_MARGIN_LEFT, styles, "margin-left");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_MARGIN_RIGHT, styles, "margin-right");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_PADDING_LEFT, styles, "padding-left");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_PADDING_RIGHT, styles, "padding-right");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_FIRST_LINE_INDENT, styles, "text-indent");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_BEFORE, styles, "margin-top");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_BEFORE, styles, "padding-top");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_AFTER, styles, "margin-bottom");
-	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_AFTER, styles, "padding-bottom");
+	setLength(*entry, ZLTextStyleEntry::LENGTH_MARGIN_LEFT, styles, CSS_MARGIN_LEFT);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_MARGIN_RIGHT, styles, CSS_MARGIN_RIGHT);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_PADDING_LEFT, styles, CSS_PADDING_LEFT);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_PADDING_RIGHT, styles, CSS_PADDING_RIGHT);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_FIRST_LINE_INDENT, styles, CSS_TEXT_INDENT);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_BEFORE, styles, CSS_MARGIN_TOP);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_BEFORE, styles, CSS_PADDING_TOP);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_AFTER, styles, CSS_MARGIN_BOTTOM);
+	setLength(*entry, ZLTextStyleEntry::LENGTH_SPACE_AFTER, styles, CSS_PADDING_BOTTOM);
 
-	const std::string verticalAlign = value(styles, "vertical-align");
+	const std::string verticalAlign = value(styles, CSS_VERTICAL_ALIGN);
 	if (!verticalAlign.empty()) {
 		static const char* values[] = { "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom", "initial", "inherit" };
 		int index = sizeof(values) / sizeof(const char*) - 1;
@@ -342,7 +342,7 @@ shared_ptr<ZLTextStyleEntry> StyleSheetTable::createOrUpdateControl(const Attrib
 		}
 	}
 
-	entry->setDisplayCode(StyleSheetUtil::displayCode(value(styles, "display")));
+	entry->setDisplayCode(StyleSheetUtil::displayCode(value(styles, CSS_DISPLAY)));
 
 	return entry;
 }
@@ -352,3 +352,32 @@ void StyleSheetTable::clear() {
 	myPageBreakBeforeMap.clear();
 	myPageBreakAfterMap.clear();
 }
+
+
+/**
+ * Define support css attribute name.
+ */
+std::string CSS_PAGE_BREAK_BEFORE = "page-break-before";
+std::string CSS_PAGE_BREAK_AFTER = "page-break-after";
+std::string CSS_TEXT_ALIGN = "text-align";
+std::string CSS_TEXT_DECORATION = "text-decoration";
+std::string CSS_TEXT_INDENT = "text-indent";
+std::string CSS_FONT_WEIGHT = "font-weight";
+std::string CSS_FONT_STYLE = "font-style";
+std::string CSS_FONT_VARIANT = "font-variant";
+std::string CSS_FONT_FAMILY = "font-family";
+std::string CSS_FONT_SIZE = "font-size";
+std::string CSS_COLOR = "color";
+std::string CSS_BG_COLOR = "background-color";
+std::string CSS_MARGIN = "margin";
+std::string CSS_MARGIN_TOP = "margin-top";
+std::string CSS_MARGIN_BOTTOM = "margin-bottom";
+std::string CSS_MARGIN_LEFT = "margin-left";
+std::string CSS_MARGIN_RIGHT = "margin-right";
+std::string CSS_PADDING = "padding";
+std::string CSS_PADDING_TOP = "padding-top";
+std::string CSS_PADDING_BOTTOM = "padding-bottom";
+std::string CSS_PADDING_LEFT = "padding-left";
+std::string CSS_PADDING_RIGHT = "padding-right";
+std::string CSS_VERTICAL_ALIGN = "vertical-align";
+std::string CSS_DISPLAY = "display";
