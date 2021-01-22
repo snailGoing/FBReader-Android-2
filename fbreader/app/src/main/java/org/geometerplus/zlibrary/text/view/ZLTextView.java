@@ -496,17 +496,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
         // then, start to draw the page.
         final List<ZLTextHighlighting> hilites = findHilites(page);
 
-        x = getLeftMargin();
-        y = getTopMargin();
         index = 0;
         for (ZLTextLineInfo info : lineInfos) {
             drawTextLine(page, hilites, info, labels[index], labels[index + 1]);
-            y += info.Height + info.Descent + info.VSpaceAfter;
             ++index;
-            if (index == page.Column0Height) {
-                y = getTopMargin();
-                x += page.getTextWidth() + getSpaceBetweenColumns();
-            }
         }
 
         // TODO: find backgroud color area, and draw.

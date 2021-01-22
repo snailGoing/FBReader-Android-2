@@ -57,7 +57,7 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
      */
     private int[] myStartEntryOffsets;
     /**
-     * Provide the length of every paragraph.
+     * Provide the element number of every paragraph.
      */
     private int[] myParagraphLengths;
     /**
