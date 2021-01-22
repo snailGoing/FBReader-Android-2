@@ -890,6 +890,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 }
             }
         }
+
+        // For english, this line may contain endElementIndex position(hyphenation),
+        // but it hasn't been handled in above for loop, need to handle the hyphenation word.
         if (index != to) {
             ZLTextElementArea area = pageAreas.get(index++);
             if (area.ChangeStyle) {
@@ -1039,7 +1042,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
      *                   {@link ZLTextParagraphCursor#getElement(int)}.
      * @param startCharIndex The start char index in the ZLTextElement.
      *                       Such as: "good" is divided into "go-" and "od"
-     * @param endIndex The end index limitation.
+     * @param endIndex The end index limitation which can't be arrived.
      * @param previousInfo The last text-line info, maybe null.
      *
      * @return {@link #processTextLineInternal }
@@ -1255,6 +1258,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 if (info.Descent < newDescent) {
                     info.Descent = newDescent;
                 }
+
+                // For Chinese, the end of the line doesn't contain the end value;
+                // for English, it may contain the first half of a word.
                 info.EndElementIndex = currentElementIndex;
                 info.EndCharIndex = currentCharIndex;
                 info.SpaceCounter = internalSpaceCounter;
@@ -1298,6 +1304,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                     // save the width of front part, such as "sud-"
                     int subwordWidth = 0;
 
+                    // Hyphenation Case 1: use ZLTextHyphenationInfo to hyphenate.
                     // traversing the word letters to get the best hyphenation point with the available spaceLeft.
                     for (int right = word.Length - 1, left = currentCharIndex; right > left; ) {
                         // binary search to find the location.
@@ -1337,11 +1344,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
                         LogUtils.d(TAG, "processTextLineInternal: 6. currentCharIndex: " + currentCharIndex + " word :" + word.toString());
                     }
 
-                    // if not find the hyphenation point by "for" loop and no element in this ZLTextLineInfo,
-                    // binary search to find the best hyphenation position.
+                    // Hyphenation Case 2: need to force hyphenate (not use ZLTextHyphenationInfo).
+                    // if not find the hyphenation point by "for" loop and this line only contains one element.
                     if (hyphenationPosition == currentCharIndex && info.EndElementIndex == startIndex) {
                         LogUtils.i(TAG, "processTextLineInternal: 7.  " + " word :" + word.toString());
                         subwordWidth = getWordWidth(word, currentCharIndex, 1, false);
+
+                        // force binary search to find the best hyphenation position.
                         int right = word.Length == currentCharIndex + 1 ? word.Length : word.Length - 1;
                         int left = currentCharIndex + 1;
                         while (right > left) {
@@ -1374,6 +1383,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                             info.Descent = newDescent;
                         }
                         info.EndElementIndex = currentElementIndex;
+                        // this hyphenation position is contained.
                         info.EndCharIndex = hyphenationPosition;
                         info.SpaceCounter = internalSpaceCounter;
                         storedStyle = getTextStyle();
@@ -1503,6 +1513,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
         final int endElementIndex = info.EndElementIndex;
         int charIndex = info.RealStartCharIndex;
         ZLTextElementArea spaceElement = null;
+        // for chinese not contains endElementIndex, for english may contains it(if can hyphenate)
         for (int wordIndex = info.RealStartElementIndex; wordIndex != endElementIndex; ++wordIndex, charIndex = 0) {
             final ZLTextElement element = paragraph.getElement(wordIndex);
             final int width = getElementWidth(element, charIndex);
