@@ -46,14 +46,18 @@ Book::~Book() {
 shared_ptr<Book> Book::createBook(
 	const ZLFile &file,
 	int id,
+	const std::string &addInnerTitle,
 	const std::string &encoding,
 	const std::string &language,
-	const std::string &title
+	const std::string &title,
+	const bool isLocal
 ) {
 	Book *book = new Book(file, id);
 	book->setEncoding(encoding);
 	book->setLanguage(language);
 	book->setTitle(title);
+	book->setAddInnerTitle(addInnerTitle);
+	book->setLocal(isLocal);
 	return book;
 }
 
@@ -87,13 +91,18 @@ shared_ptr<Book> Book::loadFromFile(const ZLFile &file) {
 
 shared_ptr<Book> Book::loadFromJavaBook(JNIEnv *env, jobject javaBook) {
 	const std::string path = AndroidUtil::Method_Book_getPath->callForCppString(javaBook);
+	const std::string addInnerTitle = AndroidUtil::Method_Book_getAddInnerTitle->callForCppString(javaBook);
 	const std::string title = AndroidUtil::Method_Book_getTitle->callForCppString(javaBook);
 	const std::string language = AndroidUtil::Method_Book_getLanguage->callForCppString(javaBook);
 	const std::string encoding = AndroidUtil::Method_Book_getEncodingNoDetection->callForCppString(javaBook);
+	const bool isLocal =  AndroidUtil::Method_Book_isLocal->call(javaBook);
 
-	return createBook(ZLFile(path), 0, encoding, language, title);
+	return createBook(ZLFile(path), 0, addInnerTitle, encoding, language, title, isLocal);
 }
 
+bool Book::isLocalBook() {
+	return isLocal;
+}
 
 bool Book::addTag(shared_ptr<Tag> tag) {
 	if (tag.isNull()) {
@@ -274,6 +283,14 @@ void Book::setEncoding(const std::string &encoding) {
 void Book::setSeries(const std::string &title, const std::string &index) {
 	mySeriesTitle = title;
 	myIndexInSeries = index;
+}
+
+void Book::setAddInnerTitle(const std::string &addInnerTitle) {
+	myAddInnerTitle = addInnerTitle;
+}
+
+void Book::setLocal(bool isLocal) {
+	this->isLocal = isLocal;
 }
 
 void Book::removeAllTags() {

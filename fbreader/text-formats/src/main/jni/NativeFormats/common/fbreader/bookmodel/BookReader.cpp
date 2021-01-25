@@ -52,7 +52,7 @@ void BookReader::setFootnoteTextModel(const std::string &id) {
 		myCurrentTextModel = (*it).second;
 	} else {
 		if (myFootnotesAllocator.isNull()) {
-			myFootnotesAllocator = new ZLCachedMemoryAllocator(8192, myModel.CacheDir, "footnotes");
+			myFootnotesAllocator = new ZLCachedMemoryAllocator(8192, myModel.CacheDir, myModel.Name, "footnotes");
 		}
 		myCurrentTextModel = new ZLTextPlainModel(id, myModel.myBookTextModel->language(), myFootnotesAllocator, myModel.myFontManager);
 		myModel.myFootnotes.insert(std::make_pair(id, myCurrentTextModel));

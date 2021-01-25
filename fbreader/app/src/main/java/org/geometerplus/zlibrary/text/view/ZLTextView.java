@@ -2003,6 +2003,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
             final ZLTextElementArea lastArea = myCurrentPage.TextElementMap.getLastArea();
             return lastArea != null ? lastArea.YEnd : 0;
         }
+
+
     }
 
     public int getSelectionEndY() {

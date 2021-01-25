@@ -65,6 +65,14 @@ public abstract class AbstractBook extends TitledEntity<AbstractBook> {
 
     public abstract String getPath();
 
+    public String getAddInnerTitle() {
+        return "";
+    }
+
+    public boolean isLocal() {
+        return true;
+    }
+
     public abstract void updateFrom(AbstractBook book);
 
     protected final void updateFrom(AbstractBook book, int state) {

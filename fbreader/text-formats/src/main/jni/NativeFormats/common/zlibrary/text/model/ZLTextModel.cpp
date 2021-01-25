@@ -35,10 +35,10 @@
 #include "ZLVideoEntry.h"
 
 ZLTextModel::ZLTextModel(const std::string &id, const std::string &language, const std::size_t rowSize,
-		const std::string &directoryName, const std::string &fileExtension, FontManager &fontManager) :
+		const std::string &directoryName, const std::string &name, const std::string &fileExtension, FontManager &fontManager) :
 	myId(id),
 	myLanguage(language.empty() ? ZLibrary::Language() : language),
-	myAllocator(new ZLCachedMemoryAllocator(rowSize, directoryName, fileExtension)),
+	myAllocator(new ZLCachedMemoryAllocator(rowSize, directoryName, name, fileExtension)),
 	myLastEntryStart(0),
 	myFontManager(fontManager) {
 }
@@ -138,8 +138,8 @@ void ZLTextModel::addParagraphInternal(ZLTextParagraph *paragraph) {
 }
 
 ZLTextPlainModel::ZLTextPlainModel(const std::string &id, const std::string &language, const std::size_t rowSize,
-		const std::string &directoryName, const std::string &fileExtension, FontManager &fontManager) :
-	ZLTextModel(id, language, rowSize, directoryName, fileExtension, fontManager) {
+		const std::string &directoryName, const std::string &name, const std::string &fileExtension, FontManager &fontManager) :
+	ZLTextModel(id, language, rowSize, directoryName, name, fileExtension, fontManager) {
 }
 
 ZLTextPlainModel::ZLTextPlainModel(const std::string &id, const std::string &language, shared_ptr<ZLCachedMemoryAllocator> allocator, FontManager &fontManager) :

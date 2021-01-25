@@ -33,6 +33,7 @@ import org.geometerplus.zlibrary.core.image.ZLFileImageProxy;
 import org.geometerplus.zlibrary.core.util.SystemInfo;
 import org.geometerplus.zlibrary.text.model.CachedCharStorageException;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -108,7 +109,16 @@ public class NativeFormatPlugin extends BuiltinFormatPlugin {
     @Override
     synchronized public void readModel(BookModel model) throws BookReadingException {
         final int code;
-        final String tempDirectory = SystemInfo.tempDirectory();
+        String tempDirectory = SystemInfo.tempDirectory();
+        // add file directory for local book.
+        String path = model.Book.getPath();
+        if (model.Book.isLocal()) {
+            tempDirectory = tempDirectory + "/" + path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."));
+            File dir = new File(tempDirectory);
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+        }
         synchronized (ourNativeLock) {
             code = readModelNative(model, tempDirectory);
         }

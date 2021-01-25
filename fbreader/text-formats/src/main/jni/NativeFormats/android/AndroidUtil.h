@@ -137,6 +137,7 @@ public:
 	static shared_ptr<BooleanMethod> Method_JavaEncodingCollection_providesConverterFor;
 
 	static shared_ptr<StringMethod> Method_Book_getPath;
+	static shared_ptr<StringMethod> Method_Book_getAddInnerTitle;
 	static shared_ptr<StringMethod> Method_Book_getTitle;
 	static shared_ptr<StringMethod> Method_Book_getLanguage;
 	static shared_ptr<StringMethod> Method_Book_getEncodingNoDetection;
@@ -147,6 +148,7 @@ public:
 	static shared_ptr<VoidMethod> Method_Book_addAuthor;
 	static shared_ptr<VoidMethod> Method_Book_addTag;
 	static shared_ptr<VoidMethod> Method_Book_addUid;
+	static shared_ptr<BooleanMethod> Method_Book_isLocal;
 
 	static shared_ptr<StaticObjectMethod> StaticMethod_Tag_getTag;
 

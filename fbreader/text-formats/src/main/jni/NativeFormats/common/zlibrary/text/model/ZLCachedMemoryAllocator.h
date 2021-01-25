@@ -27,7 +27,7 @@
 class ZLCachedMemoryAllocator {
 
 public:
-	ZLCachedMemoryAllocator(const std::size_t rowSize, const std::string &directoryName, const std::string &fileExtension);
+	ZLCachedMemoryAllocator(const std::size_t rowSize, const std::string &directoryName, const std::string &name, const std::string &fileExtension);
 	~ZLCachedMemoryAllocator();
 
 	char *allocate(std::size_t size);
@@ -43,6 +43,7 @@ public:
 
 public:
 	const std::string &directoryName() const;
+	const std::string &fileName() const;
 	const std::string &fileExtension() const;
 	std::size_t blocksNumber() const;
 	std::size_t currentBytesOffset() const;
@@ -62,6 +63,7 @@ private:
 	bool myFailed;
 
 	const std::string myDirectoryName;
+	const std::string myFileName;
 	const std::string myFileExtension;
 
 private: // disable copying
@@ -70,6 +72,7 @@ private: // disable copying
 };
 
 inline const std::string &ZLCachedMemoryAllocator::directoryName() const { return myDirectoryName; }
+inline const std::string &ZLCachedMemoryAllocator::fileName() const { return myFileName; }
 inline const std::string &ZLCachedMemoryAllocator::fileExtension() const { return myFileExtension; }
 inline std::size_t ZLCachedMemoryAllocator::blocksNumber() const { return myPool.size(); }
 inline std::size_t ZLCachedMemoryAllocator::currentBytesOffset() const { return myOffset; }

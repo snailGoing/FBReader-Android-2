@@ -90,8 +90,12 @@ public:
 
 	bool flush();
 
+	bool isLocal() const;
+	std::string addedInnerTitle() const ;
+
 public:
 	const std::string CacheDir;
+	std::string Name;
 
 private:
 	const shared_ptr<Book> myBook;

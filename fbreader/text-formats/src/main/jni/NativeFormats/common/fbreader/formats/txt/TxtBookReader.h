@@ -43,6 +43,7 @@ protected:
 
 private:
 	void internalEndParagraph();
+	void addInnerTitleName();
 
 private:
 	const PlainTextFormat &myFormat;
@@ -53,7 +54,5 @@ private:
 	bool myNewLine;
 	int mySpaceCounter;
 };
-
-inline TxtBookReader::~TxtBookReader() {}
 
 #endif /* __TXTBOOKREADER_H__ */

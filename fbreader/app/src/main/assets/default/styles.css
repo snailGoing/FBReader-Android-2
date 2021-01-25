@@ -266,3 +266,14 @@ date {
 	margin-left: 30pt;
 	hyphens: none;
 }
+
+
+kt {
+	fbreader-id: 255;
+	fbreader-name: "K inner title";
+	font-size: 2em;
+	font-weight: bold;
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+	hyphens: none;
+}

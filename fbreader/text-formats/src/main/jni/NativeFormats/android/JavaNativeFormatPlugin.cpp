@@ -185,7 +185,7 @@ JNIEXPORT void JNICALL Java_org_geometerplus_fbreader_formats_NativeFormatPlugin
 }
 
 static bool initInternalHyperlinks(JNIEnv *env, jobject javaModel, BookModel &model, const std::string &cacheDir) {
-	ZLCachedMemoryAllocator allocator(131072, cacheDir, "nlinks");
+	ZLCachedMemoryAllocator allocator(131072, cacheDir, model.Name, "nlinks");
 
 	ZLUnicodeUtil::Ucs2String ucs2id;
 	ZLUnicodeUtil::Ucs2String ucs2modelId;
@@ -217,9 +217,11 @@ static bool initInternalHyperlinks(JNIEnv *env, jobject javaModel, BookModel &mo
 	allocator.flush();
 
 	JString linksDirectoryName(env, allocator.directoryName(), false);
+	JString linksName(env, allocator.fileName(), false);
 	JString linksFileExtension(env, allocator.fileExtension(), false);
 	jint linksBlocksNumber = allocator.blocksNumber();
-	AndroidUtil::Method_BookModel_initInternalHyperlinks->call(javaModel, linksDirectoryName.j(), linksFileExtension.j(), linksBlocksNumber);
+	AndroidUtil::Method_BookModel_initInternalHyperlinks->call(javaModel,
+			linksDirectoryName.j(), linksName.j(), linksFileExtension.j(), linksBlocksNumber);
 	return !env->ExceptionCheck();
 }
 
@@ -243,6 +245,7 @@ static jobject createTextModel(JNIEnv *env, jobject javaModel, ZLTextModel &mode
 	env->SetByteArrayRegion(paragraphKinds, 0, arraysSize, &model.paragraphKinds().front());
 
 	jstring directoryName = env->NewStringUTF(model.allocator().directoryName().c_str());
+    jstring fileName = env->NewStringUTF(model.allocator().fileName().c_str());
 	jstring fileExtension = env->NewStringUTF(model.allocator().fileExtension().c_str());
 	jint blocksNumber = (jint) model.allocator().blocksNumber();
 
@@ -251,7 +254,7 @@ static jobject createTextModel(JNIEnv *env, jobject javaModel, ZLTextModel &mode
 		id, language,
 		paragraphsNumber, entryIndices, entryOffsets,
 		paragraphLenghts, textSizes, paragraphKinds,
-		directoryName, fileExtension, blocksNumber
+		directoryName, fileName, fileExtension, blocksNumber
 	);
 
 	if (env->ExceptionCheck()) {

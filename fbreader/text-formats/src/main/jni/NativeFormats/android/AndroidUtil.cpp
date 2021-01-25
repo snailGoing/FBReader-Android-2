@@ -99,6 +99,7 @@ shared_ptr<Constructor> AndroidUtil::Constructor_FileEncryptionInfo;
 shared_ptr<Constructor> AndroidUtil::Constructor_ZLFileImage;
 
 shared_ptr<StringMethod> AndroidUtil::Method_Book_getPath;
+shared_ptr<StringMethod> AndroidUtil::Method_Book_getAddInnerTitle;
 shared_ptr<StringMethod> AndroidUtil::Method_Book_getTitle;
 shared_ptr<StringMethod> AndroidUtil::Method_Book_getLanguage;
 shared_ptr<StringMethod> AndroidUtil::Method_Book_getEncodingNoDetection;
@@ -109,6 +110,7 @@ shared_ptr<VoidMethod> AndroidUtil::Method_Book_setEncoding;
 shared_ptr<VoidMethod> AndroidUtil::Method_Book_addAuthor;
 shared_ptr<VoidMethod> AndroidUtil::Method_Book_addTag;
 shared_ptr<VoidMethod> AndroidUtil::Method_Book_addUid;
+shared_ptr<BooleanMethod> AndroidUtil::Method_Book_isLocal;
 
 shared_ptr<StaticObjectMethod> AndroidUtil::StaticMethod_Tag_getTag;
 
@@ -177,6 +179,7 @@ bool AndroidUtil::init(JavaVM* jvm) {
 	Constructor_ZLFileImage = new Constructor(Class_ZLFileImage, "(Lorg/geometerplus/zlibrary/core/filesystem/ZLFile;Ljava/lang/String;[I[ILorg/geometerplus/zlibrary/core/drm/FileEncryptionInfo;)V");
 
 	Method_Book_getPath = new StringMethod(Class_AbstractBook, "getPath", "()");
+	Method_Book_getAddInnerTitle = new StringMethod(Class_AbstractBook, "getAddInnerTitle", "()");
 	Method_Book_getTitle = new StringMethod(Class_AbstractBook, "getTitle", "()");
 	Method_Book_getLanguage = new StringMethod(Class_AbstractBook, "getLanguage", "()");
 	Method_Book_getEncodingNoDetection = new StringMethod(Class_AbstractBook, "getEncodingNoDetection", "()");
@@ -187,14 +190,15 @@ bool AndroidUtil::init(JavaVM* jvm) {
 	Method_Book_addAuthor = new VoidMethod(Class_AbstractBook, "addAuthor", "(Ljava/lang/String;Ljava/lang/String;)");
 	Method_Book_addTag = new VoidMethod(Class_AbstractBook, "addTag", "(Lorg/geometerplus/fbreader/book/Tag;)");
 	Method_Book_addUid = new VoidMethod(Class_AbstractBook, "addUid", "(Ljava/lang/String;Ljava/lang/String;)");
+	Method_Book_isLocal = new BooleanMethod(Class_AbstractBook, "isLocal", "()");
 
 	StaticMethod_Tag_getTag = new StaticObjectMethod(Class_Tag, "getTag", Class_Tag, "(Lorg/geometerplus/fbreader/book/Tag;Ljava/lang/String;)");
 
 	Field_BookModel_Book = new ObjectField(Class_BookModel, "Book", Class_Book);
-	Method_BookModel_initInternalHyperlinks = new VoidMethod(Class_BookModel, "initInternalHyperlinks", "(Ljava/lang/String;Ljava/lang/String;I)");
+	Method_BookModel_initInternalHyperlinks = new VoidMethod(Class_BookModel, "initInternalHyperlinks", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)");
 	Method_BookModel_addTOCItem = new VoidMethod(Class_BookModel, "addTOCItem", "(Ljava/lang/String;I)");
 	Method_BookModel_leaveTOCItem = new VoidMethod(Class_BookModel, "leaveTOCItem", "()");
-	Method_BookModel_createTextModel = new ObjectMethod(Class_BookModel, "createTextModel", Class_ZLTextModel, "(Ljava/lang/String;Ljava/lang/String;I[I[I[I[I[BLjava/lang/String;Ljava/lang/String;I)");
+	Method_BookModel_createTextModel = new ObjectMethod(Class_BookModel, "createTextModel", Class_ZLTextModel, "(Ljava/lang/String;Ljava/lang/String;I[I[I[I[I[BLjava/lang/String;Ljava/lang/String;Ljava/lang/String;I)");
 	Method_BookModel_setBookTextModel = new VoidMethod(Class_BookModel, "setBookTextModel", "(Lorg/geometerplus/zlibrary/text/model/ZLTextModel;)");
 	Method_BookModel_setFootnoteModel = new VoidMethod(Class_BookModel, "setFootnoteModel", "(Lorg/geometerplus/zlibrary/text/model/ZLTextModel;)");
 	Method_BookModel_addImage = new VoidMethod(Class_BookModel, "addImage", "(Ljava/lang/String;Lorg/geometerplus/zlibrary/core/image/ZLImage;)");

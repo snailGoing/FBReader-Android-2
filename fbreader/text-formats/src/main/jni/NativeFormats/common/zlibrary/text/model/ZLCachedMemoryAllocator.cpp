@@ -31,13 +31,14 @@
 #include "ZLCachedMemoryAllocator.h"
 
 ZLCachedMemoryAllocator::ZLCachedMemoryAllocator(const std::size_t rowSize,
-		const std::string &directoryName, const std::string &fileExtension) :
+		const std::string &directoryName, const std::string &name, const std::string &fileExtension) :
 	myRowSize(rowSize),
 	myCurrentRowSize(0),
 	myOffset(0),
 	myHasChanges(false),
 	myFailed(false),
 	myDirectoryName(directoryName),
+	myFileName(name),
 	myFileExtension(fileExtension) {
 	ZLFile(directoryName).directory(true);
 }
@@ -63,6 +64,8 @@ void ZLCachedMemoryAllocator::flush() {
 std::string ZLCachedMemoryAllocator::makeFileName(std::size_t index) {
 	std::string name(myDirectoryName);
 	name.append("/");
+	name.append(myFileName);
+    name.append("_");
 	ZLStringUtil::appendNumber(name, index);
 	return name.append(".").append(myFileExtension);
 }

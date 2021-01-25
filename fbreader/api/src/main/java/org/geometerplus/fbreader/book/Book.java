@@ -21,6 +21,8 @@ package org.geometerplus.fbreader.book;
 
 public final class Book extends AbstractBook {
     private final String myPath;
+    private String addInnerTitle;
+    private boolean isLocal = true;
 
     public Book(long id, String path, String title, String encoding, String language) {
         super(id, title, encoding, language);
@@ -43,6 +45,24 @@ public final class Book extends AbstractBook {
     @Override
     public int hashCode() {
         return myPath.hashCode();
+    }
+
+    @Override
+    public String getAddInnerTitle() {
+        return addInnerTitle;
+    }
+
+    public void setLocal(boolean local) {
+        isLocal = local;
+    }
+
+    @Override
+    public boolean isLocal() {
+        return isLocal;
+    }
+
+    public void setAddInnerTitle(String addInnerTitle) {
+        this.addInnerTitle = addInnerTitle;
     }
 
     @Override

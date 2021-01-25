@@ -39,9 +39,11 @@ public:
 	static shared_ptr<Book> createBook(
 		const ZLFile &file,
 		int id,
+		const std::string &addInnerTitle,
 		const std::string &encoding,
 		const std::string &language,
-		const std::string &title
+		const std::string &title,
+		const bool isLocal
 	);
 
 	static shared_ptr<Book> loadFromFile(const ZLFile &file);
@@ -60,6 +62,7 @@ public:
 public: // unmodifiable book methods
 	const std::string &title() const;
 	const ZLFile &file() const;
+	const std::string &addedInnerTitle() const;
 	const std::string &language() const;
 	const std::string &encoding() const;
 	const std::string &seriesTitle() const;
@@ -69,11 +72,15 @@ public: // unmodifiable book methods
 	const AuthorList &authors() const;
 	const UIDList &uids() const;
 
+	bool isLocalBook();
+
 public: // modifiable book methods
 	void setTitle(const std::string &title);
 	void setLanguage(const std::string &language);
 	void setEncoding(const std::string &encoding);
 	void setSeries(const std::string &title, const std::string &index);
+	void setAddInnerTitle(const std::string &addInnerTitle);
+	void setLocal(bool isLocal);
 
 public:
 	bool addTag(shared_ptr<Tag> tag);
@@ -100,6 +107,7 @@ private:
 	int myBookId;
 
 	const ZLFile myFile;
+	std::string myAddInnerTitle;
 	std::string myTitle;
 	std::string myLanguage;
 	std::string myEncoding;
@@ -108,6 +116,8 @@ private:
 	TagList myTags;
 	AuthorList myAuthors;
 	UIDList myUIDs;
+
+	bool isLocal;
 
 private: // disable copying
 	Book(const Book &);
@@ -134,6 +144,7 @@ public:
 
 inline const std::string &Book::title() const { return myTitle; }
 inline const ZLFile &Book::file() const { return myFile; }
+inline const std::string &Book::addedInnerTitle() const { return myAddInnerTitle; }
 inline const std::string &Book::language() const { return myLanguage; }
 inline const std::string &Book::encoding() const { return myEncoding; }
 inline const std::string &Book::seriesTitle() const { return mySeriesTitle; }
@@ -145,5 +156,4 @@ inline const UIDList &Book::uids() const { return myUIDs; }
 
 inline int Book::bookId() const { return myBookId; }
 inline void Book::setBookId(int bookId) { myBookId = bookId; }
-
 #endif /* __BOOK_H__ */

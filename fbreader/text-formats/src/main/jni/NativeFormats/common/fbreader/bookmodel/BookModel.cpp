@@ -28,22 +28,32 @@
 
 #include "../formats/FormatPlugin.h"
 #include "../library/Book.h"
+const static std::string TAG = "BookModel";
 
 BookModel::BookModel(const shared_ptr<Book> book, jobject javaModel, const std::string &cacheDir) : CacheDir(cacheDir), myBook(book) {
-	ZLLogger::Instance().registerClass("BookModel");
+	ZLLogger::Instance().registerClass(TAG);
 	myJavaModel = AndroidUtil::getEnv()->NewGlobalRef(javaModel);
 
-	myBookTextModel = new ZLTextPlainModel(std::string(), book->language(), 131072, CacheDir, "ncache", myFontManager);
+	// The local book is no need to add name due to cacheDir.
+	std::string fileName = book->file().path();
+	if (!book->isLocalBook()) {
+		int pos1 = fileName.find_last_of('/');
+		int pos2 = fileName.find_last_of('.');
+		if (pos2 <= 0) {
+			pos2 =  fileName.size() - 1;
+		}
+		fileName = fileName.substr(pos1 + 1, pos2 - pos1 -1);
+	} else {
+		fileName = "";
+	}
+	Name = fileName;
+	myBookTextModel = new ZLTextPlainModel(std::string(), book->language(), 131072, CacheDir, fileName, "ncache", myFontManager);
 	myContentsTree = new ContentsTree();
-	/*shared_ptr<FormatPlugin> plugin = PluginCollection::Instance().plugin(book->file(), false);
-	if (!plugin.isNull()) {
-		plugin->readModel(*this);
-	}*/
 }
 
 BookModel::~BookModel() {
 	AndroidUtil::getEnv()->DeleteGlobalRef(myJavaModel);
-	ZLLogger::Instance().unregisterClass("BookModel");
+	ZLLogger::Instance().unregisterClass(TAG);
 }
 
 void BookModel::setHyperlinkMatcher(shared_ptr<HyperlinkMatcher> matcher) {
@@ -57,7 +67,7 @@ void BookModel::setHyperlinkMatcher(shared_ptr<HyperlinkMatcher> matcher) {
  */
 BookModel::Label BookModel::label(const std::string &id) const {
 	if (!myHyperlinkMatcher.isNull()) {
-		ZLLogger::Instance().println("BookModel", " label()   id = " + id);
+		ZLLogger::Instance().println(TAG, " label()   id = " + id);
 		return myHyperlinkMatcher->match(myInternalHyperlinks, id);
 	}
 
@@ -67,6 +77,14 @@ BookModel::Label BookModel::label(const std::string &id) const {
 
 const shared_ptr<Book> BookModel::book() const {
 	return myBook;
+}
+
+bool BookModel::isLocal() const {
+	return myBook->isLocalBook();
+}
+
+std::string BookModel::addedInnerTitle() const {
+	return myBook->addedInnerTitle();
 }
 
 bool BookModel::flush() {

@@ -39,16 +39,18 @@ public final class CachedCharStorage {
             new ArrayList<WeakReference<char[]>>();
 
     private final String myDirectoryName;
+    private final String myName;
     private final String myFileExtension;
 
-    public CachedCharStorage(String directoryName, String fileExtension, int blocksNumber) {
+    public CachedCharStorage(String directoryName, String name, String fileExtension, int blocksNumber) {
         myDirectoryName = directoryName + '/';
+        myName = name + "_";
         myFileExtension = '.' + fileExtension;
         myArray.addAll(Collections.nCopies(blocksNumber, new WeakReference<char[]>(null)));
     }
 
     private String fileName(int index) {
-        return myDirectoryName + index + myFileExtension;
+        return myDirectoryName + myName + index + myFileExtension;
     }
 
     public int size() {

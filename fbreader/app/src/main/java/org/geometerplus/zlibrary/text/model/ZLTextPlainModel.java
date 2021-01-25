@@ -88,6 +88,7 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
             int[] textSizes,
             byte[] paragraphKinds,
             String directoryName,
+            String fileName,
             String fileExtension,
             int blocksNumber,
             Map<String, ZLImage> imageMap,
@@ -101,7 +102,7 @@ public final class ZLTextPlainModel implements ZLTextModel, ZLTextStyleEntry.Fea
         myParagraphLengths = paragraphLengths;
         myTextSizes = textSizes;
         myParagraphKinds = paragraphKinds;
-        myStorage = new CachedCharStorage(directoryName, fileExtension, blocksNumber);
+        myStorage = new CachedCharStorage(directoryName, fileName, fileExtension, blocksNumber);
         myImageMap = imageMap;
         myFontManager = fontManager;
     }

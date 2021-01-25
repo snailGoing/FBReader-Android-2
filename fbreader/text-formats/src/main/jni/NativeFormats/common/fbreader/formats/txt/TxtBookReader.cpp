@@ -18,11 +18,18 @@
  */
 
 #include <cctype>
+#include <ZLLogger.h>
 
 #include "TxtBookReader.h"
 #include "../../bookmodel/BookModel.h"
 
+static const std::string TAG = "TxtBookReader";
 TxtBookReader::TxtBookReader(BookModel &model, const PlainTextFormat &format, const std::string &encoding) : TxtReader(encoding), BookReader(model), myFormat(format) {
+	ZLLogger::Instance().registerClass(TAG);
+}
+
+TxtBookReader::~TxtBookReader() {
+	ZLLogger::Instance().unregisterClass(TAG);
 }
 
 void TxtBookReader::internalEndParagraph() {
@@ -82,6 +89,8 @@ bool TxtBookReader::newLineHandler() {
 			/* Fixed by Hatred: remove '+ 1' for emptyLinesBeforeNewSection, it looks like very strange
 				 when we should point count of empty string decrised by 1 in settings dialog */
 		if (!myInsideContentsParagraph && (myLineFeedCounter == myFormat.emptyLinesBeforeNewSection())) {
+			ZLLogger::Instance().println(TAG, " myLineFeedCounter: %d", myLineFeedCounter);
+
 			myInsideContentsParagraph = true;
 			internalEndParagraph();
 			insertEndOfSectionParagraph();
@@ -92,6 +101,8 @@ bool TxtBookReader::newLineHandler() {
 			paragraphBreak = false;
 		}
 		if (myInsideContentsParagraph && (myLineFeedCounter == 1)) {
+			ZLLogger::Instance().println(TAG, " myLineFeedCounter = 1");
+
 			exitTitle();
 			endContentsParagraph();
 			popKind();
@@ -109,6 +120,9 @@ bool TxtBookReader::newLineHandler() {
 
 void TxtBookReader::startDocumentHandler() {
 	setMainTextModel();
+	// add inner title.
+	addInnerTitleName();
+
 	pushKind(REGULAR);
 	beginParagraph();
 	myLineFeedCounter = 0;
@@ -117,6 +131,21 @@ void TxtBookReader::startDocumentHandler() {
 	myLastLineIsEmpty = true;
 	myNewLine = true;
 	mySpaceCounter = 0;
+}
+
+/**
+ * Add inner title to chapter book.
+ */
+void TxtBookReader::addInnerTitleName() {
+    const bool isLocal = model().isLocal();
+	if (!isLocal) {
+        std::string innerTitle = model().addedInnerTitle();
+		pushKind(KT);
+		beginParagraph();
+		addData(innerTitle);
+		endParagraph();
+		popKind();
+    }
 }
 
 void TxtBookReader::endDocumentHandler() {

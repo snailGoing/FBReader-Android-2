@@ -95,13 +95,13 @@ public final class BookModel {
             String id, String language, int paragraphsNumber,
             int[] entryIndices, int[] entryOffsets,
             int[] paragraphLenghts, int[] textSizes, byte[] paragraphKinds,
-            String directoryName, String fileExtension, int blocksNumber
+            String directoryName, String name, String fileExtension, int blocksNumber
     ) {
         return new ZLTextPlainModel(
                 id, language, paragraphsNumber,
                 entryIndices, entryOffsets,
                 paragraphLenghts, textSizes, paragraphKinds,
-                directoryName, fileExtension, blocksNumber, myImageMap, FontManager
+                directoryName, name, fileExtension, blocksNumber, myImageMap, FontManager
         );
     }
 
@@ -125,8 +125,8 @@ public final class BookModel {
         myImageMap.put(id, image);
     }
 
-    public void initInternalHyperlinks(String directoryName, String fileExtension, int blocksNumber) {
-        myInternalHyperlinks = new CachedCharStorage(directoryName, fileExtension, blocksNumber);
+    public void initInternalHyperlinks(String directoryName, String name, String fileExtension, int blocksNumber) {
+        myInternalHyperlinks = new CachedCharStorage(directoryName, name, fileExtension, blocksNumber);
     }
 
     public void addTOCItem(String text, int reference) {
