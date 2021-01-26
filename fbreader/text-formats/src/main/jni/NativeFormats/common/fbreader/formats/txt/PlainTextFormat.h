@@ -81,8 +81,8 @@ friend class CreateContentsTableOptionEntry;
 class PlainTextFormatDetector {
 
 public:
-	PlainTextFormatDetector() {}
-	~PlainTextFormatDetector() {}
+	PlainTextFormatDetector();
+	~PlainTextFormatDetector();
 
 	void detect(ZLInputStream &stream, PlainTextFormat &format);
 };

@@ -24,6 +24,7 @@
 //#include <ZLOptionsDialog.h>
 //#include <ZLOptionEntry.h>
 #include <ZLFile.h>
+#include <ZLLogger.h>
 
 #include "PlainTextFormat.h"
 
@@ -78,6 +79,14 @@ PlainTextFormat::PlainTextFormat(const ZLFile&) :
 }*/
 
 const int BUFFER_SIZE = 4096;
+
+static std::string TAG = "PlainTextFormatDetector";
+PlainTextFormatDetector::PlainTextFormatDetector() {
+	ZLLogger::Instance().registerClass(TAG);
+}
+PlainTextFormatDetector::~PlainTextFormatDetector() {
+	ZLLogger::Instance().unregisterClass(TAG);
+}
 
 void PlainTextFormatDetector::detect(ZLInputStream &stream, PlainTextFormat &format) {
 	if (!stream.open()) {
@@ -153,6 +162,8 @@ void PlainTextFormatDetector::detect(ZLInputStream &stream, PlainTextFormat &for
 		for (; indent < tableSize; ++indent) {
 			lineWithIndent += stringIndentTable[indent];
 			if (lineWithIndent > 0.1 * nonEmptyLineCounter) {
+				ZLLogger::Instance().println(TAG, "lineWithIndent: %d,  nonEmptyLineCounter: %d",
+						lineWithIndent, nonEmptyLineCounter);
 				break;
 			}
 		}
@@ -168,6 +179,8 @@ void PlainTextFormatDetector::detect(ZLInputStream &stream, PlainTextFormat &for
 			breakType |= PlainTextFormat::BREAK_PARAGRAPH_AT_LINE_WITH_INDENT;
 		}
 		format.myBreakType = (breakType);
+		ZLLogger::Instance().println(TAG, "LengthLessThan81Counter: %d, nonEmptyLineCounter: %d",
+				stringsWithLengthLessThan81Counter, nonEmptyLineCounter);
 	}
 
 	{
@@ -198,6 +211,9 @@ void PlainTextFormatDetector::detect(ZLInputStream &stream, PlainTextFormat &for
 	}
 
 	format.myInitialized = (true);
+	ZLLogger::Instance().println(TAG,
+			"myIgnoredIndent: %d, myBreakType: %d, myCreateContentsTable: %d, myEmptyLinesBeforeNewSection: %d",
+			format.myIgnoredIndent, format.myBreakType, format.myCreateContentsTable, format.myEmptyLinesBeforeNewSection);
 }
 
 /*BreakTypeOptionEntry::BreakTypeOptionEntry(PlainTextInfoPage &page, ZLIntegerOption &breakTypeOption) : myPage(page), myBreakTypeOption(breakTypeOption) {
