@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <shared_ptr.h>
+#include <ZLLogger.h>
 
 class Book;
 class BookModel;
@@ -95,8 +96,12 @@ private:
 
 //inline FormatInfoPage::FormatInfoPage() {}
 //inline FormatInfoPage::~FormatInfoPage() {}
-inline FormatPlugin::FormatPlugin() {}
-inline FormatPlugin::~FormatPlugin() {}
+inline FormatPlugin::FormatPlugin() {
+	ZLLogger::Instance().registerClass("FormatPlugin");
+}
+inline FormatPlugin::~FormatPlugin() {
+	ZLLogger::Instance().unregisterClass("FormatPlugin");
+}
 //inline FormatInfoPage *FormatPlugin::createInfoPage(ZLOptionsDialog&, const ZLFile&) { return 0; }
 
 inline std::vector<shared_ptr<FormatPlugin> > PluginCollection::plugins() const {

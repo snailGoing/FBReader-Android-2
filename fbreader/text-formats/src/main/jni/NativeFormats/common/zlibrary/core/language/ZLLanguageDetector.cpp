@@ -22,6 +22,7 @@
 #include <ZLDir.h>
 #include <ZLUnicodeUtil.h>
 #include <ZLEncodingConverter.h>
+#include <ZLLogger.h>
 
 #include "ZLLanguageList.h"
 #include "ZLLanguageDetector.h"
@@ -30,10 +31,13 @@
 #include "ZLStatistics.h"
 #include "ZLCharSequence.h"
 
+static std::string TAG = "ZLLanguageDetector";
+
 ZLLanguageDetector::LanguageInfo::LanguageInfo(const std::string &language, const std::string &encoding) : Language(language), Encoding(encoding) {
 }
 
 ZLLanguageDetector::ZLLanguageDetector() {
+	ZLLogger::Instance().registerClass(TAG);
 	const ZLFile patternsArchive(ZLLanguageList::patternsDirectoryPath());
 	shared_ptr<ZLInputStream> lock = patternsArchive.inputStream();
 	shared_ptr<ZLDir> dir = patternsArchive.directory(false);
@@ -47,19 +51,23 @@ ZLLanguageDetector::ZLLanguageDetector() {
 				const std::string encoding = it->substr(index + 1);
 				shared_ptr<ZLStatisticsBasedMatcher> matcher = new ZLStatisticsBasedMatcher(dir->itemPath(*it), new LanguageInfo(language, encoding));
 				myMatchers.push_back(matcher);
+				ZLLogger::Instance().println(TAG,"put language: %s, encoding: %s ", language.c_str(), encoding.c_str());
 			}
 		}
 	}
 }
 
 ZLLanguageDetector::~ZLLanguageDetector() {
+	ZLLogger::Instance().unregisterClass(TAG);
 }
 
 static std::string naiveEncodingDetection(const unsigned char *buffer, std::size_t length) {
 	if (buffer[0] == 0xFE && buffer[1] == 0xFF) {
+		ZLLogger::Instance().println(TAG,"naiveEncodingDetection(), UTF16BE.");
 		return ZLEncodingConverter::UTF16BE;
 	}
 	if (buffer[0] == 0xFF && buffer[1] == 0xFE) {
+		ZLLogger::Instance().println(TAG,"naiveEncodingDetection(), UTF16.");
 		return ZLEncodingConverter::UTF16;
 	}
 
@@ -83,9 +91,11 @@ static std::string naiveEncodingDetection(const unsigned char *buffer, std::size
 			ascii = false;
 			utf8count = 3;
 		} else {
+			ZLLogger::Instance().println(TAG,"naiveEncodingDetection(), empty.");
 			return std::string();
 		}
 	}
+	ZLLogger::Instance().println(TAG,"naiveEncodingDetection(), ascii ? : %d ", ascii);
 	return ascii ? ZLEncodingConverter::ASCII : ZLEncodingConverter::UTF8;
 }
 
@@ -125,6 +135,9 @@ shared_ptr<ZLLanguageDetector::LanguageInfo> ZLLanguageDetector::findInfoForEnco
 			info = (*it)->info();
 			matchingCriterion = criterion;
 		}
+	}
+	if (!info.isNull()) {
+		ZLLogger::Instance().println(TAG,"findInfoForEncoding(), info : %s , %s", info->Language.c_str(), info->Encoding.c_str());
 	}
 	return info;
 }

@@ -26,11 +26,14 @@
 
 #include "../library/Book.h"
 
+static const std::string TAG = "FormatPlugin";
+
 bool FormatPlugin::detectEncodingAndLanguage(Book &book, ZLInputStream &stream, bool force) {
 	std::string language = book.language();
 	std::string encoding = book.encoding();
 
 	if (!force && !encoding.empty()) {
+		ZLLogger::Instance().println(TAG, "input language: %s, encoding: %s", language.c_str(), encoding.c_str());
 		return true;
 	}
 
@@ -55,6 +58,7 @@ bool FormatPlugin::detectEncodingAndLanguage(Book &book, ZLInputStream &stream, 
 			if (encoding == ZLEncodingConverter::ASCII || encoding == "iso-8859-1") {
 				encoding = "windows-1252";
 			}
+			ZLLogger::Instance().println(TAG, "detect language: %s, encoding: %s", language.c_str(), encoding.c_str());
 		}
 	}
 	book.setEncoding(encoding);
@@ -84,6 +88,7 @@ bool FormatPlugin::detectLanguage(Book &book, ZLInputStream &stream, const std::
 			detected = true;
 			if (!info->Language.empty()) {
 				language = info->Language;
+				ZLLogger::Instance().println(TAG, "detectLanguage() language: %s, encoding: %s", language.c_str(), encoding.c_str());
 			}
 		}
 	}
