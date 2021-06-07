@@ -19,9 +19,6 @@
 
 package org.geometerplus.zlibrary.text.view;
 
-import android.graphics.Rect;
-import android.text.TextUtils;
-
 import org.LogUtils;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
@@ -36,7 +33,6 @@ import org.geometerplus.zlibrary.text.model.ZLTextAlignmentType;
 import org.geometerplus.zlibrary.text.model.ZLTextMark;
 import org.geometerplus.zlibrary.text.model.ZLTextModel;
 import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
-import org.geometerplus.zlibrary.ui.android.R;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -483,7 +479,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
         for (ZLTextLineInfo info : lineInfos) {
             info.adjust(previousInfo);
             prepareTextLine(page, info, x, y, columnIndex);
-            y += info.Height + info.Descent + info.VSpaceAfter;
+            y += info.getHeight() + info.getDescent() + info.getVSpaceAfter();
             labels[++index] = page.TextElementMap.size();
             if (index == page.Column0Height) {
                 y = getTopMargin();
@@ -959,7 +955,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 // compute the current new text-line detail info.
                 info = processTextLine(page, paragraphCursor, info.EndElementIndex, info.EndCharIndex, endIndex, previousInfo);
                 // adjust the available height.
-                textAreaHeight -= info.Height + info.Descent;
+                textAreaHeight -= info.getHeight() + info.getDescent();
 
                 // if no height to draw, and the numbers of the page's text-line are greater
                 // than the first column line counts.
@@ -968,7 +964,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                     if (page.Column0Height == 0 && page.twoColumnView()) {
                         // re-init the available text height.
                         textAreaHeight = page.getTextHeight();
-                        textAreaHeight -= info.Height + info.Descent;
+                        textAreaHeight -= info.getHeight() + info.getDescent();
                         // save the first column view text-line counts to Column0Height.
                         // we will show the second column view according to the Column0Height value.
                         page.Column0Height = page.LineInfos.size();
@@ -978,7 +974,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
                 }
 
                 // the available height minus the current line VSpaceAfter value.
-                textAreaHeight -= info.VSpaceAfter;
+                textAreaHeight -= info.getVSpaceAfter();
                 // move the cursor to the expected location.
                 result.moveTo(info.EndElementIndex, info.EndCharIndex);
                 // add a new text-line info to list.
@@ -1116,19 +1112,19 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
         // compute the max available width limitation.
         final int maxWidth = page.getTextWidth() - storedStyle.getRightIndent(metrics());
-        info.LeftIndent = storedStyle.getLeftIndent(metrics());
+        info.setLeftIndent(storedStyle.getLeftIndent(metrics()));
 
         // compute the first line left-indent of this paragraph.
         if (isFirstLine && storedStyle.getAlignment() != ZLTextAlignmentType.ALIGN_CENTER) {
-            info.LeftIndent += storedStyle.getFirstLineIndent(metrics());
+            info.setLeftIndent(info.getLeftIndent() + storedStyle.getFirstLineIndent(metrics()));
         }
 
         // make a correction if necessary.
-        if (info.LeftIndent > maxWidth - 20) {
-            info.LeftIndent = maxWidth * 3 / 4;
+        if (info.getLeftIndent() > maxWidth - 20) {
+            info.setLeftIndent(maxWidth * 3 / 4);
         }
 
-        info.Width = info.LeftIndent;
+        info.setWidth(info.getLeftIndent());
 
         // this maybe empty line paragraph, only one paragraph-start-control element.
         if (info.RealStartElementIndex == endIndex) {
@@ -1139,9 +1135,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
         }
 
         // init the computing used width and height, etc.
-        int newWidth = info.Width;
-        int newHeight = info.Height;
-        int newDescent = info.Descent;
+        int newWidth = info.getWidth();
+        int newHeight = info.getHeight();
+        int newDescent = info.getDescent();
         boolean wordOccurred = false;
         boolean isVisible = false;
         int lastSpaceWidth = 0;
@@ -1250,13 +1246,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
             if (allowBreak) {
                 words.clear();
                 // update element info to ZLTextLineInfo.
-                info.IsVisible = isVisible;
-                info.Width = newWidth;
-                if (info.Height < newHeight) {
-                    info.Height = newHeight;
+                info.setVisible(isVisible);
+                info.setWidth(newWidth);
+                if (info.getHeight() < newHeight) {
+                    info.setHeight(newHeight);
                 }
-                if (info.Descent < newDescent) {
-                    info.Descent = newDescent;
+                if (info.getDescent() < newDescent) {
+                    info.setDescent(newDescent);
                 }
 
                 // For Chinese, the end of the line doesn't contain the end value;
@@ -1374,13 +1370,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
                     // this means hyphenated.
                     if (hyphenationPosition > currentCharIndex) {
                         hyphenated = true;
-                        info.IsVisible = true;
-                        info.Width = newWidth + subwordWidth;
-                        if (info.Height < newHeight) {
-                            info.Height = newHeight;
+                        info.setVisible(true);
+                        info.setWidth(newWidth + subwordWidth);
+                        if (info.getHeight() < newHeight) {
+                            info.setHeight(newHeight);
                         }
-                        if (info.Descent < newDescent) {
-                            info.Descent = newDescent;
+                        if (info.getDescent() < newDescent) {
+                            info.setDescent(newDescent);
                         }
                         info.EndElementIndex = currentElementIndex;
                         // this hyphenation position is contained.
@@ -1420,14 +1416,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
                                 pos - wi.StartCharIndex,
                                 word.Data[word.Offset + pos - 1] != '-'
                         );
-                        info.IsVisible = true;
-                        info.Width =
-                                wi.Width - getWordWidth(word, wi.StartCharIndex) + subwordWidth;
-                        if (info.Height < wi.Height) {
-                            info.Height = wi.Height;
+                        info.setVisible(true);
+                        info.setWidth(wi.Width - getWordWidth(word, wi.StartCharIndex) + subwordWidth);
+                        if (info.getHeight() < wi.Height) {
+                            info.setHeight(wi.Height);
                         }
-                        if (info.Descent < wi.Descent) {
-                            info.Descent = wi.Descent;
+                        if (info.getDescent() < wi.Descent) {
+                            info.setDescent(wi.Descent);
                         }
                         info.EndElementIndex = wi.ElementIndex;
                         info.EndCharIndex = pos;
@@ -1445,7 +1440,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
         }
 
         if (removeLastSpace) {
-            info.Width -= lastSpaceWidth;
+            info.setWidth(info.getWidth() - lastSpaceWidth);
             info.SpaceCounter--;
         }
 
@@ -1453,19 +1448,19 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
         // handle with the first line in this page.
         if (isFirstLine) {
-            info.VSpaceBefore = info.StartStyle.getSpaceBefore(metrics());
+            info.setVSpaceBefore(info.StartStyle.getSpaceBefore(metrics()));
             if (previousInfo != null) {
                 info.PreviousInfoUsed = true;
-                info.Height += Math.max(0, info.VSpaceBefore - previousInfo.VSpaceAfter);
+                info.setHeight(info.getHeight() + Math.max(0, info.getVSpaceBefore() - previousInfo.getVSpaceAfter()));
             } else {
                 info.PreviousInfoUsed = false;
-                info.Height += info.VSpaceBefore;
+                info.setHeight(info.getHeight() + info.getVSpaceBefore());
             }
         }
 
         // handle with the end of paragraph.
         if (info.isEndOfParagraph()) {
-            info.VSpaceAfter = getTextStyle().getSpaceAfter(metrics());
+            info.setVSpaceAfter(getTextStyle().getSpaceAfter(metrics()));
         }
 
         // save this ZLTextLineInfo into cache to avoid the next repeating computing.
@@ -1477,7 +1472,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
     }
 
     private void prepareTextLine(ZLTextPage page, ZLTextLineInfo info, int x, int y, int columnIndex) {
-        y = Math.min(y + info.Height, getTopMargin() + page.getTextHeight() - 1);
+        y = Math.min(y + info.getHeight(), getTopMargin() + page.getTextHeight() - 1);
 
         final ZLPaintContext context = getContext();
         final ZLTextParagraphCursor paragraphCursor = info.ParagraphCursor;
@@ -1488,19 +1483,19 @@ public abstract class ZLTextView extends ZLTextViewBase {
         final boolean endOfParagraph = info.isEndOfParagraph();
         boolean wordOccurred = false;
         boolean changeStyle = true;
-        x += info.LeftIndent;
+        x += info.getLeftIndent();
 
         final int maxWidth = page.getTextWidth();
         switch (getTextStyle().getAlignment()) {
             case ZLTextAlignmentType.ALIGN_RIGHT:
-                x += maxWidth - getTextStyle().getRightIndent(metrics()) - info.Width;
+                x += maxWidth - getTextStyle().getRightIndent(metrics()) - info.getWidth();
                 break;
             case ZLTextAlignmentType.ALIGN_CENTER:
-                x += (maxWidth - getTextStyle().getRightIndent(metrics()) - info.Width) / 2;
+                x += (maxWidth - getTextStyle().getRightIndent(metrics()) - info.getWidth()) / 2;
                 break;
             case ZLTextAlignmentType.ALIGN_JUSTIFY:
                 if (!endOfParagraph && (paragraphCursor.getElement(info.EndElementIndex) != ZLTextElement.AfterParagraph)) {
-                    fullCorrection = maxWidth - getTextStyle().getRightIndent(metrics()) - info.Width;
+                    fullCorrection = maxWidth - getTextStyle().getRightIndent(metrics()) - info.getWidth();
                 }
                 break;
             case ZLTextAlignmentType.ALIGN_LEFT:
@@ -1791,7 +1786,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
     }
 
     private int infoSize(ZLTextLineInfo info, int unit) {
-        return (unit == SizeUnit.PIXEL_UNIT) ? (info.Height + info.Descent + info.VSpaceAfter) : (info.IsVisible ? 1 : 0);
+        return (unit == SizeUnit.PIXEL_UNIT) ? (info.getHeight() + info.getDescent() + info.getVSpaceAfter()) : (info.isVisible() ? 1 : 0);
     }
 
     /**
@@ -1825,9 +1820,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
             size.Height += infoSize(info, unit);
             // update margin info to "size".
             if (prev == null) {
-                size.TopMargin = info.VSpaceBefore;
+                size.TopMargin = info.getVSpaceBefore();
             }
-            size.BottomMargin = info.VSpaceAfter;
+            size.BottomMargin = info.getVSpaceAfter();
         }
 
         return size;

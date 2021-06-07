@@ -34,19 +34,20 @@ final class ZLTextLineInfo {
     int EndElementIndex;
     int EndCharIndex;
 
-    boolean IsVisible;
-    int LeftIndent;
+    private boolean mIsVisible;
+
+    private int mLeftIndent;
     /**
      * The width of this text line.
      */
-    int Width;
+    private int mWidth;
     /**
      * The height of this text line.
      */
-    int Height;
-    int Descent;
-    int VSpaceBefore;
-    int VSpaceAfter;
+    private int mHeight;
+    private int mDescent;
+    private int mVSpaceBefore;
+    private int mVSpaceAfter;
     boolean PreviousInfoUsed;
     int SpaceCounter;
     ZLTextStyle StartStyle;
@@ -71,9 +72,74 @@ final class ZLTextLineInfo {
 
     void adjust(ZLTextLineInfo previous) {
         if (!PreviousInfoUsed && previous != null) {
-            Height -= Math.min(previous.VSpaceAfter, VSpaceBefore);
+            mHeight -= Math.min(previous.mVSpaceAfter, mVSpaceBefore);
             PreviousInfoUsed = true;
         }
+    }
+
+    public int getDescent() {
+        return mDescent;
+    }
+
+    public void setDescent(int descent) {
+        this.mDescent = descent;
+    }
+
+
+    public boolean isVisible() {
+        return mIsVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        mIsVisible = visible;
+    }
+
+    public int getWidth() {
+        return mWidth;
+    }
+
+    public void setWidth(int width) {
+        mWidth = width;
+    }
+
+    public int getHeight() {
+        return mHeight;
+    }
+
+    public void setHeight(int height) {
+        this.mHeight = height;
+    }
+
+    public int getVSpaceBefore() {
+        return mVSpaceBefore;
+    }
+
+    public void setVSpaceBefore(int VSpaceBefore) {
+        this.mVSpaceBefore = VSpaceBefore;
+    }
+
+    public int getVSpaceAfter() {
+        return mVSpaceAfter;
+    }
+
+    public void setVSpaceAfter(int VSpaceAfter) {
+        this.mVSpaceAfter = VSpaceAfter;
+    }
+
+    public int getSpaceCounter() {
+        return SpaceCounter;
+    }
+
+    public void setSpaceCounter(int spaceCounter) {
+        SpaceCounter = spaceCounter;
+    }
+
+    public int getLeftIndent() {
+        return mLeftIndent;
+    }
+
+    public void setLeftIndent(int leftIndent) {
+        mLeftIndent = leftIndent;
     }
 
     /**

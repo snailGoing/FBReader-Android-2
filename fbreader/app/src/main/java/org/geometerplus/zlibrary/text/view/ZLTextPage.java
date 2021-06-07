@@ -120,7 +120,7 @@ final class ZLTextPage {
 
     boolean isEmptyPage() {
         for (ZLTextLineInfo info : LineInfos) {
-            if (info.IsVisible) {
+            if (info.isVisible()) {
                 return false;
             }
         }
@@ -135,7 +135,7 @@ final class ZLTextPage {
         ZLTextLineInfo info = null;
         for (ZLTextLineInfo i : LineInfos) {
             info = i;
-            if (info.IsVisible) {
+            if (info.isVisible()) {
                 --overlappingValue;
                 if (overlappingValue == 0) {
                     break;
@@ -156,7 +156,7 @@ final class ZLTextPage {
         ZLTextLineInfo info = null;
         for (int i = size - 1; i >= 0; --i) {
             info = infos.get(i);
-            if (info.IsVisible) {
+            if (info.isVisible()) {
                 --overlappingValue;
                 if (overlappingValue == 0) {
                     break;
@@ -177,10 +177,10 @@ final class ZLTextPage {
         ZLTextLineInfo info = null;
         for (ZLTextLineInfo i : LineInfos) {
             info = i;
-            if (info.IsVisible) {
+            if (info.isVisible()) {
                 visibleLineOccured = true;
             }
-            height -= info.Height + info.Descent + info.VSpaceAfter;
+            height -= info.getHeight() + info.getDescent() + info.getVSpaceAfter();
             if (visibleLineOccured && (height <= 0)) {
                 break;
             }

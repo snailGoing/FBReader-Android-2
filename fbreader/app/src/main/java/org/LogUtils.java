@@ -18,6 +18,12 @@ public class LogUtils {
         }
     }
 
+    public static void d(String tag, String msg, Throwable e){
+        if (DEBUG) {
+            Log.d(tag, msg, e);
+        }
+    }
+
     public static void d(String tag, int msg){
         if (DEBUG) {
             Log.d(tag, "" + msg);

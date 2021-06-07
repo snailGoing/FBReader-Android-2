@@ -81,6 +81,7 @@ public final class FBView extends ZLTextView {
         myBookElementManager = new BookElementManager(this);
     }
 
+    @Override
     public void setModel(ZLTextModel model) {
         super.setModel(model);
         if (myFooter != null) {
