@@ -369,7 +369,8 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 
     @Override
     protected int getStringHeightInternal() {
-        return (int) (myTextPaint.getTextSize() + 0.5f);
+//        return (int) (myTextPaint.getTextSize() + 0.5f);
+        return (int)(-myTextPaint.ascent() + myTextPaint.descent());
     }
 
     @Override
@@ -451,6 +452,11 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
             y0 = swap;
         }
         myCanvas.drawRect(x0, y0, x1 + 1, y1 + 1, myFillPaint);
+    }
+
+    @Override
+    public void drawRect(Rect rect) {
+        myCanvas.drawRect(rect, myLinePaint);
     }
 
     @Override

@@ -19,6 +19,8 @@
 
 package org.geometerplus.zlibrary.core.view;
 
+import android.graphics.Rect;
+
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.fonts.FontEntry;
 import org.geometerplus.zlibrary.core.image.ZLImageData;
@@ -128,6 +130,11 @@ final class DummyPaintContext extends ZLPaintContext {
 
     @Override
     public void fillRectangle(int x0, int y0, int x1, int y1) {
+    }
+
+    @Override
+    public void drawRect(Rect rect) {
+
     }
 
     @Override
