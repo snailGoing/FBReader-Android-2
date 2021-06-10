@@ -482,7 +482,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
             info.adjust(previousInfo);
             prepareTextLine(page, info, x, y, columnIndex);
 //            y += info.getHeight() + info.getDescent() + info.getVSpaceAfter();
-            y += info.getHeight();
+            y += info.getHeight() + info.getVSpaceAfter();
             labels[++index] = page.TextElementMap.size();
             if (index == page.Column0Height) {
                 y = getTopMargin();
