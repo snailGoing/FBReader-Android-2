@@ -19,8 +19,6 @@
 
 package org.geometerplus.zlibrary.text.view;
 
-import org.LogUtils;
-
 final class ZLTextLineInfo {
     final ZLTextParagraphCursor ParagraphCursor;
     final int ParagraphCursorLength;
@@ -129,9 +127,6 @@ final class ZLTextLineInfo {
 
     public void setVSpaceAfter(int VSpaceAfter) {
         this.mVSpaceAfter = VSpaceAfter;
-        if (VSpaceAfter > 0) {
-            LogUtils.d("aa", "" + VSpaceAfter);
-        }
     }
 
     public int getSpaceCounter() {
