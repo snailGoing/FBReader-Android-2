@@ -515,6 +515,9 @@
             <node name="lineSpacing" value="Line spacing">
                 <node name="inherit" value="&lt;unchanged&gt;" />
             </node>
+            <node name="ParaSpacing" value="Para spacing">
+                <node name="inherit" value="&lt;不变&gt;" />
+            </node>
             <node name="alignment" value="Alignment">
                 <node name="left" value="Left" />
                 <node name="right" value="Right" />

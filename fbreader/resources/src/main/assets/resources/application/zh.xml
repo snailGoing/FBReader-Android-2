@@ -493,6 +493,9 @@
             <node name="lineSpacing" value="行间距">
                 <node name="inherit" value="&lt;不变&gt;" />
             </node>
+            <node name="ParaSpacing" value="段间距">
+                <node name="inherit" value="&lt;不变&gt;" />
+            </node>
             <node name="alignment" value="对齐">
                 <node name="left" value="左" />
                 <node name="right" value="右" />

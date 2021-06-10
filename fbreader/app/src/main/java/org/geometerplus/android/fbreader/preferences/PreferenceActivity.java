@@ -376,6 +376,20 @@ public class PreferenceActivity extends ZLPreferenceActivity {
                 this, textScreen.Resource.getResource("lineSpacing"),
                 spaceOption, spacings
         ));
+
+        // added for para space.
+        int ParaSpaceArray[] = ZLTextBaseStyle.ParaSpaceArray;
+        final ZLIntegerRangeOption paraSpaceOption = ZLTextBaseStyle.ParaSpaceOption;
+        final String[] paraSpacings = new String[ParaSpaceArray.length];
+        for (int i = 0; i < paraSpacings.length; ++i) {
+            final int val = paraSpaceOption.MinValue + i;
+            paraSpacings[i] = (char) (val / 10 + '0') + decimalSeparator + (char) (val % 10 + '0');
+        }
+        textScreen.addPreference(new ZLChoicePreference(
+                this, textScreen.Resource.getResource("ParaSpacing"),
+                paraSpaceOption, paraSpacings
+        ));
+
         final String[] alignments = {"left", "right", "center", "justify"};
         textScreen.addPreference(new ZLChoicePreference(
                 this, textScreen.Resource.getResource("alignment"),

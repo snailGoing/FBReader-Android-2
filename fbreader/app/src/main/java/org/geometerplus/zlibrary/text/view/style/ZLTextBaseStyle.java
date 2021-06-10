@@ -26,13 +26,14 @@ import org.geometerplus.zlibrary.core.options.ZLIntegerRangeOption;
 import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.text.model.ZLTextAlignmentType;
 import org.geometerplus.zlibrary.text.model.ZLTextMetrics;
+import org.geometerplus.zlibrary.text.view.ZLTextCommStyle;
 import org.geometerplus.zlibrary.text.view.ZLTextHyperlink;
-import org.geometerplus.zlibrary.text.view.ZLTextStyle;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ZLTextBaseStyle extends ZLTextStyle {
+public class ZLTextBaseStyle extends ZLTextCommStyle {
+
     private static final String GROUP = "Style";
     private static final String OPTIONS = "Options";
 
@@ -163,11 +164,6 @@ public class ZLTextBaseStyle extends ZLTextStyle {
 
     @Override
     public int getSpaceBefore(ZLTextMetrics metrics) {
-        return 0;
-    }
-
-    @Override
-    public int getSpaceAfter(ZLTextMetrics metrics) {
         return 0;
     }
 

@@ -23,12 +23,13 @@ import android.text.TextUtils;
 
 import org.geometerplus.zlibrary.core.fonts.FontEntry;
 import org.geometerplus.zlibrary.text.model.ZLTextMetrics;
+import org.geometerplus.zlibrary.text.view.ZLTextCommStyle;
 import org.geometerplus.zlibrary.text.view.ZLTextHyperlink;
 import org.geometerplus.zlibrary.text.view.ZLTextStyle;
 
 import java.util.List;
 
-public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
+public abstract class ZLTextDecoratedStyle extends ZLTextCommStyle {
     // fields to be cached
     protected final ZLTextBaseStyle BaseStyle;
 
@@ -140,17 +141,24 @@ public abstract class ZLTextDecoratedStyle extends ZLTextStyle {
         if (!metrics.equals(myMetrics)) {
             initMetricsCache(metrics);
         }
-        return mySpaceBefore;
+        return (int)(mySpaceBefore * (getParaSpacePercent() + 1) + 0.5f);
     }
 
     protected abstract int getSpaceBeforeInternal(ZLTextMetrics metrics, int fontSize);
 
     @Override
     public final int getSpaceAfter(ZLTextMetrics metrics) {
+        int superValue = super.getSpaceAfter(metrics);
+
         if (!metrics.equals(myMetrics)) {
             initMetricsCache(metrics);
         }
-        return mySpaceAfter;
+        // if mySpaceAfter == superValue, means the base style(mySpaceAfter was set value by Parent style).
+        if (mySpaceAfter <= superValue) {
+            return superValue;
+        } else {
+            return (int)(mySpaceAfter * (getParaSpacePercent() + 1) + 0.5f);
+        }
     }
 
     protected abstract int getSpaceAfterInternal(ZLTextMetrics metrics, int fontSize);
