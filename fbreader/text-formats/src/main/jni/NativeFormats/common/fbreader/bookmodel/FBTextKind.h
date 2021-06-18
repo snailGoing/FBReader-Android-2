@@ -69,7 +69,7 @@ enum FBTextKind {
 	//BOOK_HYPERLINK = 38,
 
 	XHTML_TAG_P = 51,
-	KT = 255 // add inner title.
+	KT = 100 // add inner title.
 };
 
 #endif /* __FBTEXTKIND_H__ */
