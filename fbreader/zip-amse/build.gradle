@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-
+def enableCMake = true
 
 android {
     compileSdkVersion 29
@@ -44,6 +44,15 @@ android {
         }
     }
 
+    if (enableCMake) {
+        externalNativeBuild {
+            cmake {
+                path 'src/main/jni/CMakeLists.txt'
+            }
+        }
+    }
+
+
     task ndkBuild(type: Exec) {
         def ndkDir = android.ndkDirectory
         def ndkBuildCmd = "ndk-build.cmd"
@@ -57,8 +66,10 @@ android {
         commandLine "$ndkDir/$ndkBuildCmd", '-C', file('src/main/jni').absolutePath
     }
 
-    tasks.withType(JavaCompile) {
-        compileTask -> compileTask.dependsOn ndkBuild
+    if (!enableCMake) {
+        tasks.withType(JavaCompile) {
+            compileTask -> compileTask.dependsOn ndkBuild
+        }
     }
 
     clean {
