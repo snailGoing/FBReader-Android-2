@@ -27,13 +27,20 @@
 class MiscUtil {
 
 private:
-	MiscUtil();
+    MiscUtil();
 
 public:
-	static FBTextKind referenceType(const std::string &link);
-	static std::string htmlDirectoryPrefix(const std::string &fileName);
-	static std::string htmlFileName(const std::string &fileName);
-	static std::string decodeHtmlURL(const std::string &encodedURL);
+    static FBTextKind referenceType(const std::string &link);
+
+    static std::string htmlDirectoryPrefix(const std::string &fileName);
+
+    static std::string htmlFileName(const std::string &fileName);
+
+    static std::string decodeHtmlURL(const std::string &encodedURL);
+
+    static std::string extractHtmlFileName(const std::string &input);
+
+    static bool contains(std::vector<std::string> &result, const std::string &input);
 };
 
 #endif /* __MISCUTIL_H__ */
