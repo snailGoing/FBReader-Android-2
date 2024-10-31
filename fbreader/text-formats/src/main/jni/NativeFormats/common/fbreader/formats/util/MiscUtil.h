@@ -41,6 +41,8 @@ public:
     static std::string extractHtmlFileName(const std::string &input);
 
     static bool contains(std::vector<std::string> &result, const std::string &input);
+
+    static bool isUtf8Bom(const char *data);
 };
 
 #endif /* __MISCUTIL_H__ */

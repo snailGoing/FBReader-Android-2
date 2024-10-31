@@ -110,3 +110,7 @@ std::string MiscUtil::extractHtmlFileName(const std::string &input) {
 bool MiscUtil::contains(std::vector<std::string> &result, const std::string &input) {
     return std::find(result.begin(), result.end(), input) != result.end();
 }
+
+bool MiscUtil::isUtf8Bom(const char *data) {
+    return (*data == '\xEF') && (*(data + 1) == '\xBB') && (*(data + 2) == '\xBF');
+}
